@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <head>
-    <link rel="stylesheet" href="static/base.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='chess/chess.css') }}">
+
+    <script src="{{ url_for('static', filename='chess/utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='chess/chess.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='chess/board.js') }}"></script>
     <title>Atomic Chess</title>
 </head>
 <body>
-    <p>Hi</p>
+    <div id="board" class="board"></div>
 </body>

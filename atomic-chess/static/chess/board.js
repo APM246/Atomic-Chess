@@ -28,6 +28,7 @@ class Position {
 
     constructor() {
         this._isAtomic = false;
+        this._squares = [];
         this.reset();
     }
 
@@ -43,18 +44,30 @@ class Position {
         return this._colorToMove;
     }
 
+    get enpassantSquare() {
+        return this._enpassantSquare;
+    }
+
     // Get the Forsyth–Edwards Notation (FEN) of the current position
     get fen() {
         return "";
     }
 
     isSquareOccupied(square) {
-        return this.getPieceOnSquare(square) !== null
+        return this.getPieceOnSquare(square) !== null;
     }
 
     getPieceOnSquare(square) {
         assert(square >= 0 && square < this._squares.length, "Invalid square");
         return this._squares[square];
+    }
+
+    canCastleKingside(color) {
+        return color === COLORS.WHITE ? this._castlingRights.whiteKingside : this._castlingRights.blackKingside;
+    }
+
+    canCastleQueenside(color) {
+        return color === COLORS.WHITE ? this._castlingRights.whiteQueenside : this._castlingRights.blackQueenside;
     }
 
     // Set the piece positions from a Forsyth–Edwards Notation (FEN) string
@@ -67,8 +80,8 @@ class Position {
             if (c === ' ') {
                 break;
             }
-            if (!isNaN(Number(c))) {
-                const count = c.charCodeAt(0) - "0".charCodeAt(0);
+            const count = Number(c);
+            if (!isNaN(count)) {
                 currentFile += count;
             }
             if (c === '/') {
@@ -119,7 +132,7 @@ class Position {
     // Clears pieces and resets castling rights
     reset() {
         this._squares = [];
-        for (let i = 0; i < PIECE_COUNT; i++) {
+        for (let i = 0; i < SQUARE_COUNT; i++) {
             this._squares.push(null);
         }
         this._castlingRights = {
@@ -128,7 +141,7 @@ class Position {
             blackKingside: true,
             blackQueenside: true,
         };
-        this._enpassantSquare = null;
+        this._enpassantSquare = SQUARES.INVALID;
         this._colorToMove = COLORS.WHITE;
     }
 
@@ -212,6 +225,31 @@ class ChessBoard {
         return this.boardClientHeight / RANK_COUNT;
     }
 
+    get isFlipped() {
+        return this._flipped;
+    }
+
+    // Flip the board to see from the other color's perspective
+    flip() {
+        this._flipped = !this._flipped;
+        this.redraw();
+    }
+
+    // Used to mount the chess board later - even after it has been cleaned up
+    mount(element) {
+        if (!this._parentElement) {
+            this._parentElement = element;
+            this._create();
+            this._createPieces();
+        }
+    }
+
+    // Redraws the board - may be required if the containing div is resized
+    redraw() {
+        this._create();
+        this._createPieces();
+    }
+
     // Set current board state from a Forsyth–Edwards Notation (FEN) string
     setFromFen(fen) {
         this.clear();
@@ -221,8 +259,10 @@ class ChessBoard {
 
     // Cleanup and remove graphics from webpage
     cleanup() {
-        this.clear();
-        // TODO: remove board
+        this._destroyPieces();
+        this._destroyBoard();
+        this._position.reset();
+        this._parentElement = null;
     }
 
     // Utility function that converts a square to an absolute pixel position
@@ -258,38 +298,56 @@ class ChessBoard {
 
     // Clears the pieces from the board
     clear() {
+        this._destroyPieces();
+        this._position.reset();
+    }
+
+    _destroyPieces() {
         for (const piece of this._pieces) {
             if (piece.div) {
                 piece.div.remove();
             }
         }
         this._pieces = [];
-        this._position.reset();
+    }
+
+    _destroyBoard() {
+        if (this._parentElement) {
+            assert(this._pieces.length === 0, "Must have destroyed all pieces before destroying board");
+            this._parentElement.innerHTML = "";
+        }
     }
 
     // Helper function to create the HTML elements of the board
     _create() {
-        const table = document.createElement("table");
-        table.className = "chess-board";
-        for (let file = 0; file < FILE_COUNT; file++) {
-            const row = document.createElement("tr");
-            for (let rank = 0; rank < RANK_COUNT; rank++) {
-                const cell = document.createElement("td");
-                cell.style.backgroundColor = (file + rank) % 2 === 0 ? this._options.lightSquareColor : this._options.darkSquareColor;
-                row.appendChild(cell);
+        this._destroyPieces();
+        this._destroyBoard();
+        if (this._parentElement) {
+            const table = document.createElement("table");
+            table.className = "chess-board";
+            for (let file = 0; file < FILE_COUNT; file++) {
+                const row = document.createElement("tr");
+                for (let rank = 0; rank < RANK_COUNT; rank++) {
+                    const cell = document.createElement("td");
+                    cell.style.backgroundColor = (file + rank) % 2 === 0 ? this._options.lightSquareColor : this._options.darkSquareColor;
+                    row.appendChild(cell);
+                }
+                table.appendChild(row);
             }
-            table.appendChild(row);
+            this._parentElement.appendChild(table);
         }
-        this._parentElement.appendChild(table);
     }
 
     // Helper function to create the HTML elements for the pieces
     _createPieces() {
-        for (let i = 0; i < SQUARE_COUNT; i++) {
-            const pieceData = this._position.getPieceOnSquare(i);
-            if (Boolean(pieceData) && pieceData.piece !== PIECES.NONE) {
-                const pieceObject = new ChessPiece(pieceData.piece, pieceData.color, this._getImageUri(pieceData.piece, pieceData.color), i);
-                this._createPiece(pieceObject);
+        this._destroyPieces();
+        if (this._parentElement) {
+            for (let i = 0; i < SQUARE_COUNT; i++) {
+                const pieceData = this._position.getPieceOnSquare(i);
+                if (Boolean(pieceData) && pieceData.piece !== PIECES.NONE) {
+                    const pieceObject = new ChessPiece(pieceData.piece, pieceData.color, this._getImageUri(pieceData.piece, pieceData.color), i);
+                    this._createPiece(pieceObject);
+                }
             }
         }
     }
@@ -432,3 +490,5 @@ class ChessBoard {
 const board = new ChessBoard({ target: "#board" });
 // Set position from FEN (initial starting position)
 board.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+board.flip();
+console.log(generatePseudoLegalMoves(board.position));

@@ -62,6 +62,10 @@ function getForwardSquare(square, color) {
     return square + (color === COLORS.WHITE ? FILE_COUNT : -FILE_COUNT);
 }
 
+function getBackwardSquare(square, color) {
+    return getForwardSquare(square, otherColor(color));
+}
+
 // Returns the square to the left of the given respect with respect to WHITE
 // eg. getLeftSquare(SQUARES.E4) === SQUARES.D4
 function getLeftSquare(square) {
@@ -84,6 +88,7 @@ function otherColor(color) {
     return color === COLORS.BLACK ? COLORS.WHITE : COLORS.BLACK;
 }
 
+// Utility function to create a move from 2 squares
 function createMove(fromSquare, toSquare, promotion = PIECES.NONE) {
     assert(fromSquare !== toSquare, "Invalid move");
     assert(fromSquare !== SQUARES.INVALID && toSquare !== SQUARES.INVALID, "Invalid from or to square");
@@ -222,11 +227,18 @@ function generateQueenMoves(square, color, position) {
 function generateKingMoves(square, color, position) {
     const moves = generateMovesFromNonSlidingVectors(square, color, position, KING_MOVE_VECTORS);
     // TODO: Castling moves
+    const rank = rankOfSquare(square);
     if (position.canCastleKingside(color)) {
-
+        const isEmptyPath = [createSquare(FILES.FILE_F, rank), createSquare(FILES.FILE_G, rank)].every(square => !position.isSquareOccupied(square));
+        if (isEmptyPath) {
+            moves.push(createMove(square, createSquare(FILES.FILE_G, rank)));
+        }
     }
     if (position.canCastleQueenside(color)) {
-
+        const isEmptyPath = [createSquare(FILES.FILE_B, rank), createSquare(FILES.FILE_C, rank), createSquare(FILES.FILE_D, rank)].every(square => !position.isSquareOccupied(square));
+        if (isEmptyPath) {
+            moves.push(createMove(square, createSquare(FILES.FILE_C, rank)));
+        }
     }
     return moves;
 }
@@ -260,4 +272,71 @@ function generatePseudoLegalMoves(position) {
         }
     }
     return moves;
+}
+
+// Convert square to UCI string
+function squareToString(square) {
+    const file = fileOfSquare(square);
+    const rank = rankOfSquare(square);
+    return String.fromCharCode("a".charCodeAt(0) + file, "1".charCodeAt(0) + rank);
+}
+
+// Create square from UCI string (eg. e4)
+function squareFromString(str) {
+    const file = str[0];
+    const rank = str[1];
+    return createSquare(file.charCodeAt(0) - "a".charCodeAt(0), rank.charCodeAt(0) - "1".charCodeAt(0));
+}
+
+// Converts piece type to the UCI promotion character
+function pieceToString(piece) {
+    switch (piece) {
+        case PIECES.KNIGHT:
+            return "n";
+        case PIECES.BISHOP:
+            return "b";
+        case PIECES.ROOK:
+            return "r";
+        case PIECES.QUEEN:
+            return "q";
+    }
+    return "";
+}
+
+// Converts a move into a UCI string
+function moveToString(move) {
+    return squareToString(move.from) + squareToString(move.to) + (move.promotion !== PIECES.NONE ? pieceToString(move.promotion) : "");
+}
+
+// Perft is a function to test move generation, applyMove and undoMove
+// Given a position and depth it recursively applied all possible moves and returns the total number of moves
+// Compare with known results from https://www.chessprogramming.org/Perft_Results
+function perft(position, depth) {
+    const moveData = {};
+    const internalPerft = (dpth) => {
+        if (dpth <= 0) {
+            return 1;
+        }
+        const moves = generatePseudoLegalMoves(position).filter(mv => position.isLegal(mv));
+        if (dpth <= 1 && depth !== 1) {
+            return moves.length;
+        }
+        let count = 0;
+        for (const move of moves) {
+            const undo = position.applyMove(move, false, false);
+            const c = internalPerft(dpth - 1);
+            count += c;
+            position.undoMove(move, undo);
+            if (dpth === depth) {
+                moveData[moveToString(move)] = c;
+            }
+        }
+        return count;
+    }
+    const total = internalPerft(depth);
+    for (const key of Object.keys(moveData)) {
+        console.log(`${key}: ${moveData[key]}`);
+    }
+    console.log(total);
+    return total;
 }

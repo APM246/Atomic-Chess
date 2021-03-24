@@ -36,6 +36,9 @@ const ATOMIC_EXPLOSION_VECTORS = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, 
 // Constants that represent the current state of the board
 const POSITION_STATE = Object.freeze({ VALID: 0, DRAW: 1, WHITE_WIN: 2, BLACK_WIN: 3 });
 
+// Constants for if someones king got blown up in the position
+const KING_EXPLODE = Object.freeze({ NONE: 0, WHITE: 1, BLACK: 2 });
+
 class EventEmitter {
 
     constructor() {
@@ -364,10 +367,12 @@ class Position {
         this._colorToMove = COLORS.WHITE;
         this._kingSquares = [SQUARES.INVALID, SQUARES.INVALID];
         this._inCheck = false;
+        this._kingBlewUp = KING_EXPLODE.NONE;
         this.cleared.trigger();
     }
 
     // Applies a move to the position - does not check that the move is legal or even pseudo-legal
+    // also does not check if the game has already ended (someone got mated)
     applyMove(move, animate = false, sendEvents = true) {
         assert(Boolean(move), "Invalid move");
         // Save the current board state
@@ -406,6 +411,10 @@ class Position {
                         const pieceOnSquare = this.getPieceOnSquare(newSquare);
                         // Only explode non-pawn pieces
                         if (pieceOnSquare && pieceOnSquare.piece !== PIECES.PAWN) {
+                            // Check if the enemy king got blown up
+                            if (pieceOnSquare.piece === PIECES.KING) {
+                                this._kingBlewUp = this.colorToMove === COLORS.BLACK ? KING_EXPLODE.WHITE : KING_EXPLODE.BLACK;
+                            }
                             undoInfo.capturedPieces.push({ square: newSquare, piece: pieceOnSquare });
                             this._squares[newSquare] = null;
                             if (sendEvents) {
@@ -614,8 +623,31 @@ class Position {
     }
 
     // Determine whether the position is a draw or checkmate or still valid
+    // This function is quite as expensive, as it calls isLegal() multiple times
+    // performance is fine though 
     getResult() {
-        // TODO: determine checkmate
+        // Check if someones king got blown up
+        if (this._kingBlewUp !== KING_EXPLODE.NONE) {
+            return this._kingBlewUp === KING_EXPLODE.BLACK ? POSITION_STATE.WHITE_WIN : POSITION_STATE.BLACK_WIN;
+        }
+
+        const moves = generatePseudoLegalMoves(this);
+        let hasLegalMove = false;
+        for (const mv of moves) {
+            if (this.isLegal(mv)) {
+                hasLegalMove = true;
+                break;
+            }
+        }
+
+        if (this.inCheck && !hasLegalMove) {
+            return this.colorToMove === COLORS.BLACK ? POSITION_STATE.WHITE_WIN : POSITION_STATE.BLACK_WIN;
+        }
+
+        if (!this.inCheck && !hasLegalMove) {
+            return POSITION_STATE.DRAW;
+        }
+
         return POSITION_STATE.VALID;
     }
 
@@ -762,7 +794,7 @@ class ChessBoard {
         this._position.pieceAdded.addEventListener((square, piece, animate) => {
             const pieceObject = new ChessPiece(piece.piece, piece.color, this._getImageUri(piece.piece, piece.color), square);
             this._createPiece(pieceObject, animate);
-        })
+        });
 
         this._position.pieceRemoved.addEventListener((square, piece, animate) => {
             const pieceIndex = this._indexOfPieceOnSquare(square);
@@ -771,7 +803,7 @@ class ChessBoard {
                 this._pieces.splice(pieceIndex, 1);
                 this._destroyPiece(pieceObject);
             }
-        })
+        });
 
         this._position.pieceMoved.addEventListener((from, to, piece, animate) => {
             const pieceIndex = this._indexOfPieceOnSquare(from);
@@ -779,7 +811,7 @@ class ChessBoard {
                 const pieceObject = this._pieces[pieceIndex];
                 this._movePieceToSquare(to, pieceObject, animate);
             }
-        })
+        });
 
         this._position.piecePromoted.addEventListener((square, piece, animate) => {
             const image = this._getImageUri(piece.piece, piece.color);
@@ -788,12 +820,12 @@ class ChessBoard {
                 const pieceObject = this._pieces[pieceIndex];
                 pieceObject.setImageUri(image);
             }
-        })
+        });
 
         this._position.cleared.addEventListener(() => {
             this._destroyPieces();
             this._moveHistory = [];
-        })
+        });
     }
 
     get position() {
@@ -1219,6 +1251,19 @@ class ChessBoard {
                     // Highlight the move
                     const square = this.boardPositionToSquare(e.clientX - this.boardClientX, e.clientY - this.boardClientY);
                     this._squareEmphasizer.onMove(square);
+
+                    const state = this._position.getResult();
+                    switch (state) {
+                        case POSITION_STATE.BLACK_WIN:
+                            console.log("Black Won");
+                            break;
+                        case POSITION_STATE.WHITE_WIN:
+                            console.log("White Won");
+                            break;
+                        case POSITION_STATE.DRAW:
+                            console.log("Draw");
+                            break;
+                    }
                 }
                 // Cleanup event listeners
                 removeEventListeners();

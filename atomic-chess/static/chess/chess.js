@@ -238,7 +238,7 @@ function generateQueenMoves(square, color, position) {
 // Generates all pseudo-legal king moves from a given square
 function generateKingMoves(square, color, position) {
     const moves = generateMovesFromNonSlidingVectors(square, color, position, KING_MOVE_VECTORS);
-    // TODO: Castling moves
+
     const rank = rankOfSquare(square);
     if (position.canCastleKingside(color)) {
         const isEmptyPath = [createSquare(FILES.FILE_F, rank), createSquare(FILES.FILE_G, rank)].every(square => !position.isSquareOccupied(square));

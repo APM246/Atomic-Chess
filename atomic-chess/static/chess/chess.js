@@ -53,6 +53,11 @@ function validFileAndRank(file, rank) {
     return file >= 0 && file < FILE_COUNT && rank >= 0 && rank < RANK_COUNT;
 }
 
+function squareColor(square)
+{
+    return (fileOfSquare(square) + rankOfSquare(square)) % 2 === 0 ? COLORS.BLACK : COLORS.WHITE;
+}
+
 // Returns the square directly in front of the given square with respect to the color
 // eg. getForwardSquare(SQUARES.A2, COLORS.WHITE) === SQUARES.A3
 //     getForwardSquare(SQUARES.A2, COLORS.BLACK) === SQUARES.A1

@@ -2,6 +2,8 @@ const DEFAULT_CHESS_BOARD_OPTIONS = {
     target: "body",
     lightSquareColor: "#EEEEEE",
     darkSquareColor: "#4682B4",
+    lightSquareHighlightColor: "#F6F669",
+    darkSquareHighlightColor: "#BACA2B",
     pieceImages: {
         whitePawn:   "static/pieces/white_pawn.png",
         whiteKnight: "static/pieces/white_knight.png",
@@ -617,6 +619,77 @@ class ChessPiece {
 
 }
 
+// Helper class for highlighting squares on the chess board
+class SquareEmphasizer {
+
+    constructor(chessBoard) {
+        this._chessBoard = chessBoard;
+
+        // Square of the piece last grabbed by user
+        this._lastGrab = null;
+
+        this._lastMove1 = null;
+        this._lastMove2 = null;
+
+        this._emphasizedSquares = [];
+    }
+
+    // Call this when the user clicks on a piece
+    onGrab(square) {
+        const color = squareColor(square) === COLORS.BLACK ? this._chessBoard._options.darkSquareHighlightColor : this._chessBoard._options.lightSquareHighlightColor;
+        this._emphasizeSquare(square, color);
+
+        if (this._lastGrab !== null) {
+            this._deemphasizeSquare(this._lastGrab);
+        }
+        this._lastGrab = square;
+    }
+
+    // Call this when the user moves a piece to a square
+    onMove(square) {
+        if (this._lastMove1 !== null) {
+            this._deemphasizeSquare(this._lastMove1);
+        }
+        if (this._lastMove2 !== null) {
+            this._deemphasizeSquare(this._lastMove2);
+        }
+
+        const color = squareColor(square) === COLORS.BLACK ? this._chessBoard._options.darkSquareHighlightColor : this._chessBoard._options.lightSquareHighlightColor;
+        this._emphasizeSquare(square, color);
+
+        this._lastMove1 = this._lastGrab;
+        this._lastMove2 = square;
+        this._lastGrab = null;
+    }
+
+    _emphasizeSquare(square, color) {
+        const squareWidth = this._chessBoard.squareClientWidth;
+        const squareHeight = this._chessBoard.squareClientHeight;
+
+        const div = document.createElement("div");
+        div.className = "highlight-square";
+        const clientPosition = this._chessBoard.squareToBoardPosition(square);
+        div.style.transform = `translate(${clientPosition.x}px, ${clientPosition.y}px)`;
+        div.style.width = `${squareWidth}px`;
+        div.style.height = `${squareHeight}px`;
+        div.style.backgroundColor = color;
+
+        this._chessBoard._parentElement.appendChild(div);
+        this._emphasizedSquares.push({ "square": square, "div": div });
+    }
+    
+    _deemphasizeSquare(square) {
+        const emph = this._emphasizedSquares;
+        for (const index in emph) {
+            if (emph[index].square == square) {
+                emph[index].div.remove();
+                emph.splice(index, 1);
+                return;
+             }
+        }
+    }
+}
+
 // Abstraction layer around the Position object which manages how the game is displayed to the user
 // Also handles the interaction (being able to drag/drop pieces)
 class ChessBoard {
@@ -626,6 +699,7 @@ class ChessBoard {
         this._parentElement = getElement(this._options.target);
         this._position = new Position();
         this._pieces = [];
+        this._squareEmphasizer = new SquareEmphasizer(this);
 
         // If flipped then we are seeing the board from Black's perspective
         this._flipped = false;
@@ -842,31 +916,31 @@ class ChessBoard {
     }
 
     _createMoveMarkerDiv(square, color, scale) {
-        const squareWidth = this.squareClientWidth
-        const squareHeight = this.squareClientHeight
-        const width = squareWidth * scale
-        const height = squareHeight * scale
+        const squareWidth = this.squareClientWidth;
+        const squareHeight = this.squareClientHeight;
+        const width = squareWidth * scale;
+        const height = squareHeight * scale;
 
-        const div = document.createElement("div")
-        div.className = "chess-marker"
-        const clientPosition = this.squareToBoardPosition(square)
-        div.style.transform = `translate(${clientPosition.x}px, ${clientPosition.y}px)`
-        div.style.width = `${squareWidth}px`
-        div.style.height = `${squareHeight}px`
+        const div = document.createElement("div");
+        div.className = "chess-marker";
+        const clientPosition = this.squareToBoardPosition(square);
+        div.style.transform = `translate(${clientPosition.x}px, ${clientPosition.y}px)`;
+        div.style.width = `${squareWidth}px`;
+        div.style.height = `${squareHeight}px`;
 
-        const ns = "http://www.w3.org/2000/svg"
+        const ns = "http://www.w3.org/2000/svg";
 
-        const svg = document.createElementNS(ns, "svg")
-        svg.setAttributeNS(null, 'viewBox', `0 0 ${squareWidth} ${squareHeight}`)
-        const circle = document.createElementNS(ns, "circle")
-        circle.setAttributeNS(null, 'cx', `${squareWidth / 2}`)
-        circle.setAttributeNS(null, 'cy', `${squareHeight / 2}`)
-        circle.setAttributeNS(null, 'r', `${Math.min(width / 2, height / 2)}`)
-        circle.setAttributeNS(null, 'fill', color)
-        svg.appendChild(circle)
-        div.appendChild(svg)
+        const svg = document.createElementNS(ns, "svg");
+        svg.setAttributeNS(null, 'viewBox', `0 0 ${squareWidth} ${squareHeight}`);
+        const circle = document.createElementNS(ns, "circle");
+        circle.setAttributeNS(null, 'cx', `${squareWidth / 2}`);
+        circle.setAttributeNS(null, 'cy', `${squareHeight / 2}`);
+        circle.setAttributeNS(null, 'r', `${Math.min(width / 2, height / 2)}`);
+        circle.setAttributeNS(null, 'fill', color);
+        svg.appendChild(circle);
+        div.appendChild(svg);
 
-        return div
+        return div;
     }
 
     // Find the index of the piece that is on the given square
@@ -992,23 +1066,32 @@ class ChessBoard {
         // Snap the piece to the closest square to its current absolute position
         const placePiece = (clientX, clientY) => {
             const square = this.boardPositionToSquare(clientX - this.boardClientX, clientY - this.boardClientY);
+            let success;
             if (square !== SQUARES.INVALID && square !== piece.currentSquare) {
                 const originalSquare = piece.currentSquare;
                 const promotionRank = piece.color === COLORS.WHITE ? RANKS.RANK_8 : RANKS.RANK_1;
                 const promotion = piece.piece === PIECES.PAWN && rankOfSquare(square) === promotionRank ? PIECES.QUEEN : PIECES.NONE;
                 const move = createMove(originalSquare, square, promotion);
-                if (this.applyMove(move)) {
+                success = Boolean(this.applyMove(move));
+                if (success) {
                     // Set piece position to the square's position
                     currentPosition = this.squareToBoardPosition(square);
                 }
             }
             // Update piece transform
             resetTransform();
+            return success;
         }
 
         piece.div.onmousedown = (e) => {
             // When we hold down the mouse on a piece, start dragging it
             e.preventDefault();
+            
+            // Highlight the square the grabbed piece is on
+            this._squareEmphasizer.onGrab(piece.currentSquare);
+
+            // Draw the piece we are holding in front of the other pieces
+            piece.div.style.zIndex = "20";
             // Show the available moves
             this.showMoveMarkers(piece.currentSquare);
             // If we are somehow dragging another piece - reset transform
@@ -1027,10 +1110,17 @@ class ChessBoard {
             document.onmouseup = (e) => {
                 // When we drop the piece - snap to nearest square
                 // If we dropped it outside of the board it will return to the original position
-                placePiece(e.clientX, e.clientY);
+                if (placePiece(e.clientX, e.clientY)) {
+                    // Highlight the move
+                    const square = this.boardPositionToSquare(e.clientX - this.boardClientX, e.clientY - this.boardClientY);
+                    this._squareEmphasizer.onMove(square);
+                }
                 // Cleanup event listeners
                 document.onmouseup = null;
                 document.onmousemove = null;
+
+                // Set the z-index of the piece back to its default
+                piece.div.style.zIndex = "";
             }
 
             document.onmousemove = (e) => {

@@ -63,16 +63,10 @@ class EventEmitter {
 class Position {
 
     constructor() {
-        // (square, piece: { piece: PIECES, color: COLORS }, animate) => void
-        this.pieceAdded = new EventEmitter();
-        // (square, piece: { piece: PIECES, color: COLORS }, animate) => void
-        this.pieceRemoved = new EventEmitter();
-        // (from, to, piece: { piece: PIECES, color: COLORS }, animate) => void
-        this.pieceMoved = new EventEmitter();
-        // (square, piece: { piece: PIECES, color: COLORS }, animate) => void
-        this.piecePromoted = new EventEmitter();
-        // () => void
+        this.ready = new EventEmitter();
         this.cleared = new EventEmitter();
+        this.movePlayed = new EventEmitter();
+        this.moveUndone = new EventEmitter();
 
         this._isAtomic = false;
         this.reset();
@@ -338,12 +332,7 @@ class Position {
         this._initialize();
 
         // Send creation events
-        for (let square = 0; square < this._squares.length; square++) {
-            const piece = this.getPieceOnSquare(square);
-            if (piece) {
-                this.pieceAdded.trigger(square, piece);
-            }
-        }
+        this.ready.trigger();
     }
 
     // Clears pieces and resets castling rights
@@ -379,13 +368,22 @@ class Position {
             isPromotion: false,
             isKingsideCastle: false,
             isQueensideCastle: false,
+            movingPiece: null,
+        };
+        const eventData = {
+            move,
+            animate,
+            movingPieces: [],
+            capturedPieces: [],
+            promotedPieces: [],
+            movingPieceCaptured: false,
         };
         const fromSquare = move.from;
         const toSquare = move.to;
         const promotion = move.promotion;
         const enpassantSquare = this.enpassantSquare;
         const movingPiece = this.getPieceOnSquare(fromSquare);
-        const isCapture = this.isCapture(move);
+        undoInfo.movingPiece = movingPiece;
         assert(Boolean(movingPiece) && movingPiece.piece !== PIECES.NONE && movingPiece.color === this.colorToMove, "Invalid move");
         const capturedPiece = this.getPieceOnSquare(toSquare);
         assert(!Boolean(capturedPiece) || capturedPiece.color !== this.colorToMove, "Invalid capture");
@@ -405,20 +403,15 @@ class Position {
                         // Only explode non-pawn pieces
                         if (pieceOnSquare && pieceOnSquare.piece !== PIECES.PAWN) {
                             undoInfo.capturedPieces.push({ square: newSquare, piece: pieceOnSquare });
+                            eventData.capturedPieces.push({ square: newSquare, piece: pieceOnSquare });
                             this._squares[newSquare] = null;
-                            if (sendEvents) {
-                                this.pieceRemoved.trigger(newSquare, pieceOnSquare, animate);
-                            }
                         }
                     }
                 }
                 // Explode the moving piece
                 this._squares[explosionSquare] = null;
-                undoInfo.capturedPieces.push({ square: captureFrom, piece: capturingPiece });
-                if (sendEvents) {
-                    // Trigger the event as if it was from the "from square" since the piece never actually moves
-                    this.pieceRemoved.trigger(captureFrom, capturingPiece, animate);
-                }
+                undoInfo.capturedPieces.push({ square: captureFrom, piece: capturingPiece, isMovingPiece: true });
+                eventData.movingPieceCaptured = true;
             }
         }
 
@@ -432,10 +425,8 @@ class Position {
 
         if (capturedPiece) {
             undoInfo.capturedPieces.push({ square: toSquare, piece: capturedPiece });
+            eventData.capturedPieces.push({ square: toSquare, piece: capturedPiece });
             explode(movingPiece, fromSquare, toSquare);
-            if (sendEvents) {
-                this.pieceRemoved.trigger(toSquare, capturedPiece, animate);
-            }
         }
 
         // Enpassant
@@ -443,25 +434,16 @@ class Position {
             const captureSquare = getBackwardSquare(toSquare, this.colorToMove);
             const capturedPawn = { piece: PIECES.PAWN, color: otherColor(this.colorToMove) };
             undoInfo.capturedPieces.push({ square: captureSquare, piece: capturedPawn });
+            eventData.capturedPieces.push({ square: captureSquare, piece: capturedPawn });
             this._squares[captureSquare] = null;
             explode(movingPiece, fromSquare, toSquare);
-            if (sendEvents) {
-                this.pieceRemoved.trigger(captureSquare, capturedPawn, animate);
-            }
-        }
-
-        // A piece only "moves" in atomic if it is not a capture (otherwise it is exploded)
-        if (sendEvents && (!this.isAtomic || !isCapture)) {
-            this.pieceMoved.trigger(fromSquare, toSquare, movingPiece, animate);
         }
 
         // Update promotion
         if (promotion !== PIECES.NONE && movingPiece.piece === PIECES.PAWN) {
             this._squares[toSquare] = { piece: promotion, color: this.colorToMove };
             undoInfo.isPromotion = true;
-            if (sendEvents) {
-                this.piecePromoted.trigger(toSquare, this._squares[toSquare], animate);
-            }
+            eventData.promotedPieces.push({ square: toSquare, piece: this._squares[toSquare] });
         }
 
         // If we double push a pawn - set the enpassant square
@@ -534,10 +516,7 @@ class Position {
                 const toRookSquare = createSquare(FILES.FILE_F, rank);
                 this._squares[fromRookSquare] = null;
                 this._squares[toRookSquare] = { piece: PIECES.ROOK, color: this.colorToMove };
-                if (sendEvents) {
-                    // Always animate rook moves in castling
-                    this.pieceMoved.trigger(fromRookSquare, toRookSquare, this._squares[toRookSquare], true);
-                }
+                eventData.movingPieces.push({ from: fromRookSquare, to: toRookSquare, piece: this._squares[toRookSquare] });
             } else if (fromFile === FILES.FILE_E && toFile === FILES.FILE_C) {
                 // Queenside castling
                 // Move the rook
@@ -546,10 +525,7 @@ class Position {
                 const toRookSquare = createSquare(FILES.FILE_D, rank);
                 this._squares[fromRookSquare] = null;
                 this._squares[toRookSquare] = { piece: PIECES.ROOK, color: this.colorToMove };
-                if (sendEvents) {
-                    // Always animate rook moves in castling
-                    this.pieceMoved.trigger(fromRookSquare, toRookSquare, this._squares[toRookSquare], true);
-                }
+                eventData.movingPieces.push({ from: fromRookSquare, to: toRookSquare, piece: this._squares[toRookSquare] });
             }
         }
 
@@ -567,6 +543,10 @@ class Position {
         // Swap moving color
         this._colorToMove = otherColor(this.colorToMove);
 
+        if (sendEvents) {
+            this.movePlayed.trigger(eventData);
+        }
+
         return undoInfo;
     }
 
@@ -574,6 +554,13 @@ class Position {
         assert(Boolean(move) && Boolean(undoInfo), "Invalid arguments");
 
         if (sendEvents) {
+            const eventData = {
+                move,
+                animate,
+                movingPieces: [],
+                addedPieces: [],
+                promotedPieces: [],
+            };
             const fromSquare = move.to;
             const toSquare = move.from;
             const movingPiece = this.getPieceOnSquare(fromSquare);
@@ -581,24 +568,27 @@ class Position {
             // There must be a piece on the square unless it is atomic in which case it may have been exploded
             assert(Boolean(movingPiece) || this.isAtomic, "Invalid move");
             if (movingPiece) {
-                this.pieceMoved.trigger(fromSquare, toSquare, movingPiece, animate);
+                eventData.movingPieces.push({ from: fromSquare, to: toSquare, piece: undoInfo.movingPiece });
+            } else {
+                eventData.movingPieces.push({ from: toSquare, to: toSquare, piece: undoInfo.movingPiece });
             }
             for (const piece of undoInfo.capturedPieces) {
-                this.pieceAdded.trigger(piece.square, piece.piece);
+                eventData.addedPieces.push({ square: piece.square, piece: piece.piece, isMovingPiece: piece.isMovingPiece });
             }
             if (undoInfo.isPromotion) {
-                this.piecePromoted.trigger(toSquare, { piece: PIECES.PAWN, color }, animate);
+                eventData.promotedPieces.push({ square: toSquare, piece: { piece: PIECES.PAWN, color } });
             }
             if (undoInfo.isKingsideCastle) {
                 // Move the rook back
                 const rank = rankOfSquare(fromSquare);
-                this.pieceMoved.trigger(createSquare(FILES.FILE_F, rank), createSquare(FILES.FILE_H, rank), { piece: PIECES.ROOK, color }, animate);
+                eventData.movingPieces.push({ from: createSquare(FILES.FILE_F, rank), to: createSquare(FILES.FILE_H, rank), piece: { piece: PIECES.ROOK, color } });
             }
             if (undoInfo.isQueensideCastle) {
                 // Move the rook back
                 const rank = rankOfSquare(fromSquare);
-                this.pieceMoved.trigger(createSquare(FILES.FILE_D, rank), createSquare(FILES.FILE_A, rank), { piece: PIECES.ROOK, color }, animate);
+                eventData.movingPieces.push({ from: createSquare(FILES.FILE_D, rank), to: createSquare(FILES.FILE_A, rank), piece: { piece: PIECES.ROOK, color } });
             }
+            this.moveUndone.trigger(eventData);
         }
 
         // Restore board state from undoInfo
@@ -642,10 +632,18 @@ class ChessPiece {
     }
 
     // Used when a piece is promoted - updates <img> src
-    setImageUri(uri) {
+    setImageUri(uri, promise) {
         this.imageUri = uri;
-        if (this.div) {
-            this.div.children[0].src = this.imageUri;
+        if (promise) {
+            promise.then(() => {
+                if (this.div) {
+                    this.div.children[0].src = this.imageUri;
+                }
+            });
+        } else {
+            if (this.div) {
+                this.div.children[0].src = this.imageUri;
+            }
         }
     }
 
@@ -675,40 +673,115 @@ class ChessBoard {
 
         // Setup event listeners so we can update our graphics when moves are made in the position
 
-        this._position.pieceAdded.addEventListener((square, piece, animate) => {
-            const pieceObject = new ChessPiece(piece.piece, piece.color, this._getImageUri(piece.piece, piece.color), square);
-            this._createPiece(pieceObject, animate);
-        })
+        this._position.movePlayed.addEventListener((moveData) => {
+            // 1. Logically remove the pieces that were captured on this move (does NOT clean up the graphics of these pieces)
+            const capturedPieceObjects = [];
+            for (const piece of moveData.capturedPieces) {
+                const index = this._indexOfPieceOnSquare(piece.square);
+                if (index >= 0) {
+                    capturedPieceObjects.push(this._pieces[index]);
+                    this._pieces.splice(index, 1);
+                }
+            }
 
-        this._position.pieceRemoved.addEventListener((square, piece, animate) => {
-            const pieceIndex = this._indexOfPieceOnSquare(square);
-            if (pieceIndex >= 0) {
-                const pieceObject = this._pieces[pieceIndex];
-                this._pieces.splice(pieceIndex, 1);
-                this._destroyPiece(pieceObject);
+            const promise = wait(MOVE_ANIMATION_TIME_MS);
+
+            // For every other moving piece (rooks during castling) - not the primary moving piece
+            // always animate to the new square
+            for (const piece of moveData.movingPieces) {
+                const index = this._indexOfPieceOnSquare(piece.from);
+                if (index >= 0) {
+                    this._movePieceToSquare(piece.to, this._pieces[index], promise);
+                }
+            }
+
+            // Find the piece that is the primary target of this move and make the move
+            const movingPieceIndex = this._indexOfPieceOnSquare(moveData.move.from);
+            let movingPieceObject = null;
+            if (movingPieceIndex >= 0) {
+                movingPieceObject = this._pieces[movingPieceIndex];
+                this._movePieceToSquare(moveData.move.to, movingPieceObject, moveData.animate ? promise : null);
+                if (moveData.movingPieceCaptured) {
+                    // Logically remove the piece - not clean up graphics
+                    this._pieces.splice(movingPieceIndex, 1);
+                }
+            }
+
+            const cleanupGraphics = () => {
+                // After movement has completed remove graphics of captured pieces
+                for (const piece of capturedPieceObjects) {
+                    this._destroyPiece(piece);
+                }
+                // If this move resulted in the moving piece being exploded (capture in atomic chess)
+                // Now is the time to clean it up
+                if (moveData.movingPieceCaptured && movingPieceObject) {
+                    this._destroyPiece(movingPieceObject);
+                }
+            }
+
+            if (moveData.animate) {
+                // WAIT for movement to finish
+                promise.then(cleanupGraphics);
+            } else {
+                cleanupGraphics();
+            }
+
+            // Update promotion graphics
+            for (const promotion of moveData.promotedPieces) {
+                const index = this._indexOfPieceOnSquare(promotion.square);
+                if (index >= 0) {
+                    this._pieces[index].piece = promotion.piece.piece;
+                    this._pieces[index].setImageUri(this._getImageUri(promotion.piece.piece, promotion.piece.color), moveData.animate ? promise : null);
+                }
             }
         })
 
-        this._position.pieceMoved.addEventListener((from, to, piece, animate) => {
-            const pieceIndex = this._indexOfPieceOnSquare(from);
-            if (pieceIndex >= 0) {
-                const pieceObject = this._pieces[pieceIndex];
-                this._movePieceToSquare(to, pieceObject, animate);
+        this._position.moveUndone.addEventListener((moveData) => {
+            // Add pieces that were captured by the previous move
+            for (const piece of moveData.addedPieces) {
+                const pieceObject = new ChessPiece(piece.piece.piece, piece.piece.color, this._getImageUri(piece.piece.piece, piece.piece.color), piece.square);
+                // In the case of atomic chess the moving piece may need to be added back (exploded when it captured another piece)
+                // In that case we still want to animate the piece moving from the capture square back to its old square
+                // However there is likely another piece already on the square (the piece we captured)
+                // Therefore before we create the piece we set its square to the capture square (move.to) and after its position has been update we set its actual square to the location it is about to move to
+                // Temporarily its graphical position and logical position are out of sync
+                if (piece.isMovingPiece) {
+                    pieceObject.currentSquare = moveData.move.to;
+                }
+                this._createPiece(pieceObject)
+                pieceObject.currentSquare = piece.square;
             }
-        })
 
-        this._position.piecePromoted.addEventListener((square, piece, animate) => {
-            const image = this._getImageUri(piece.piece, piece.color);
-            const pieceIndex = this._indexOfPieceOnSquare(square);
-            if (pieceIndex >= 0) {
-                const pieceObject = this._pieces[pieceIndex];
-                pieceObject.setImageUri(image);
+            const promise = wait(MOVE_ANIMATION_TIME_MS);
+
+            // Moving pieces includes all pieces that need to be moved (including primary piece)
+            // The primary piece is guaranteed to be index 0
+            for (let i = 0; i < moveData.movingPieces.length; i++) {
+                const pieceData = moveData.movingPieces[i];
+                const index = this._indexOfPieceOnSquare(pieceData.from);
+                if (index >= 0) {
+                    // Always animate if i > 0 (rook moves from castling)
+                    this._movePieceToSquare(pieceData.to, this._pieces[index], i !== 0 || moveData.animate ? promise : null);
+                }
+            }
+
+            // Update promoted pieces
+            for (const promotion of moveData.promotedPieces) {
+                const index = this._indexOfPieceOnSquare(promotion.square);
+                if (index >= 0) {
+                    this._pieces[index].piece = promotion.piece.piece;
+                    this._pieces[index].setImageUri(this._getImageUri(promotion.piece.piece, promotion.piece.color));
+                }
             }
         })
 
         this._position.cleared.addEventListener(() => {
             this._destroyPieces();
             this._moveHistory = [];
+        })
+
+        this._position.ready.addEventListener(() => {
+            this._createPieces();
         })
     }
 
@@ -1015,7 +1088,7 @@ class ChessBoard {
     }
 
     // Constructs the HTML elements for rendering a single piece
-    _createPiece(piece, animate = false) {
+    _createPiece(piece) {
         if (this._parentElement) {
             const div = this._createPieceDiv(piece);
             // Piece now tracks its div
@@ -1174,16 +1247,16 @@ class ChessBoard {
     }
 
     // Sets the piece transform for a given square
-    _movePieceToSquare(square, piece, animate) {
+    _movePieceToSquare(square, piece, animationPromise) {
         if (piece.div) {
             const position = this.squareToBoardPosition(square);
-            if (animate) {
+            if (animationPromise) {
                 piece.div.style.transition = `${MOVE_ANIMATION_TIME_MS}ms`;
-                setTimeout(() => {
+                animationPromise.then(() => {
                     if (piece.div) {
                         piece.div.style.transition = "";
                     }
-                }, MOVE_ANIMATION_TIME_MS)
+                })
             }
             piece.div.style.transform = `translate(${position.x}px, ${position.y}px)`;
         }

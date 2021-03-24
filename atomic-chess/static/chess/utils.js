@@ -15,3 +15,11 @@ function assert(condition, message) {
         throw new Error(message)
     }
 }
+
+// Returns a promise that resolves after a given number of milliseconds
+function wait(milliseconds) {
+    let promiseResolve = null
+    const promise = new Promise((resolve, reject) => promiseResolve = resolve);
+    setTimeout(() => promiseResolve(), milliseconds);
+    return promise;
+}

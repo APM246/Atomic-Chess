@@ -1,6 +1,6 @@
 // Utility function that takes 2 objects and combines their keys giving preference to the options
 function assignDefaults(options, defaults) {
-    // Works event when options or defaults is null - { ...null } === {}
+    // Works even when options or defaults is null - { ...null } === {}
     return { ...defaults, ...options }
 }
 

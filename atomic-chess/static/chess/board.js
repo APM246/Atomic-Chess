@@ -147,7 +147,7 @@ class Position {
 
     // Takes a pseudo-legal move and determines whether it is a legal move
     isLegal(move) {
-        const ctm = this.colorToMove
+        const ctm = this.colorToMove;
 
         const kingsideCastle = this.isKingsideCastle(move);
         const queensideCastle = this.isQueensideCastle(move);
@@ -158,8 +158,8 @@ class Position {
             }
             // Ensure that we are not castling through check
             const rank = rankOfSquare(move.from);
-            const squares = []
-            const pawnSquares = []
+            const squares = [];
+            const pawnSquares = [];
             const squareShift = this.colorToMove === COLORS.WHITE ? FILE_COUNT : -FILE_COUNT;
             // Find squares that if attacked by an enemy piece would prevent us castling
             // Also find squares that if an enemy pawn was on would prevent us castling (the squares needs to be shifted by squareShift later)
@@ -422,7 +422,7 @@ class Position {
                     this.pieceRemoved.trigger(captureFrom, capturingPiece, animate);
                 }
             }
-        }
+        };
 
         // Reset enpassant square
         this._enpassantSquare = SQUARES.INVALID;
@@ -740,7 +740,7 @@ class ChessBoard {
 
     constructor(options) {
         this._options = assignDefaults(options, DEFAULT_CHESS_BOARD_OPTIONS);
-        const targetElement = getElement(this._options.target)
+        const targetElement = getElement(this._options.target);
         this._parentElement = null;
         this._position = new Position();
         this._pieces = [];
@@ -912,7 +912,7 @@ class ChessBoard {
         return {
             x: this._flipped ? this.boardClientWidth - relX : relX,
             y: this._flipped ? -this.boardClientHeight + relY : -relY,
-        }
+        };
     }
 
     // Utility function that converts an absolute pixel position to a square
@@ -1254,7 +1254,7 @@ class ChessBoard {
 
                 this._parentElement.ontouchend = (e) => {
                     if (e.changedTouches.length === 1) {
-                        placePiece(e.changedTouches[0].clientX, e.changedTouches[0].clientY)
+                        placePiece(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
                     } else {
                         resetTransform();
                     }
@@ -1264,7 +1264,7 @@ class ChessBoard {
                 this._parentElement.ontouchmove = (e) => {
                     if (e.changedTouches.length === 1) {
                         // Move piece to new location (track touches)
-                        setTransform(e.changedTouches[0].clientX, e.changedTouches[0].clientY)
+                        setTransform(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
                     }
                 };
             }
@@ -1288,7 +1288,7 @@ class ChessBoard {
                     if (piece.div) {
                         piece.div.style.transition = "";
                     }
-                }, MOVE_ANIMATION_TIME_MS)
+                }, MOVE_ANIMATION_TIME_MS);
             }
             piece.div.style.transform = `translate(${position.x}px, ${position.y}px)`;
         }
@@ -1312,7 +1312,7 @@ class ChessBoard {
             case PIECES.KING:
                 return isWhite ? this._options.pieceImages.whiteKing : this._options.pieceImages.blackKing;
         }
-        return ""
+        return "";
     }
 
 }

@@ -9,3 +9,9 @@
     z-index: 10;
     text-align: center;
 }
+
+.chess-marker {
+    position: absolute;
+    z-index: 5;
+    text-align: center;
+}

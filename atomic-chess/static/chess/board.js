@@ -17,7 +17,13 @@ const DEFAULT_CHESS_BOARD_OPTIONS = {
         blackKing:   "static/pieces/black_king.png",
     },
     interactive: true,
+    showMoveMarkers: true,
 };
+
+const MOVE_MARKER_DEFAULT_COLOR = "#22222266";
+const MOVE_MARKER_CAPTURE_COLOR = "#AA222266";
+const MOVE_MARKER_DEFAULT_SCALE = 0.3;
+const MOVE_MARKER_CAPTURE_SCALE = 0.4;
 
 // Constants that represent the current state of the board
 const POSITION_STATE = Object.freeze({ VALID: 0, DRAW: 1, WHITE_WIN: 2, BLACK_WIN: 3 });
@@ -120,6 +126,15 @@ class Position {
     isQueensideCastle(move) {
         const piece = this.getPieceOnSquare(move.from);
         return Boolean(piece) && piece.piece === PIECES.KING && fileOfSquare(move.from) === FILES.FILE_E && fileOfSquare(move.to) === FILES.FILE_C;
+    }
+
+    isCapture(move) {
+        const pieceOnSquare = this.getPieceOnSquare(move.to);
+        if (pieceOnSquare) {
+            return true;
+        }
+        const movingPiece = this.getPieceOnSquare(move.from);
+        return movingPiece && movingPiece.piece === PIECES.PAWN && move.to === this.enpassantSquare;
     }
 
     // Takes a pseudo-legal move and determines whether it is a legal move
@@ -509,7 +524,7 @@ class Position {
 class ChessPiece {
 
     constructor(pieceType, color, imageUri, square) {
-        this.type = pieceType;
+        this.piece = pieceType;
         this.color = color;
         this.imageUri = imageUri;
         this.currentSquare = square;
@@ -538,6 +553,8 @@ class ChessBoard {
 
         // If flipped then we are seeing the board from Black's perspective
         this._flipped = false;
+
+        this._moveMarkerDivs = [];
 
         if (this._parentElement) {
             this._create();
@@ -634,6 +651,14 @@ class ChessBoard {
         }
     }
 
+    enableMoveMarkers() {
+        this._options.showMoveMarkers = true;
+    }
+
+    disableMoveMarkers() {
+        this._options.showMoveMarkers = false;
+    }
+
     // Redraws the board - may be required if the containing div is resized
     redraw() {
         this._create();
@@ -686,6 +711,7 @@ class ChessBoard {
 
     // Clears the pieces from the board
     clear() {
+        this.hideMoveMarkers();
         this._destroyPieces();
         this._position.reset();
     }
@@ -701,6 +727,66 @@ class ChessBoard {
         }
         console.log("Invalid move");
         return null;
+    }
+
+    showMoveMarkers(square) {
+        this.hideMoveMarkers();
+        if (this._options.showMoveMarkers) {
+            const pieceOnSquare = this.position.getPieceOnSquare(square);
+            if (pieceOnSquare && pieceOnSquare.color === this.position.colorToMove) {
+                const moves = generateMoves(pieceOnSquare.piece, square, pieceOnSquare.color, this.position);
+                for (const move of moves) {
+                    if (this.position.isLegal(move)) {
+                        this._createMoveMarker(move);
+                    }
+                }
+            }
+        }
+    }
+
+    hideMoveMarkers() {
+        for (const marker of this._moveMarkerDivs) {
+            marker.remove();
+        }
+        this._moveMarkerDivs = [];
+    }
+
+    _createMoveMarker(move) {
+        const isCapture = this.position.isCapture(move);
+        const color = isCapture ? MOVE_MARKER_CAPTURE_COLOR : MOVE_MARKER_DEFAULT_COLOR;
+        const scale = isCapture ? MOVE_MARKER_CAPTURE_SCALE : MOVE_MARKER_DEFAULT_SCALE;
+        const div = this._createMoveMarkerDiv(move.to, color, scale);
+
+        this._parentElement.appendChild(div);
+        this._moveMarkerDivs.push(div);
+    }
+
+    _createMoveMarkerDiv(square, color, scale) {
+        const squareWidth = this.squareClientWidth
+        const squareHeight = this.squareClientHeight
+        const width = squareWidth * scale
+        const height = squareHeight * scale
+
+        const div = document.createElement("div")
+        div.className = "chess-marker"
+        const clientPosition = this.squareToBoardPosition(square)
+        div.style.transform = `translate(${clientPosition.x}px, ${clientPosition.y}px)`
+        div.style.width = `${squareWidth}px`
+        div.style.height = `${squareHeight}px`
+
+        const ns = "http://www.w3.org/2000/svg"
+
+        const svg = document.createElementNS(ns, "svg")
+        svg.setAttributeNS(null, 'viewBox', `0 0 ${squareWidth} ${squareHeight}`)
+        const circle = document.createElementNS(ns, "circle")
+        circle.setAttributeNS(null, 'cx', `${squareWidth / 2}`)
+        circle.setAttributeNS(null, 'cy', `${squareHeight / 2}`)
+        circle.setAttributeNS(null, 'r', `${Math.min(width / 2, height / 2)}`)
+        circle.setAttributeNS(null, 'fill', color)
+        svg.appendChild(circle)
+        div.appendChild(svg)
+
+        return div
     }
 
     // Find the index of the piece that is on the given square
@@ -811,6 +897,7 @@ class ChessBoard {
 
         // Resets piece back to its original position before we started moving it
         const resetTransform = () => {
+            this.hideMoveMarkers();
             piece.div.style.transform = `translate(${currentPosition.x}px, ${currentPosition.y}px)`;
         }
 
@@ -828,7 +915,7 @@ class ChessBoard {
             if (square !== SQUARES.INVALID && square !== piece.currentSquare) {
                 const originalSquare = piece.currentSquare;
                 const promotionRank = piece.color === COLORS.WHITE ? RANKS.RANK_8 : RANKS.RANK_1;
-                const promotion = piece.type === PIECES.PAWN && rankOfSquare(square) === promotionRank ? PIECES.QUEEN : PIECES.NONE;
+                const promotion = piece.piece === PIECES.PAWN && rankOfSquare(square) === promotionRank ? PIECES.QUEEN : PIECES.NONE;
                 const move = createMove(originalSquare, square, promotion);
                 if (this.applyMove(move)) {
                     // Set piece position to the square's position
@@ -842,6 +929,8 @@ class ChessBoard {
         piece.div.onmousedown = (e) => {
             // When we hold down the mouse on a piece, start dragging it
             e.preventDefault();
+            // Show the available moves
+            this.showMoveMarkers(piece.currentSquare);
             // If we are somehow dragging another piece - reset transform
             if (document.onmouseup) {
                 resetTransform();

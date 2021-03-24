@@ -25,6 +25,8 @@ const MOVE_MARKER_CAPTURE_COLOR = "#AA222266";
 const MOVE_MARKER_DEFAULT_SCALE = 0.3;
 const MOVE_MARKER_CAPTURE_SCALE = 0.4;
 
+const MOVE_ANIMATION_TIME_MS = 300;
+
 // Format: [[files, ranks], ...]
 const ATOMIC_EXPLOSION_VECTORS = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
 
@@ -235,7 +237,7 @@ class Position {
             }
         }
         // UNDO MOVE
-        this.undoMove(move, undoInfo);
+        this.undoMove(move, undoInfo, false, false);
         return isLegal;
     }
 
@@ -358,6 +360,7 @@ class Position {
         this._enpassantSquare = SQUARES.INVALID;
         this._colorToMove = COLORS.WHITE;
         this._kingSquares = [SQUARES.INVALID, SQUARES.INVALID];
+        this._inCheck = false;
         this.cleared.trigger();
     }
 
@@ -372,6 +375,9 @@ class Position {
             enpassantSquare: this._enpassantSquare,
             kingSquares: [...this._kingSquares],
             capturedPieces: [],
+            isPromotion: false,
+            isKingsideCastle: false,
+            isQueensideCastle: false,
         };
         const fromSquare = move.from;
         const toSquare = move.to;
@@ -407,6 +413,7 @@ class Position {
                 }
                 // Explode the moving piece
                 this._squares[explosionSquare] = null;
+                undoInfo.capturedPieces.push({ square: captureFrom, piece: capturingPiece });
                 if (sendEvents) {
                     // Trigger the event as if it was from the "from square" since the piece never actually moves
                     this.pieceRemoved.trigger(captureFrom, capturingPiece);
@@ -432,12 +439,13 @@ class Position {
 
         // A piece only "moves" in atomic if it is not a capture (otherwise it is exploded)
         if (sendEvents && (!this.isAtomic || !isCapture)) {
-            this.pieceMoved.trigger(fromSquare, toSquare, movingPiece);
+            this.pieceMoved.trigger(fromSquare, toSquare, movingPiece, animate);
         }
 
         // Update promotion
         if (promotion !== PIECES.NONE && movingPiece.piece === PIECES.PAWN) {
             this._squares[toSquare] = { piece: promotion, color: this.colorToMove };
+            undoInfo.isPromotion = true;
             if (sendEvents) {
                 this.piecePromoted.trigger(toSquare, this._squares[toSquare]);
             }
@@ -521,22 +529,26 @@ class Position {
             if (fromFile === FILES.FILE_E && toFile === FILES.FILE_G) {
                 // Kingside castling
                 // Move the rook
+                undoInfo.isKingsideCastle = true;
                 const fromRookSquare = createSquare(FILES.FILE_H, rank);
                 const toRookSquare = createSquare(FILES.FILE_F, rank);
                 this._squares[fromRookSquare] = null;
                 this._squares[toRookSquare] = { piece: PIECES.ROOK, color: this.colorToMove };
                 if (sendEvents) {
-                    this.pieceMoved.trigger(fromRookSquare, toRookSquare, this._squares[toRookSquare]);
+                    // Always animate rook moves in castling
+                    this.pieceMoved.trigger(fromRookSquare, toRookSquare, this._squares[toRookSquare], true);
                 }
             } else if (fromFile === FILES.FILE_E && toFile === FILES.FILE_C) {
                 // Queenside castling
                 // Move the rook
+                undoInfo.isQueensideCastle = true;
                 const fromRookSquare = createSquare(FILES.FILE_A, rank);
                 const toRookSquare = createSquare(FILES.FILE_D, rank);
                 this._squares[fromRookSquare] = null;
                 this._squares[toRookSquare] = { piece: PIECES.ROOK, color: this.colorToMove };
                 if (sendEvents) {
-                    this.pieceMoved.trigger(fromRookSquare, toRookSquare, this._squares[toRookSquare]);
+                    // Always animate rook moves in castling
+                    this.pieceMoved.trigger(fromRookSquare, toRookSquare, this._squares[toRookSquare], true);
                 }
             }
         }
@@ -558,8 +570,37 @@ class Position {
         return undoInfo;
     }
 
-    undoMove(move, undoInfo) {
+    undoMove(move, undoInfo, animate = false, sendEvents = true) {
         assert(Boolean(move) && Boolean(undoInfo), "Invalid arguments");
+
+        if (sendEvents) {
+            const fromSquare = move.to;
+            const toSquare = move.from;
+            const movingPiece = this.getPieceOnSquare(fromSquare);
+            const color = otherColor(this.colorToMove);
+            // There must be a piece on the square unless it is atomic in which case it may have been exploded
+            assert(Boolean(movingPiece) || this.isAtomic, "Invalid move");
+            if (movingPiece) {
+                this.pieceMoved.trigger(fromSquare, toSquare, movingPiece, animate);
+            }
+            for (const piece of undoInfo.capturedPieces) {
+                this.pieceAdded.trigger(piece.square, piece.piece);
+            }
+            if (undoInfo.isPromotion) {
+                this.piecePromoted.trigger(toSquare, { piece: PIECES.PAWN, color });
+            }
+            if (undoInfo.isKingsideCastle) {
+                // Move the rook back
+                const rank = rankOfSquare(fromSquare);
+                this.pieceMoved.trigger(createSquare(FILES.FILE_F, rank), createSquare(FILES.FILE_H, rank), { piece: PIECES.ROOK, color }, animate);
+            }
+            if (undoInfo.isQueensideCastle) {
+                // Move the rook back
+                const rank = rankOfSquare(fromSquare);
+                this.pieceMoved.trigger(createSquare(FILES.FILE_D, rank), createSquare(FILES.FILE_A, rank), { piece: PIECES.ROOK, color }, animate);
+            }
+        }
+
         // Restore board state from undoInfo
         this._squares = [...undoInfo.squares];
         this._castlingRights = { ...undoInfo.castlingRights };
@@ -584,6 +625,7 @@ class Position {
                 this._kingSquares[piece.color] = square;
             }
         }
+        // TODO: Detect if position is in check
     }
 
 }
@@ -621,8 +663,9 @@ class ChessBoard {
 
         // If flipped then we are seeing the board from Black's perspective
         this._flipped = false;
-
         this._moveMarkerDivs = [];
+
+        this._moveHistory = [];
 
         if (this._parentElement) {
             this._create();
@@ -648,7 +691,7 @@ class ChessBoard {
             const pieceIndex = this._indexOfPieceOnSquare(from);
             if (pieceIndex >= 0) {
                 const pieceObject = this._pieces[pieceIndex];
-                this._movePieceToSquare(to, pieceObject);
+                this._movePieceToSquare(to, pieceObject, animate);
             }
         })
 
@@ -663,6 +706,7 @@ class ChessBoard {
 
         this._position.cleared.addEventListener(() => {
             this._destroyPieces();
+            this._moveHistory = [];
         })
     }
 
@@ -744,6 +788,7 @@ class ChessBoard {
 
     // Cleanup and remove graphics from webpage
     cleanup() {
+        this._moveHistory = [];
         this._destroyPieces();
         this._destroyBoard();
         this._position.reset();
@@ -783,6 +828,7 @@ class ChessBoard {
 
     // Clears the pieces from the board
     clear() {
+        this._moveHistory = [];
         this.hideMoveMarkers();
         this._destroyPieces();
         this._position.reset();
@@ -794,11 +840,19 @@ class ChessBoard {
         for (const mv of pseudoLegalMoves) {
             if (movesEqual(mv, move) && this.position.isLegal(move)) {
                 const undoInfo = this.position.applyMove(move);
+                this._moveHistory.push({ move, undo: undoInfo });
                 return undoInfo;
             }
         }
         console.log("Invalid move");
         return null;
+    }
+
+    undoLastMove() {
+        if (this._moveHistory.length > 0) {
+            const moveInfo = this._moveHistory.pop();
+            this.position.undoMove(moveInfo.move, moveInfo.undo, true, true);
+        }
     }
 
     showMoveMarkers(square) {
@@ -1078,9 +1132,17 @@ class ChessBoard {
     }
 
     // Sets the piece transform for a given square
-    _movePieceToSquare(square, piece) {
+    _movePieceToSquare(square, piece, animate) {
         if (piece.div) {
             const position = this.squareToBoardPosition(square);
+            if (animate) {
+                piece.div.style.transition = `${MOVE_ANIMATION_TIME_MS}ms`;
+                setTimeout(() => {
+                    if (piece.div) {
+                        piece.div.style.transition = "";
+                    }
+                }, MOVE_ANIMATION_TIME_MS)
+            }
             piece.div.style.transform = `translate(${position.x}px, ${position.y}px)`;
         }
         piece.currentSquare = square;
@@ -1114,3 +1176,5 @@ board.setAtomic(true);
 // Set position from FEN (initial starting position)
 board.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 // board.setFromFen("8/8/8/3N4/4n3/8/8/8 w - - 0 1");
+
+document.getElementById("undo-button").onclick = () => board.undoLastMove();

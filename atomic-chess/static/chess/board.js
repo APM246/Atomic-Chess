@@ -208,6 +208,7 @@ class Position {
                 return false;
             }
             // Any capture that explodes enemy king is legal (even if in check)
+            // as long as it does not capture next to our king (handled by above case)
             if (isCapture && isNextToSquare(move.to, otherKingSquare)) {
                 return true;
             }
@@ -231,17 +232,8 @@ class Position {
         let isLegal = true;
         for (const mv of moves) {
             if (mv.to === kingSquare) {
-                if (this.isAtomic) {
-                    // In atomic the opposition king cannot capture anything - kings can touch
-                    const movingPiece = this.getPieceOnSquare(mv.from);
-                    if (movingPiece && movingPiece.piece !== PIECES.KING) {
-                        isLegal = false;
-                        break;
-                    }
-                } else {
-                    isLegal = false;
-                    break;
-                }
+                isLegal = false;
+                break;
             }
         }
         // UNDO MOVE
@@ -1049,11 +1041,18 @@ class ChessBoard {
         assert(Boolean(piece.div), "Invalid piece");
         let currentPosition = this.squareToBoardPosition(piece.currentSquare);
 
+        const removeEventListeners = () => {
+            this._parentElement.onmouseup = null;
+            this._parentElement.onmousemove = null;
+            this._parentElement.ontouchend = null;
+            this._parentElement.ontouchmove = null;
+        };
+
         // Resets piece back to its original position before we started moving it
         const resetTransform = () => {
             this.hideMoveMarkers();
             piece.div.style.transform = `translate(${currentPosition.x}px, ${currentPosition.y}px)`;
-        }
+        };
 
         // Set the piece position based on an absolute mouse position (from mousemove event)
         // Used to make the piece follow the cursor
@@ -1061,7 +1060,7 @@ class ChessBoard {
             const x = clientX - this.boardClientX - this.squareClientWidth / 2;
             const y = clientY - this.boardClientY - this.boardClientHeight - this.squareClientHeight / 2;
             piece.div.style.transform = `translate(${x}px, ${y}px)`;
-        }
+        };
 
         // Snap the piece to the closest square to its current absolute position
         const placePiece = (clientX, clientY) => {
@@ -1081,10 +1080,9 @@ class ChessBoard {
             // Update piece transform
             resetTransform();
             return success;
-        }
+        };
 
         piece.div.onmousedown = (e) => {
-            // When we hold down the mouse on a piece, start dragging it
             e.preventDefault();
             
             // Highlight the square the grabbed piece is on
@@ -1094,20 +1092,20 @@ class ChessBoard {
             piece.div.style.zIndex = "20";
             // Show the available moves
             this.showMoveMarkers(piece.currentSquare);
-            // If we are somehow dragging another piece - reset transform
-            if (document.onmouseup) {
-                resetTransform();
-                document.onmouseup = null;
-                document.onmousemove = null;
+            // If we are dragging another piece ignore this drag
+            if (this._parentElement.onmouseup) {
                 return;
             }
+            // When we hold down the mouse on a piece, start dragging it
+            // Show the available moves
+            this.showMoveMarkers(piece.currentSquare);
             // Store current position
             currentPosition = this.squareToBoardPosition(piece.currentSquare);
             // Move the piece to the mouse location
             setTransform(e.clientX, e.clientY);
 
             // Setup event listeners
-            document.onmouseup = (e) => {
+            this._parentElement.onmouseup = (e) => {
                 // When we drop the piece - snap to nearest square
                 // If we dropped it outside of the board it will return to the original position
                 if (placePiece(e.clientX, e.clientY)) {
@@ -1116,21 +1114,52 @@ class ChessBoard {
                     this._squareEmphasizer.onMove(square);
                 }
                 // Cleanup event listeners
-                document.onmouseup = null;
-                document.onmousemove = null;
+                removeEventListeners();
 
                 // Set the z-index of the piece back to its default
                 piece.div.style.zIndex = "";
-            }
+            };
 
-            document.onmousemove = (e) => {
+            this._parentElement.onmousemove = (e) => {
                 e.preventDefault();
                 // Move piece to new mouse location
                 setTransform(e.clientX, e.clientY);
-            }
-        }
+            };
+        };
 
-        // TODO: touch events
+        piece.div.ontouchstart = (e) => {
+            if (e.touches.length === 1) {
+                e.preventDefault();
+
+                // If we are dragging another piece ignore this drag
+                if (this._parentElement.ontouchend) {
+                    return;
+                }
+
+                // Show the available moves
+                this.showMoveMarkers(piece.currentSquare);
+                // Store current position
+                currentPosition = this.squareToBoardPosition(piece.currentSquare);
+                // Move the piece to the mouse location
+                setTransform(e.touches[0].clientX, e.touches[0].clientY);
+
+                this._parentElement.ontouchend = (e) => {
+                    if (e.changedTouches.length === 1) {
+                        placePiece(e.changedTouches[0].clientX, e.changedTouches[0].clientY)
+                    } else {
+                        resetTransform();
+                    }
+                    removeEventListeners();
+                };
+
+                this._parentElement.ontouchmove = (e) => {
+                    if (e.changedTouches.length === 1) {
+                        // Move piece to new location (track touches)
+                        setTransform(e.changedTouches[0].clientX, e.changedTouches[0].clientY)
+                    }
+                };
+            }
+        };
     }
 
     // Prevent a piece from being dragged/dropped

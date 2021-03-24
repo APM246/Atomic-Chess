@@ -15,3 +15,8 @@
     z-index: 5;
     text-align: center;
 }
+
+.highlight-square {
+    position: absolute;
+    z-index: 1;
+}

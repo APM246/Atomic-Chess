@@ -2,4 +2,5 @@
     width: 600px;
     height: 600px;
     outline: none;
+    user-select: none;
 }

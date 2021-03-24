@@ -696,6 +696,16 @@ class SquareEmphasizer {
         this._lastGrab = null;
     }
 
+    clear() {
+        for (const emph of this._emphasizedSquares) {
+            emph.div.remove();
+        }
+        this._lastGrab = null;
+        this._lastMove1 = null;
+        this._lastMove2 = null;
+        this._emphasizedSquares = [];
+    }
+
     _emphasizeSquare(square, color) {
         const squareWidth = this._chessBoard.squareClientWidth;
         const squareHeight = this._chessBoard.squareClientHeight;
@@ -711,7 +721,7 @@ class SquareEmphasizer {
         this._chessBoard._parentElement.appendChild(div);
         this._emphasizedSquares.push({ "square": square, "div": div });
     }
-    
+
     _deemphasizeSquare(square) {
         const emph = this._emphasizedSquares;
         for (const index in emph) {
@@ -954,13 +964,16 @@ class ChessBoard {
     redoMove() {
         if (this._historyIndex < this._moveHistory.length - 1) {
             this._historyIndex++;
-            const moveInfo = this._moveHistory[this._historyIndex]
+            const moveInfo = this._moveHistory[this._historyIndex];
             moveInfo.undo = this.position.applyMove(moveInfo.move, true);
+            this._squareEmphasizer.onGrab(moveInfo.move.from);
+            this._squareEmphasizer.onMove(moveInfo.move.to);
         }
     }
 
     undoLastMove() {
         if (this._historyIndex >= 0) {
+            this._squareEmphasizer.clear();
             const moveInfo = this._moveHistory[this._historyIndex];
             this.position.undoMove(moveInfo.move, moveInfo.undo, true, true);
             this._historyIndex--;
@@ -1177,7 +1190,7 @@ class ChessBoard {
 
         piece.div.onmousedown = (e) => {
             e.preventDefault();
-            
+
             // Highlight the square the grabbed piece is on
             this._squareEmphasizer.onGrab(piece.currentSquare);
 

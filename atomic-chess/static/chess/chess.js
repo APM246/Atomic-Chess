@@ -84,6 +84,13 @@ function getRightSquare(square) {
     return square + 1;
 }
 
+// Returns true if the squares are touching each other (includes diagonally)
+function isNextToSquare(square0, square1) {
+    const df = fileOfSquare(square0) - fileOfSquare(square1);
+    const dr = rankOfSquare(square0) - rankOfSquare(square1);
+    return Math.abs(df) <= 1 && Math.abs(dr) <= 1;
+}
+
 function otherColor(color) {
     return color === COLORS.BLACK ? COLORS.WHITE : COLORS.BLACK;
 }

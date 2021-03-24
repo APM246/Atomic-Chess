@@ -25,6 +25,9 @@ const MOVE_MARKER_CAPTURE_COLOR = "#AA222266";
 const MOVE_MARKER_DEFAULT_SCALE = 0.3;
 const MOVE_MARKER_CAPTURE_SCALE = 0.4;
 
+// Format: [[files, ranks], ...]
+const ATOMIC_EXPLOSION_VECTORS = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
+
 // Constants that represent the current state of the board
 const POSITION_STATE = Object.freeze({ VALID: 0, DRAW: 1, WHITE_WIN: 2, BLACK_WIN: 3 });
 
@@ -188,6 +191,34 @@ class Position {
             }
         }
 
+        // Some atomic specific rules
+        if (this.isAtomic) {
+            const movingPiece = this.getPieceOnSquare(move.from);
+            const isCapture = this.isCapture(move);
+            const ourKingSquare = this.getKingSquare(ctm);
+            const otherKingSquare = this.getKingSquare(otherColor(ctm));
+            // King can never capture anything
+            if (movingPiece && movingPiece.piece === PIECES.KING && isCapture) {
+                return false;
+            }
+            // Cannot capture anything next to our own king
+            if (isCapture && isNextToSquare(move.to, ourKingSquare)) {
+                return false;
+            }
+            // Any capture that explodes enemy king is legal (even if in check)
+            if (isCapture && isNextToSquare(move.to, otherKingSquare)) {
+                return true;
+            }
+            // Our king can always move next to the opposition king
+            if (movingPiece.piece === PIECES.KING && isNextToSquare(move.to, otherKingSquare)) {
+                return true;
+            }
+            // If our king is already next to the opposition king any move is legal
+            if (isNextToSquare(ourKingSquare, otherKingSquare)) {
+                return true;
+            }
+        }
+
         // We need to check that the move we played didn't cause us to be in check
         // Apply the move then check the enemy's moves - if any attack our king then the move is illegal
 
@@ -195,16 +226,25 @@ class Position {
         // Need to use the king square from after applying the move (can't move into check)
         const kingSquare = this.getKingSquare(ctm);
         const moves = generatePseudoLegalMoves(this);
+        let isLegal = true;
         for (const mv of moves) {
             if (mv.to === kingSquare) {
-                // MUST UNDO MOVE
-                this.undoMove(move, undoInfo);
-                return false;
+                if (this.isAtomic) {
+                    // In atomic the opposition king cannot capture anything - kings can touch
+                    const movingPiece = this.getPieceOnSquare(mv.from);
+                    if (movingPiece && movingPiece.piece !== PIECES.KING) {
+                        isLegal = false;
+                        break;
+                    }
+                } else {
+                    isLegal = false;
+                    break;
+                }
             }
         }
         // UNDO MOVE
         this.undoMove(move, undoInfo);
-        return true;
+        return isLegal;
     }
 
     // Set the piece positions from a Forsyth–Edwards Notation (FEN) string
@@ -346,26 +386,60 @@ class Position {
         const promotion = move.promotion;
         const enpassantSquare = this.enpassantSquare;
         const movingPiece = this.getPieceOnSquare(fromSquare);
+        const isCapture = this.isCapture(move);
         assert(Boolean(movingPiece) && movingPiece.piece !== PIECES.NONE && movingPiece.color === this.colorToMove, "Invalid move");
         const capturedPiece = this.getPieceOnSquare(toSquare);
         assert(!Boolean(capturedPiece) || capturedPiece.color !== this.colorToMove, "Invalid capture");
 
-        // Reset enpassant square
-        this._enpassantSquare = SQUARES.INVALID;
-
-        if (capturedPiece) {
-            undoInfo.capturedPieces.push({ square: toSquare, piece: capturedPiece });
-            if (sendEvents) {
-                this.pieceRemoved.trigger(toSquare, capturedPiece);
+        // Utility function called whenever a piece is captured
+        // Handles atomic chess explosion
+        const explode = (capturingPiece, captureFrom, explosionSquare) => {
+            if (this.isAtomic) {
+                const file = fileOfSquare(explosionSquare);
+                const rank = rankOfSquare(explosionSquare);
+                for (const vector of ATOMIC_EXPLOSION_VECTORS) {
+                    const newFile = file + vector[0];
+                    const newRank = rank + vector[1];
+                    if (validFileAndRank(newFile, newRank)) {
+                        const newSquare = createSquare(newFile, newRank);
+                        const pieceOnSquare = this.getPieceOnSquare(newSquare);
+                        // Only explode non-pawn pieces
+                        if (pieceOnSquare && pieceOnSquare.piece !== PIECES.PAWN) {
+                            undoInfo.capturedPieces.push({ square: newSquare, piece: pieceOnSquare });
+                            this._squares[newSquare] = null;
+                            if (sendEvents) {
+                                this.pieceRemoved.trigger(newSquare, pieceOnSquare);
+                            }
+                        }
+                    }
+                }
+                // Explode the moving piece
+                this._squares[explosionSquare] = null;
+                if (sendEvents) {
+                    // Trigger the event as if it was from the "from square" since the piece never actually moves
+                    this.pieceRemoved.trigger(captureFrom, capturingPiece);
+                }
             }
         }
+
+        // Reset enpassant square
+        this._enpassantSquare = SQUARES.INVALID;
 
         // Clear the from square
         this._squares[fromSquare] = null;
         // Move to the new square (copy piece data)
         this._squares[toSquare] = { ...movingPiece };
 
-        if (sendEvents) {
+        if (capturedPiece) {
+            undoInfo.capturedPieces.push({ square: toSquare, piece: capturedPiece });
+            explode(movingPiece, fromSquare, toSquare);
+            if (sendEvents) {
+                this.pieceRemoved.trigger(toSquare, capturedPiece);
+            }
+        }
+
+        // A piece only "moves" in atomic if it is not a capture (otherwise it is exploded)
+        if (sendEvents && (!this.isAtomic || !isCapture)) {
             this.pieceMoved.trigger(fromSquare, toSquare, movingPiece);
         }
 
@@ -435,11 +509,13 @@ class Position {
         }
 
         // Handle special cases (enpassant and castling)
+        // Enpassant
         if (toSquare === enpassantSquare && movingPiece.piece === PIECES.PAWN) {
             const captureSquare = getBackwardSquare(toSquare, this.colorToMove);
             const capturedPawn = { piece: PIECES.PAWN, color: otherColor(this.colorToMove) };
             undoInfo.capturedPieces.push({ square: captureSquare, piece: capturedPawn });
             this._squares[captureSquare] = null;
+            explode(movingPiece, fromSquare, toSquare);
             if (sendEvents) {
                 this.pieceRemoved.trigger(captureSquare, capturedPawn);
             }
@@ -640,6 +716,10 @@ class ChessBoard {
     flip() {
         this._flipped = !this._flipped;
         this.redraw();
+    }
+
+    setAtomic(isAtomic) {
+        this.position.isAtomic = isAtomic;
     }
 
     // Used to mount the chess board later - even after it has been cleaned up
@@ -1003,5 +1083,7 @@ class ChessBoard {
 
 // Create a chess board inside the #board element
 const board = new ChessBoard({ target: "#board" });
+board.setAtomic(true);
 // Set position from FEN (initial starting position)
 board.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+// board.setFromFen("8/8/8/3N4/4n3/8/8/8 w - - 0 1");

@@ -697,17 +697,17 @@ class SquareEmphasizer {
         this._lastMove1 = null;
         this._lastMove2 = null;
 
-        this._emphasizedSquares = [];
     }
 
     // Call this when the user clicks on a piece
     onGrab(square) {
-        const color = squareColor(square) === COLORS.BLACK ? this._chessBoard._options.darkSquareHighlightColor : this._chessBoard._options.lightSquareHighlightColor;
-        this._emphasizeSquare(square, color);
-
         if (this._lastGrab !== null) {
             this._deemphasizeSquare(this._lastGrab);
         }
+        
+        const color = squareColor(square) === COLORS.BLACK ? this._chessBoard._options.darkSquareHighlightColor : this._chessBoard._options.lightSquareHighlightColor;
+        this._emphasizeSquare(square, color);
+
         this._lastGrab = square;
     }
 
@@ -729,40 +729,31 @@ class SquareEmphasizer {
     }
 
     clear() {
-        for (const emph of this._emphasizedSquares) {
-            emph.div.remove();
-        }
         this._lastGrab = null;
         this._lastMove1 = null;
         this._lastMove2 = null;
-        this._emphasizedSquares = [];
+
+        for (let square = 0; square < SQUARE_COUNT; square++) {
+            this._deemphasizeSquare(square);
+        }
     }
 
     _emphasizeSquare(square, color) {
-        const squareWidth = this._chessBoard.squareClientWidth;
-        const squareHeight = this._chessBoard.squareClientHeight;
-
-        const div = document.createElement("div");
-        div.className = "highlight-square";
-        const clientPosition = this._chessBoard.squareToBoardPosition(square);
-        div.style.transform = `translate(${clientPosition.x}px, ${clientPosition.y}px)`;
-        div.style.width = `${squareWidth}px`;
-        div.style.height = `${squareHeight}px`;
-        div.style.backgroundColor = color;
-
-        this._chessBoard._parentElement.appendChild(div);
-        this._emphasizedSquares.push({ "square": square, "div": div });
+        let row = 7 - rankOfSquare(square);
+        let col = fileOfSquare(square);
+        if (this._chessBoard._flipped) {
+            row = 7 - row;
+            col = 7 - col;
+        }
+        const table = this._chessBoard._parentElement.getElementsByTagName("table")[0];
+        const tr = table.getElementsByTagName("tr")[row];
+        const td = tr.getElementsByTagName("td")[col];
+        td.style.backgroundColor = color;
     }
 
     _deemphasizeSquare(square) {
-        const emph = this._emphasizedSquares;
-        for (const index in emph) {
-            if (emph[index].square == square) {
-                emph[index].div.remove();
-                emph.splice(index, 1);
-                return;
-             }
-        }
+        const color = squareColor(square) === COLORS.BLACK ? this._chessBoard._options.darkSquareColor : this._chessBoard._options.lightSquareColor;
+        this._emphasizeSquare(square, color);
     }
 }
 

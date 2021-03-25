@@ -108,7 +108,7 @@ function createMove(fromSquare, toSquare, promotion = PIECES.NONE) {
         from: fromSquare,
         to: toSquare,
         promotion,
-    }
+    };
 }
 
 // Compares the equality of 2 moves
@@ -128,7 +128,7 @@ function generatePawnMoves(square, color, position) {
     const doublePushRank = color === COLORS.WHITE ? RANKS.RANK_2 : RANKS.RANK_7;
     const forwardSquare = getForwardSquare(square, color);
     const toRank = rankOfSquare(forwardSquare);
-    const isPromotion = toRank === promotionRank
+    const isPromotion = toRank === promotionRank;
     // If there is no piece directly in front of us then we can move forward
     if (!position.isSquareOccupied(forwardSquare)) {
         // Handle pushing to promote
@@ -344,7 +344,7 @@ function perft(position, depth) {
             }
         }
         return count;
-    }
+    };
     const total = internalPerft(depth);
     for (const key of Object.keys(moveData)) {
         console.log(`${key}: ${moveData[key]}`);

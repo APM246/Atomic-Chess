@@ -22,6 +22,8 @@ const DEFAULT_CHESS_BOARD_OPTIONS = {
     showMoveMarkers: true,
     showSquareHighlights: true,
     allowUndo: true,
+    useMoveAnimations: true,
+    animationTime: 300,
 };
 
 const MOVE_MARKER_DEFAULT_COLOR = "#22222266";
@@ -29,7 +31,8 @@ const MOVE_MARKER_CAPTURE_COLOR = "#AA222266";
 const MOVE_MARKER_DEFAULT_SCALE = 0.3;
 const MOVE_MARKER_CAPTURE_SCALE = 0.4;
 
-const MOVE_ANIMATION_TIME_MS = 300;
+const MOVING_PIECE_Z_INDEX_STRING = "20";
+const DEFAULT_PIECE_Z_INDEX_STRING = "";
 
 // Format: [[files, ranks], ...]
 const ATOMIC_EXPLOSION_VECTORS = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
@@ -217,8 +220,8 @@ class Position {
             if (movingPiece.piece === PIECES.KING && isNextToSquare(move.to, otherKingSquare)) {
                 return true;
             }
-            // If our king is already next to the opposition king any move is legal
-            if (isNextToSquare(ourKingSquare, otherKingSquare)) {
+            // If our king is already next to the opposition king any non-king move is legal
+            if (movingPiece && movingPiece.piece !== PIECES.KING && isNextToSquare(ourKingSquare, otherKingSquare)) {
                 return true;
             }
         }
@@ -804,6 +807,8 @@ class ChessBoard {
         // Setup event listeners so we can update our graphics when moves are made in the position
 
         this._position.movePlayed.addEventListener((moveData) => {
+            const shouldAnimate = this._options.useMoveAnimations && moveData.animate;
+
             // 1. Logically remove the pieces that were captured on this move (does NOT clean up the graphics of these pieces)
             const capturedPieceObjects = [];
             for (const piece of moveData.capturedPieces) {
@@ -814,14 +819,14 @@ class ChessBoard {
                 }
             }
 
-            const promise = wait(MOVE_ANIMATION_TIME_MS);
+            const promise = wait(this._options.animationTime);
 
             // For every other moving piece (rooks during castling) - not the primary moving piece
             // always animate to the new square
             for (const piece of moveData.movingPieces) {
                 const index = this._indexOfPieceOnSquare(piece.from);
                 if (index >= 0) {
-                    this._movePieceToSquare(piece.to, this._pieces[index], promise);
+                    this._movePieceToSquare(piece.to, this._pieces[index], this._options.useMoveAnimations ? promise : null);
                 }
             }
 
@@ -830,7 +835,7 @@ class ChessBoard {
             let movingPieceObject = null;
             if (movingPieceIndex >= 0) {
                 movingPieceObject = this._pieces[movingPieceIndex];
-                this._movePieceToSquare(moveData.move.to, movingPieceObject, moveData.animate ? promise : null);
+                this._movePieceToSquare(moveData.move.to, movingPieceObject, shouldAnimate ? promise : null);
                 if (moveData.movingPieceCaptured) {
                     // Logically remove the piece - not clean up graphics
                     this._pieces.splice(movingPieceIndex, 1);
@@ -849,7 +854,7 @@ class ChessBoard {
                 }
             };
 
-            if (moveData.animate) {
+            if (shouldAnimate) {
                 // WAIT for movement to finish
                 promise.then(cleanupGraphics);
             } else {
@@ -861,7 +866,7 @@ class ChessBoard {
                 const index = this._indexOfPieceOnSquare(promotion.square);
                 if (index >= 0) {
                     this._pieces[index].piece = promotion.piece.piece;
-                    this._pieces[index].setImageUri(this._getImageUri(promotion.piece.piece, promotion.piece.color), moveData.animate ? promise : null);
+                    this._pieces[index].setImageUri(this._getImageUri(promotion.piece.piece, promotion.piece.color), shouldAnimate ? promise : null);
                 }
             }
 
@@ -881,6 +886,7 @@ class ChessBoard {
         });
 
         this._position.moveUndone.addEventListener((moveData) => {
+            const shouldAnimate = this._options.useMoveAnimations && moveData.animate;
             // Add pieces that were captured by the previous move
             for (const piece of moveData.addedPieces) {
                 const pieceObject = new ChessPiece(piece.piece.piece, piece.piece.color, this._getImageUri(piece.piece.piece, piece.piece.color), piece.square);
@@ -896,7 +902,7 @@ class ChessBoard {
                 pieceObject.currentSquare = piece.square;
             }
 
-            const promise = wait(MOVE_ANIMATION_TIME_MS);
+            const promise = wait(this._options.animationTime);
 
             // Moving pieces includes all pieces that need to be moved (including primary piece)
             // The primary piece is guaranteed to be index 0
@@ -905,7 +911,8 @@ class ChessBoard {
                 const index = this._indexOfPieceOnSquare(pieceData.from);
                 if (index >= 0) {
                     // Always animate if i > 0 (rook moves from castling)
-                    this._movePieceToSquare(pieceData.to, this._pieces[index], i !== 0 || moveData.animate ? promise : null);
+                    const animateRook = i !== 0 && this._options.useMoveAnimations;
+                    this._movePieceToSquare(pieceData.to, this._pieces[index], animateRook || shouldAnimate ? promise : null);
                 }
             }
 
@@ -1075,11 +1082,11 @@ class ChessBoard {
     }
 
     // Applies a given move - first checks that the move is a legal move
-    applyMove(move) {
+    applyMove(move, animate = false) {
         const pseudoLegalMoves = generatePseudoLegalMoves(this.position);
         for (const mv of pseudoLegalMoves) {
             if (movesEqual(mv, move) && this.position.isLegal(move)) {
-                const undoInfo = this.position.applyMove(move);
+                const undoInfo = this.position.applyMove(move, animate && this._options.useMoveAnimations);
 
                 if (this._historyIndex < this._moveHistory.length - 1) {
                     const expectedMove = this._moveHistory[this._historyIndex + 1];
@@ -1102,7 +1109,7 @@ class ChessBoard {
         if (this._historyIndex < this._moveHistory.length - 1) {
             this._historyIndex++;
             const moveInfo = this._moveHistory[this._historyIndex];
-            moveInfo.undo = this.position.applyMove(moveInfo.move, true);
+            moveInfo.undo = this.position.applyMove(moveInfo.move, this._options.useMoveAnimations);
             this._squareEmphasizer.onGrab(moveInfo.move.from);
             this._squareEmphasizer.onMove(moveInfo.move.to);
         }
@@ -1112,7 +1119,7 @@ class ChessBoard {
         if (this._historyIndex >= 0) {
             this._squareEmphasizer.clear();
             const moveInfo = this._moveHistory[this._historyIndex];
-            this.position.undoMove(moveInfo.move, moveInfo.undo, true, true);
+            this.position.undoMove(moveInfo.move, moveInfo.undo, this._options.useMoveAnimations, true);
             this._historyIndex--;
         }
     }
@@ -1285,15 +1292,16 @@ class ChessBoard {
         let currentPosition = this.squareToBoardPosition(piece.currentSquare);
 
         const removeEventListeners = () => {
-            this._parentElement.onmouseup = null;
-            this._parentElement.onmousemove = null;
-            this._parentElement.ontouchend = null;
-            this._parentElement.ontouchmove = null;
+            document.onmouseup = null;
+            document.onmousemove = null;
+            document.ontouchend = null;
+            document.ontouchmove = null;
         };
 
         // Resets piece back to its original position before we started moving it
         const resetTransform = () => {
             this.hideMoveMarkers();
+            this._endMovingPiece(piece);
             piece.div.style.transform = `translate(${currentPosition.x}px, ${currentPosition.y}px)`;
         };
 
@@ -1307,6 +1315,7 @@ class ChessBoard {
 
         // Snap the piece to the closest square to its current absolute position
         const placePiece = (clientX, clientY) => {
+            this._endMovingPiece(piece);
             const square = this.boardPositionToSquare(clientX - this.boardClientX, clientY - this.boardClientY);
             let success;
             if (square !== SQUARES.INVALID && square !== piece.currentSquare) {
@@ -1329,7 +1338,7 @@ class ChessBoard {
 
         piece.div.onmousedown = (e) => {
             // If we are dragging another piece ignore this drag
-            if (this._parentElement.onmouseup) {
+            if (document.onmouseup) {
                 return;
             }
             e.preventDefault();
@@ -1337,8 +1346,7 @@ class ChessBoard {
             this.focus();
             // Highlight the square the grabbed piece is on
             this._squareEmphasizer.onGrab(piece.currentSquare);
-            // Draw the piece we are holding in front of the other pieces
-            piece.div.style.zIndex = "20";
+            this._beginMovingPiece(piece);
             // When we hold down the mouse on a piece, start dragging it
             // Show the available moves
             this.showMoveMarkers(piece.currentSquare);
@@ -1348,7 +1356,7 @@ class ChessBoard {
             setTransform(e.clientX, e.clientY);
 
             // Setup event listeners
-            this._parentElement.onmouseup = (e) => {
+            document.onmouseup = (e) => {
                 // When we drop the piece - snap to nearest square
                 // If we dropped it outside of the board it will return to the original position
                 placePiece(e.clientX, e.clientY);
@@ -1359,7 +1367,7 @@ class ChessBoard {
                 piece.div.style.zIndex = "";
             };
 
-            this._parentElement.onmousemove = (e) => {
+            document.onmousemove = (e) => {
                 e.preventDefault();
                 // Move piece to new mouse location
                 setTransform(e.clientX, e.clientY);
@@ -1370,7 +1378,7 @@ class ChessBoard {
         piece.div.ontouchstart = (e) => {
             if (e.touches.length === 1) {
                 // If we are dragging another piece ignore this drag
-                if (this._parentElement.ontouchend) {
+                if (document.ontouchend) {
                     return;
                 }
                 e.preventDefault();
@@ -1378,8 +1386,7 @@ class ChessBoard {
                 this.focus();
                 // Highlight the square the grabbed piece is on
                 this._squareEmphasizer.onGrab(piece.currentSquare);
-                // Draw the piece we are holding in front of the other pieces
-                piece.div.style.zIndex = "20";
+                this._beginMovingPiece(piece);
                 // Show the available moves
                 this.showMoveMarkers(piece.currentSquare);
                 // Store current position
@@ -1387,7 +1394,7 @@ class ChessBoard {
                 // Move the piece to the mouse location
                 setTransform(e.touches[0].clientX, e.touches[0].clientY);
 
-                this._parentElement.ontouchend = (e) => {
+                document.ontouchend = (e) => {
                     if (e.changedTouches.length === 1) {
                         placePiece(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
                     } else {
@@ -1396,7 +1403,7 @@ class ChessBoard {
                     removeEventListeners();
                 };
 
-                this._parentElement.ontouchmove = (e) => {
+                document.ontouchmove = (e) => {
                     if (e.changedTouches.length === 1) {
                         // Move piece to new location (track touches)
                         setTransform(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
@@ -1413,16 +1420,31 @@ class ChessBoard {
         piece.div.style.pointerEvents = "none";
     }
 
+    _beginMovingPiece(piece) {
+        if (piece.div) {
+            // Draw the piece we are holding in front of the other pieces
+            piece.div.style.zIndex = MOVING_PIECE_Z_INDEX_STRING;
+        }
+    }
+
+    _endMovingPiece(piece) {
+        if (piece.div) {
+            piece.div.style.zIndex = DEFAULT_PIECE_Z_INDEX_STRING;
+        }
+    }
+
     // Sets the piece transform for a given square
     _movePieceToSquare(square, piece, animationPromise) {
         if (piece.div) {
             const position = this.squareToBoardPosition(square);
             if (animationPromise) {
-                piece.div.style.transition = `${MOVE_ANIMATION_TIME_MS}ms`;
+                this._beginMovingPiece(piece);
+                piece.div.style.transition = `${this._options.animationTime}ms`;
                 animationPromise.then(() => {
                     if (piece.div) {
                         piece.div.style.transition = "";
                     }
+                    this._endMovingPiece(piece);
                 });
             }
             piece.div.style.transform = `translate(${position.x}px, ${position.y}px)`;
@@ -1459,6 +1481,6 @@ board.setAtomic(true);
 board.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 // board.setFromFen("8/8/8/3N4/4n3/8/8/8 w - - 0 1");
 
-const normal = new ChessBoard({ target: "#secondBoard", showSquareHighlights: false });
+const normal = new ChessBoard({ target: "#secondBoard", useMoveAnimations: false });
 normal.setAtomic(false);
 normal.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");

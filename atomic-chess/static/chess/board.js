@@ -390,6 +390,28 @@ class Position {
         const capturedPiece = this.getPieceOnSquare(toSquare);
         assert(!Boolean(capturedPiece) || capturedPiece.color !== this.colorToMove, "Invalid capture");
 
+        // If we have captured someone's rook and it was on its original square - prevent castling
+        const updateCastlingFromCapturedPiece = (capPiece, square) => {
+            if (capPiece && capPiece.piece === PIECES.ROOK) {
+                const requiredRank = capPiece.color === COLORS.WHITE ? RANKS.RANK_1 : RANKS.RANK_8;
+                const fromFile = fileOfSquare(square);
+                const fromRank = rankOfSquare(square);
+                if (fromFile === FILES.FILE_H && requiredRank === fromRank) {
+                    if (capPiece.color === COLORS.WHITE) {
+                        this._castlingRights.whiteKingside = false;
+                    } else {
+                        this._castlingRights.blackKingside = false;
+                    }
+                } else if (fromFile === FILES.FILE_A && requiredRank === fromRank) {
+                    if (capPiece.color === COLORS.WHITE) {
+                        this._castlingRights.whiteQueenside = false;
+                    } else {
+                        this._castlingRights.blackQueenside = false;
+                    }
+                }
+            }
+        }
+
         // Utility function called whenever a piece is captured
         // Handles atomic chess explosion
         const explode = (capturingPiece, captureFrom, explosionSquare) => {
@@ -404,6 +426,7 @@ class Position {
                         const pieceOnSquare = this.getPieceOnSquare(newSquare);
                         // Only explode non-pawn pieces
                         if (pieceOnSquare && pieceOnSquare.piece !== PIECES.PAWN) {
+                            updateCastlingFromCapturedPiece(pieceOnSquare, newSquare);
                             undoInfo.capturedPieces.push({ square: newSquare, piece: pieceOnSquare });
                             eventData.capturedPieces.push({ square: newSquare, piece: pieceOnSquare });
                             this._squares[newSquare] = null;
@@ -486,24 +509,7 @@ class Position {
         }
 
         // If we capture the opponent's rook on its initial square revoke their castling rights
-        if (capturedPiece && capturedPiece.piece === PIECES.ROOK) {
-            const requiredRank = this.colorToMove === COLORS.WHITE ? RANKS.RANK_8 : RANKS.RANK_1;
-            const fromFile = fileOfSquare(toSquare);
-            const fromRank = rankOfSquare(toSquare);
-            if (fromFile === FILES.FILE_H && requiredRank === fromRank) {
-                if (this.colorToMove === COLORS.WHITE) {
-                    this._castlingRights.blackKingside = false;
-                } else {
-                    this._castlingRights.whiteKingside = false;
-                }
-            } else if (fromFile === FILES.FILE_A && requiredRank === fromRank) {
-                if (this.colorToMove === COLORS.WHITE) {
-                    this._castlingRights.blackQueenside = false;
-                } else {
-                    this._castlingRights.whiteQueenside = false;
-                }
-            }
-        }
+        updateCastlingFromCapturedPiece(capturedPiece, toSquare);
 
         // Castling
         if (movingPiece.piece === PIECES.KING) {
@@ -1396,3 +1402,7 @@ board.setAtomic(true);
 // Set position from FEN (initial starting position)
 board.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 // board.setFromFen("8/8/8/3N4/4n3/8/8/8 w - - 0 1");
+
+const normal = new ChessBoard({ target: "#secondBoard" });
+normal.setAtomic(false);
+normal.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");

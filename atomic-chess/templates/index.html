@@ -9,5 +9,18 @@
     <title>Atomic Chess</title>
 </head>
 <body>
-    <div id="board" class="board" tabindex="0"></div>
+    <div class="container">
+        <div>
+            <button onclick="board.flip();">Flip</button>
+            <button onclick="board.undoLastMove();">Undo</button>
+            <button onclick="board.redoMove();">Redo</button>
+            <div id="board" class="board" tabindex="0"></div>
+        </div>
+        <div style="margin-left: 20px">
+            <button onclick="normal.flip();">Flip</button>
+            <button onclick="normal.undoLastMove();">Undo</button>
+            <button onclick="normal.redoMove();">Redo</button>
+            <div id="secondBoard" class="board" tabindex="1"></div>
+        </div>
+    </div>
 </body>

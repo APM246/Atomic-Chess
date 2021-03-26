@@ -20,6 +20,7 @@ const DEFAULT_CHESS_BOARD_OPTIONS = {
     },
     interactive: true,
     showMoveMarkers: true,
+    showSquareHighlights: true,
     allowUndo: true,
 };
 
@@ -660,8 +661,9 @@ class ChessPiece {
 // Helper class for highlighting squares on the chess board
 class SquareEmphasizer {
 
-    constructor(chessBoard) {
+    constructor(chessBoard, enabled) {
         this._chessBoard = chessBoard;
+        this._enabled = enabled;
 
         // Square of the piece last grabbed by user
         this._lastGrab = null;
@@ -672,32 +674,47 @@ class SquareEmphasizer {
         this._emphasizedSquares = [];
     }
 
+    get enabled() {
+        return this._enabled;
+    }
+
+    set enabled(enabled) {
+        this._enabled = enabled;
+        if (!enabled) {
+            this.clear();
+        }
+    }
+
     // Call this when the user clicks on a piece
     onGrab(square) {
-        const color = squareColor(square) === COLORS.BLACK ? this._chessBoard._options.darkSquareHighlightColor : this._chessBoard._options.lightSquareHighlightColor;
-        this._emphasizeSquare(square, color);
+        if (this.enabled) {
+            const color = squareColor(square) === COLORS.BLACK ? this._chessBoard.options.darkSquareHighlightColor : this._chessBoard.options.lightSquareHighlightColor;
+            this._emphasizeSquare(square, color);
 
-        if (this._lastGrab !== null) {
-            this._deemphasizeSquare(this._lastGrab);
+            if (this._lastGrab !== null) {
+                this._deemphasizeSquare(this._lastGrab);
+            }
+            this._lastGrab = square;
         }
-        this._lastGrab = square;
     }
 
     // Call this when the user moves a piece to a square
     onMove(square) {
-        if (this._lastMove1 !== null) {
-            this._deemphasizeSquare(this._lastMove1);
-        }
-        if (this._lastMove2 !== null) {
-            this._deemphasizeSquare(this._lastMove2);
-        }
+        if (this.enabled) {
+            if (this._lastMove1 !== null) {
+                this._deemphasizeSquare(this._lastMove1);
+            }
+            if (this._lastMove2 !== null) {
+                this._deemphasizeSquare(this._lastMove2);
+            }
 
-        const color = squareColor(square) === COLORS.BLACK ? this._chessBoard._options.darkSquareHighlightColor : this._chessBoard._options.lightSquareHighlightColor;
-        this._emphasizeSquare(square, color);
+            const color = squareColor(square) === COLORS.BLACK ? this._chessBoard.options.darkSquareHighlightColor : this._chessBoard.options.lightSquareHighlightColor;
+            this._emphasizeSquare(square, color);
 
-        this._lastMove1 = this._lastGrab;
-        this._lastMove2 = square;
-        this._lastGrab = null;
+            this._lastMove1 = this._lastGrab;
+            this._lastMove2 = square;
+            this._lastGrab = null;
+        }
     }
 
     clear() {
@@ -748,7 +765,7 @@ class ChessBoard {
         this._parentElement = null;
         this._position = new Position();
         this._pieces = [];
-        this._squareEmphasizer = new SquareEmphasizer(this);
+        this._squareEmphasizer = new SquareEmphasizer(this, this._options.showSquareHighlights);
 
         // If flipped then we are seeing the board from Black's perspective
         this._flipped = false;
@@ -873,6 +890,10 @@ class ChessBoard {
         this._position.ready.addEventListener(() => {
             this._createPieces();
         });
+    }
+
+    get options() {
+        return this._options;
     }
 
     get position() {
@@ -1260,6 +1281,8 @@ class ChessBoard {
                 if (success) {
                     // Set piece position to the square's position
                     currentPosition = this.squareToBoardPosition(square);
+                    // Highlight the move
+                    this._squareEmphasizer.onMove(square);
                 }
             }
             // Update piece transform
@@ -1268,20 +1291,17 @@ class ChessBoard {
         };
 
         piece.div.onmousedown = (e) => {
-            e.preventDefault();
-
-            // Highlight the square the grabbed piece is on
-            this._squareEmphasizer.onGrab(piece.currentSquare);
-
-            // Draw the piece we are holding in front of the other pieces
-            piece.div.style.zIndex = "20";
-            // Show the available moves
-            this.showMoveMarkers(piece.currentSquare);
             // If we are dragging another piece ignore this drag
             if (this._parentElement.onmouseup) {
                 return;
             }
+            e.preventDefault();
+            // Focus the board element
             this.focus();
+            // Highlight the square the grabbed piece is on
+            this._squareEmphasizer.onGrab(piece.currentSquare);
+            // Draw the piece we are holding in front of the other pieces
+            piece.div.style.zIndex = "20";
             // When we hold down the mouse on a piece, start dragging it
             // Show the available moves
             this.showMoveMarkers(piece.currentSquare);
@@ -1294,11 +1314,7 @@ class ChessBoard {
             this._parentElement.onmouseup = (e) => {
                 // When we drop the piece - snap to nearest square
                 // If we dropped it outside of the board it will return to the original position
-                if (placePiece(e.clientX, e.clientY)) {
-                    // Highlight the move
-                    const square = this.boardPositionToSquare(e.clientX - this.boardClientX, e.clientY - this.boardClientY);
-                    this._squareEmphasizer.onMove(square);
-                }
+                placePiece(e.clientX, e.clientY);
                 // Cleanup event listeners
                 removeEventListeners();
 
@@ -1316,14 +1332,17 @@ class ChessBoard {
         // Support mobile inputs
         piece.div.ontouchstart = (e) => {
             if (e.touches.length === 1) {
-                e.preventDefault();
-
                 // If we are dragging another piece ignore this drag
                 if (this._parentElement.ontouchend) {
                     return;
                 }
-
+                e.preventDefault();
+                // Focus board element
                 this.focus();
+                // Highlight the square the grabbed piece is on
+                this._squareEmphasizer.onGrab(piece.currentSquare);
+                // Draw the piece we are holding in front of the other pieces
+                piece.div.style.zIndex = "20";
                 // Show the available moves
                 this.showMoveMarkers(piece.currentSquare);
                 // Store current position
@@ -1403,6 +1422,6 @@ board.setAtomic(true);
 board.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 // board.setFromFen("8/8/8/3N4/4n3/8/8/8 w - - 0 1");
 
-const normal = new ChessBoard({ target: "#secondBoard" });
+const normal = new ChessBoard({ target: "#secondBoard", showSquareHighlights: false });
 normal.setAtomic(false);
 normal.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");

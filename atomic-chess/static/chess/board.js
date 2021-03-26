@@ -1362,9 +1362,6 @@ class ChessBoard {
                 placePiece(e.clientX, e.clientY);
                 // Cleanup event listeners
                 removeEventListeners();
-
-                // Set the z-index of the piece back to its default
-                piece.div.style.zIndex = "";
             };
 
             document.onmousemove = (e) => {

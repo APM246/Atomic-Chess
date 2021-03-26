@@ -37,6 +37,9 @@ const ATOMIC_EXPLOSION_VECTORS = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, 
 // Constants that represent the current state of the board
 const POSITION_STATE = Object.freeze({ VALID: 0, DRAW: 1, WHITE_WIN: 2, BLACK_WIN: 3 });
 
+// Constants for if someones king got blown up in the position
+const KING_EXPLODE = Object.freeze({ NONE: 0, WHITE: 1, BLACK: 2 });
+
 class EventEmitter {
 
     constructor() {
@@ -354,10 +357,12 @@ class Position {
         this._colorToMove = COLORS.WHITE;
         this._kingSquares = [SQUARES.INVALID, SQUARES.INVALID];
         this._inCheck = false;
+        this._kingBlewUp = KING_EXPLODE.NONE;
         this.cleared.trigger();
     }
 
     // Applies a move to the position - does not check that the move is legal or even pseudo-legal
+    // also does not check if the game has already ended (someone got mated)
     applyMove(move, animate = false, sendEvents = true) {
         assert(Boolean(move), "Invalid move");
         // Save the current board state
@@ -411,7 +416,7 @@ class Position {
                     }
                 }
             }
-        }
+        };
 
         // Utility function called whenever a piece is captured
         // Handles atomic chess explosion
@@ -428,6 +433,10 @@ class Position {
                         // Only explode non-pawn pieces
                         if (pieceOnSquare && pieceOnSquare.piece !== PIECES.PAWN) {
                             updateCastlingFromCapturedPiece(pieceOnSquare, newSquare);
+                            // Check if the enemy king got blown up
+                            if (pieceOnSquare.piece === PIECES.KING) {
+                                this._kingBlewUp = this.colorToMove === COLORS.BLACK ? KING_EXPLODE.WHITE : KING_EXPLODE.BLACK;
+                            }
                             undoInfo.capturedPieces.push({ square: newSquare, piece: pieceOnSquare });
                             eventData.capturedPieces.push({ square: newSquare, piece: pieceOnSquare });
                             this._squares[newSquare] = null;
@@ -611,8 +620,31 @@ class Position {
     }
 
     // Determine whether the position is a draw or checkmate or still valid
+    // This function is quite as expensive, as it calls isLegal() multiple times
+    // performance is fine though 
     getResult() {
-        // TODO: determine checkmate
+        // Check if someones king got blown up
+        if (this._kingBlewUp !== KING_EXPLODE.NONE) {
+            return this._kingBlewUp === KING_EXPLODE.BLACK ? POSITION_STATE.WHITE_WIN : POSITION_STATE.BLACK_WIN;
+        }
+
+        const moves = generatePseudoLegalMoves(this);
+        let hasLegalMove = false;
+        for (const mv of moves) {
+            if (this.isLegal(mv)) {
+                hasLegalMove = true;
+                break;
+            }
+        }
+
+        if (this.inCheck && !hasLegalMove) {
+            return this.colorToMove === COLORS.BLACK ? POSITION_STATE.WHITE_WIN : POSITION_STATE.BLACK_WIN;
+        }
+
+        if (!this.inCheck && !hasLegalMove) {
+            return POSITION_STATE.DRAW;
+        }
+
         return POSITION_STATE.VALID;
     }
 
@@ -671,7 +703,6 @@ class SquareEmphasizer {
         this._lastMove1 = null;
         this._lastMove2 = null;
 
-        this._emphasizedSquares = [];
     }
 
     get enabled() {
@@ -688,12 +719,13 @@ class SquareEmphasizer {
     // Call this when the user clicks on a piece
     onGrab(square) {
         if (this.enabled) {
-            const color = squareColor(square) === COLORS.BLACK ? this._chessBoard.options.darkSquareHighlightColor : this._chessBoard.options.lightSquareHighlightColor;
-            this._emphasizeSquare(square, color);
-
             if (this._lastGrab !== null) {
                 this._deemphasizeSquare(this._lastGrab);
             }
+
+            const color = squareColor(square) === COLORS.BLACK ? this._chessBoard.options.darkSquareHighlightColor : this._chessBoard.options.lightSquareHighlightColor;
+            this._emphasizeSquare(square, color);
+
             this._lastGrab = square;
         }
     }
@@ -718,40 +750,31 @@ class SquareEmphasizer {
     }
 
     clear() {
-        for (const emph of this._emphasizedSquares) {
-            emph.div.remove();
-        }
         this._lastGrab = null;
         this._lastMove1 = null;
         this._lastMove2 = null;
-        this._emphasizedSquares = [];
+
+        for (let square = 0; square < SQUARE_COUNT; square++) {
+            this._deemphasizeSquare(square);
+        }
     }
 
     _emphasizeSquare(square, color) {
-        const squareWidth = this._chessBoard.squareClientWidth;
-        const squareHeight = this._chessBoard.squareClientHeight;
-
-        const div = document.createElement("div");
-        div.className = "highlight-square";
-        const clientPosition = this._chessBoard.squareToBoardPosition(square);
-        div.style.transform = `translate(${clientPosition.x}px, ${clientPosition.y}px)`;
-        div.style.width = `${squareWidth}px`;
-        div.style.height = `${squareHeight}px`;
-        div.style.backgroundColor = color;
-
-        this._chessBoard._parentElement.appendChild(div);
-        this._emphasizedSquares.push({ "square": square, "div": div });
+        let row = RANK_COUNT - rankOfSquare(square) - 1;
+        let col = fileOfSquare(square);
+        if (this._chessBoard.isFlipped) {
+            row = RANK_COUNT - row - 1;
+            col = FILE_COUNT - col - 1;
+        }
+        const table = this._chessBoard._parentElement.getElementsByTagName("table")[0];
+        const tr = table.getElementsByTagName("tr")[row];
+        const td = tr.getElementsByTagName("td")[col];
+        td.style.backgroundColor = color;
     }
 
     _deemphasizeSquare(square) {
-        const emph = this._emphasizedSquares;
-        for (const index in emph) {
-            if (emph[index].square == square) {
-                emph[index].div.remove();
-                emph.splice(index, 1);
-                return;
-             }
-        }
+        const color = squareColor(square) === COLORS.BLACK ? this._chessBoard._options.darkSquareColor : this._chessBoard._options.lightSquareColor;
+        this._emphasizeSquare(square, color);
     }
 }
 
@@ -840,6 +863,20 @@ class ChessBoard {
                     this._pieces[index].piece = promotion.piece.piece;
                     this._pieces[index].setImageUri(this._getImageUri(promotion.piece.piece, promotion.piece.color), moveData.animate ? promise : null);
                 }
+            }
+
+            // Debug getResult
+            const state = this.position.getResult();
+            switch (state) {
+                case POSITION_STATE.BLACK_WIN:
+                    console.log("Black Won");
+                    break;
+                case POSITION_STATE.WHITE_WIN:
+                    console.log("White Won");
+                    break;
+                case POSITION_STATE.DRAW:
+                    console.log("Draw");
+                    break;
             }
         });
 

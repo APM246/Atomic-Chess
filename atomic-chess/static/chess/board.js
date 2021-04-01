@@ -1316,10 +1316,3 @@ class ChessBoard {
     }
 
 }
-
-// Create a chess board inside the #board element
-// const board = new ChessBoard({ target: "#board" });
-// board.setAtomic(true);
-// Set position from FEN (initial starting position)
-// board.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-// board.setFromFen("8/8/8/3N4/4n3/8/8/8 w - - 0 1");

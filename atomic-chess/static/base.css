@@ -3,4 +3,9 @@
     height: 600px;
     outline: none;
     user-select: none;
+    border: 2px solid black;
+}
+
+.container {
+    display: flex;
 }

@@ -108,7 +108,7 @@ function createMove(fromSquare, toSquare, promotion = PIECES.NONE) {
         from: fromSquare,
         to: toSquare,
         promotion,
-    }
+    };
 }
 
 // Compares the equality of 2 moves
@@ -128,7 +128,7 @@ function generatePawnMoves(square, color, position) {
     const doublePushRank = color === COLORS.WHITE ? RANKS.RANK_2 : RANKS.RANK_7;
     const forwardSquare = getForwardSquare(square, color);
     const toRank = rankOfSquare(forwardSquare);
-    const isPromotion = toRank === promotionRank
+    const isPromotion = toRank === promotionRank;
     // If there is no piece directly in front of us then we can move forward
     if (!position.isSquareOccupied(forwardSquare)) {
         // Handle pushing to promote
@@ -238,7 +238,7 @@ function generateQueenMoves(square, color, position) {
 // Generates all pseudo-legal king moves from a given square
 function generateKingMoves(square, color, position) {
     const moves = generateMovesFromNonSlidingVectors(square, color, position, KING_MOVE_VECTORS);
-    // TODO: Castling moves
+
     const rank = rankOfSquare(square);
     if (position.canCastleKingside(color)) {
         const isEmptyPath = [createSquare(FILES.FILE_F, rank), createSquare(FILES.FILE_G, rank)].every(square => !position.isSquareOccupied(square));
@@ -344,7 +344,7 @@ function perft(position, depth, log = false) {
             }
         }
         return count;
-    }
+    };
     const total = internalPerft(depth);
     if (log) {
         for (const key of Object.keys(moveData)) {

@@ -69,7 +69,7 @@ mocha.describe("Chess Position", function() {
         });
     });
 
-    mocha.describe("Move Generation", function() {
+    mocha.describe("Classical Move Generation", function() {
         mocha.describe("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", function() {
             this.timeout(120000);
             const position = new Position();
@@ -213,6 +213,74 @@ mocha.describe("Chess Position", function() {
             });
             it("Depth 4", function() {
                 expect(perft(position, 4)).to.equal(3894594);
+            });
+        });
+    });
+
+    mocha.describe("Atomic Move Generation", function() {
+        mocha.describe("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", function() {
+            this.timeout(120000);
+            const position = new Position();
+            position.isAtomic = true;
+            position.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+            it("Depth 1", function() {
+                expect(perft(position, 1)).to.equal(20);
+            });
+            it("Depth 2", function() {
+                expect(perft(position, 2)).to.equal(400);
+            });
+            it("Depth 3", function() {
+                expect(perft(position, 3)).to.equal(8902);
+            });
+            it("Depth 4", function() {
+                expect(perft(position, 4)).to.equal(197326);
+            });
+            it("Depth 5", function() {
+                expect(perft(position, 5)).to.equal(4864979);
+            });
+        });
+
+        mocha.describe("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -", function() {
+            this.timeout(120000);
+            const position = new Position();
+            position.isAtomic = true;
+            position.setFromFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+
+            it("Depth 1", function() {
+                expect(perft(position, 1)).to.equal(48);
+            });
+            it("Depth 2", function() {
+                expect(perft(position, 2)).to.equal(1939);
+            });
+            it("Depth 3", function() {
+                expect(perft(position, 3)).to.equal(88298);
+            });
+            it("Depth 4", function() {
+                expect(perft(position, 4)).to.equal(3492097);
+            });
+        });
+
+        mocha.describe("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -", function() {
+            this.timeout(120000);
+            const position = new Position();
+            position.isAtomic = true;
+            position.setFromFen("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -");
+
+            it("Depth 1", function() {
+                expect(perft(position, 1)).to.equal(14);
+            });
+            it("Depth 2", function() {
+                expect(perft(position, 2)).to.equal(203);
+            });
+            it("Depth 3", function() {
+                expect(perft(position, 3)).to.equal(2784);
+            });
+            it("Depth 4", function() {
+                expect(perft(position, 4)).to.equal(42280);
+            });
+            it("Depth 5", function() {
+                expect(perft(position, 5)).to.equal(619830);
             });
         });
     });

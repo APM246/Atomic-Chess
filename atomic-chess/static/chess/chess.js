@@ -323,8 +323,16 @@ function moveToString(move) {
 // Perft is a function to test move generation, applyMove and undoMove
 // Given a position and depth it recursively applied all possible moves and returns the total number of moves
 // Compare with known results from https://www.chessprogramming.org/Perft_Results
-function perft(position, depth, log = false) {
+function perft(position, depth, log = false, comparisonData = null) {
     const moveData = {};
+    const comparison = {};
+    if (comparisonData) {
+        const lines = comparisonData.split("\n");
+        for (const line of lines) {
+            const parts = line.split(":")
+            comparison[parts[0]] = Number(parts.slice(1));
+        }
+    }
     const internalPerft = (dpth) => {
         if (dpth <= 0) {
             return 1;
@@ -338,7 +346,7 @@ function perft(position, depth, log = false) {
             const undo = position.applyMove(move, false, false);
             const c = internalPerft(dpth - 1);
             count += c;
-            position.undoMove(move, undo);
+            position.undoMove(move, undo, false, false);
             if (dpth === depth) {
                 moveData[moveToString(move)] = c;
             }
@@ -349,6 +357,11 @@ function perft(position, depth, log = false) {
     if (log) {
         for (const key of Object.keys(moveData)) {
             console.log(`${key}: ${moveData[key]}`);
+            if (Object.keys(comparison).length > 0) {
+                if (comparison[key] !== moveData[key]) {
+                    console.warn(`${key} ERROR ${moveData[key]} !== ${comparison[key]}`);
+                }
+            }
         }
         console.log(total);
     }

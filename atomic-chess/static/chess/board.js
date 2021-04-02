@@ -150,6 +150,10 @@ class Position {
     isLegal(move) {
         const ctm = this.colorToMove;
 
+        if (this._kingSquares[ctm] === SQUARES.INVALID) {
+            return false;
+        }
+
         const kingsideCastle = this.isKingsideCastle(move);
         const queensideCastle = this.isQueensideCastle(move);
         if (kingsideCastle || queensideCastle) {
@@ -360,7 +364,6 @@ class Position {
         this._colorToMove = COLORS.WHITE;
         this._kingSquares = [SQUARES.INVALID, SQUARES.INVALID];
         this._inCheck = false;
-        this._kingBlewUp = KING_EXPLODE.NONE;
         this.cleared.trigger();
     }
 
@@ -438,7 +441,7 @@ class Position {
                             updateCastlingFromCapturedPiece(pieceOnSquare, newSquare);
                             // Check if the enemy king got blown up
                             if (pieceOnSquare.piece === PIECES.KING) {
-                                this._kingBlewUp = this.colorToMove === COLORS.BLACK ? KING_EXPLODE.WHITE : KING_EXPLODE.BLACK;
+                                this._kingSquares[otherColor(this.colorToMove)] = SQUARES.INVALID;
                             }
                             undoInfo.capturedPieces.push({ square: newSquare, piece: pieceOnSquare });
                             eventData.capturedPieces.push({ square: newSquare, piece: pieceOnSquare });
@@ -627,8 +630,20 @@ class Position {
     // performance is fine though 
     getResult() {
         // Check if someones king got blown up
-        if (this._kingBlewUp !== KING_EXPLODE.NONE) {
-            return this._kingBlewUp === KING_EXPLODE.BLACK ? POSITION_STATE.WHITE_WIN : POSITION_STATE.BLACK_WIN;
+        if (this._kingSquares[COLORS.WHITE] === SQUARES.INVALID || this._kingSquares[COLORS.BLACK] === SQUARES.INVALID) {
+            return this._kingSquares[COLORS.BLACK] === SQUARES.INVALID ? POSITION_STATE.WHITE_WIN : POSITION_STATE.BLACK_WIN;
+        }
+
+        // If only kings remain it is a draw
+        let valid = false;
+        for (const piece of this._squares) {
+            if (piece && piece.piece !== PIECES.KING) {
+                valid = true;
+                break;
+            }
+        }
+        if (!valid) {
+            return POSITION_STATE.DRAW;
         }
 
         const moves = generatePseudoLegalMoves(this);
@@ -659,7 +674,18 @@ class Position {
                 this._kingSquares[piece.color] = square;
             }
         }
-        // TODO: Detect if position is in check
+        // Detect check
+        this._inCheck = false;
+        const kingSquare = this.getKingSquare(this.colorToMove);
+        this._colorToMove = otherColor(this.colorToMove);
+        const moves = generatePseudoLegalMoves(this);
+        for (const move of moves) {
+            if (move.to === kingSquare && this.isLegal(move)) {
+                this._inCheck = true;
+                break;
+            }
+        }
+        this._colorToMove = otherColor(this.colorToMove);
     }
 
 }

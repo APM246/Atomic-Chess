@@ -1,0 +1,20 @@
+name: Run-Tests
+on: push
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update
+        run: sudo apt-get update
+      - name: Checkout Atomic-Chess
+        uses: actions/checkout@v2
+      - name: Setup NodeJs
+        uses: actions/setup-node@v1
+        with:
+          node-version: 15.x
+      - name: Install Packages
+        run: npm install
+        working-directory: tests
+      - name: Run Tests
+        run: npm test
+        working-directory: tests

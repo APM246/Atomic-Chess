@@ -815,6 +815,7 @@ class ChessBoard {
         this._options = assignDefaults(options, DEFAULT_CHESS_BOARD_OPTIONS);
         const targetElement = getElement(this._options.target);
         this._parentElement = null;
+        this._boardElement = null;
         this._position = new Position();
         this._pieces = [];
         this._squareEmphasizer = new SquareEmphasizer(this, this._options.showSquareHighlights);
@@ -972,22 +973,22 @@ class ChessBoard {
 
     // Get the offset of the board from the left-border of the page
     get boardClientX() {
-        return this._parentElement.getBoundingClientRect().x;
+        return this._boardElement.getBoundingClientRect().x;
     }
 
     // Get the offset of the board from the top-border of the page
     get boardClientY() {
-        return this._parentElement.getBoundingClientRect().y;
+        return this._boardElement.getBoundingClientRect().y;
     }
 
     // Get the board width in pixels
     get boardClientWidth() {
-        return this._parentElement.clientWidth;
+        return this._boardElement.clientWidth;
     }
 
     // Get the board height in pixels
     get boardClientHeight() {
-        return this._parentElement.clientHeight;
+        return this._boardElement.clientHeight;
     }
 
     // Get the width of a square in pixels
@@ -1065,6 +1066,7 @@ class ChessBoard {
         this._destroyPieces();
         this._destroyBoard();
         this._position.reset();
+        this._boardElement = null;
         this._parentElement = null;
     }
 
@@ -1178,7 +1180,7 @@ class ChessBoard {
         const scale = isCapture ? MOVE_MARKER_CAPTURE_SCALE : MOVE_MARKER_DEFAULT_SCALE;
         const div = this._createMoveMarkerDiv(move.to, color, scale);
 
-        this._parentElement.appendChild(div);
+        this._boardElement.appendChild(div);
         this._moveMarkerDivs.push(div);
     }
 
@@ -1234,6 +1236,7 @@ class ChessBoard {
         if (this._parentElement) {
             assert(this._pieces.length === 0, "Must have destroyed all pieces before destroying board");
             this._parentElement.innerHTML = "";
+            this._boardElement = null;
         }
     }
 
@@ -1242,6 +1245,28 @@ class ChessBoard {
         this._destroyPieces();
         this._destroyBoard();
         if (this._parentElement) {
+            const parentWidth = this._parentElement.clientWidth;
+            const parentHeight = this._parentElement.clientHeight;
+            const div = document.createElement("div");
+            div.className = "chess-board";
+
+            const coordinateWidthProportion = 0.1;
+            const coordinateHeightProportion = 0.1;
+
+            const topDiv = document.createElement("div");
+            topDiv.className = "chess-board";
+            topDiv.style.display = "flex";
+            topDiv.style.height = `${parentHeight * (1 - coordinateHeightProportion)}px`;
+
+            const yCoordsDiv = document.createElement("div");
+            yCoordsDiv.style.width = `${parentWidth * coordinateWidthProportion}px`;
+
+            const xCoordsDiv = document.createElement("div");
+            xCoordsDiv.style.width = "100%";
+            xCoordsDiv.style.height = `${parentHeight * coordinateWidthProportion}px`;
+
+            const tableDiv = document.createElement("div");
+            tableDiv.className = "chess-board";
             const table = document.createElement("table");
             table.className = "chess-board";
             for (let file = 0; file < FILE_COUNT; file++) {
@@ -1253,14 +1278,21 @@ class ChessBoard {
                 }
                 table.appendChild(row);
             }
-            this._parentElement.appendChild(table);
+            tableDiv.appendChild(table);
+            topDiv.appendChild(yCoordsDiv);
+            topDiv.appendChild(tableDiv);
+            div.appendChild(topDiv);
+            div.appendChild(xCoordsDiv);
+            this._parentElement.appendChild(div);
+
+            this._boardElement = tableDiv;
         }
     }
 
     // Helper function to create the HTML elements for the pieces
     _createPieces() {
         this._destroyPieces();
-        if (this._parentElement) {
+        if (this._boardElement) {
             for (let i = 0; i < SQUARE_COUNT; i++) {
                 const pieceData = this._position.getPieceOnSquare(i);
                 if (Boolean(pieceData) && pieceData.piece !== PIECES.NONE) {
@@ -1273,7 +1305,7 @@ class ChessBoard {
 
     // Constructs the HTML elements for rendering a single piece
     _createPiece(piece) {
-        if (this._parentElement) {
+        if (this._boardElement) {
             const div = this._createPieceDiv(piece);
             // Piece now tracks its div
             piece.div = div;
@@ -1285,7 +1317,7 @@ class ChessBoard {
             this._pieces.push(piece);
 
             // Add div to the board
-            this._parentElement.appendChild(div);
+            this._boardElement.appendChild(div);
         }
     }
 

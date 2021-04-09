@@ -8,9 +8,11 @@
     <script src="{{ url_for('static', filename='chess/board.js') }}"></script>
 
     <script>
+        let board;
+        let normal;
         window.onload = () => {
             // Create a chess board inside the #board element
-            const board = new ChessBoard({ target: "#board" });
+            board = new ChessBoard({ target: "#board" });
             board.setAtomic(true);
             // Set position from FEN (initial starting position)
             board.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -20,7 +22,7 @@
                 perft(board.position, depth, true, comparison);
             }
 
-            const normal = new ChessBoard({ target: "#secondBoard", useMoveAnimations: false });
+            normal = new ChessBoard({ target: "#secondBoard", useMoveAnimations: false });
             normal.setAtomic(false);
             normal.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         };

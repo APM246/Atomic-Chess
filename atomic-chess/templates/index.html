@@ -5,9 +5,44 @@
 
     <script src="{{ url_for('static', filename='chess/utils.js') }}"></script>
     <script src="{{ url_for('static', filename='chess/chess.js') }}"></script>
-    <script defer src="{{ url_for('static', filename='chess/board.js') }}"></script>
+    <script src="{{ url_for('static', filename='chess/board.js') }}"></script>
+
+    <script>
+        let board;
+        let normal;
+        window.onload = () => {
+            // Create a chess board inside the #board element
+            board = new ChessBoard({ target: "#board" });
+            board.setAtomic(true);
+            // Set position from FEN (initial starting position)
+            board.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+            // board.setFromFen("8/8/8/3N4/4n3/8/8/8 w - - 0 1");
+
+            window.test = (depth, comparison) => {
+                perft(board.position, depth, true, comparison);
+            }
+
+            normal = new ChessBoard({ target: "#secondBoard", useMoveAnimations: false });
+            normal.setAtomic(false);
+            normal.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        };
+    </script>
+
     <title>Atomic Chess</title>
 </head>
 <body>
-    <div id="board" class="board" tabindex="0"></div>
+    <div class="container">
+        <div>
+            <button onclick="board.flip();">Flip</button>
+            <button onclick="board.undoLastMove();">Undo</button>
+            <button onclick="board.redoMove();">Redo</button>
+            <div id="board" class="board" tabindex="0"></div>
+        </div>
+        <div style="margin-left: 20px">
+            <button onclick="normal.flip();">Flip</button>
+            <button onclick="normal.undoLastMove();">Undo</button>
+            <button onclick="normal.redoMove();">Redo</button>
+            <div id="secondBoard" class="board" tabindex="1"></div>
+        </div>
+    </div>
 </body>

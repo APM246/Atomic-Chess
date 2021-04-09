@@ -13,3 +13,10 @@ Website designed to teach people how to play the chess variant [Atomic](https://
 `SET FLASK_ENV=development`
 `flask run`
 4. Navigate to [localhost:5000](http://localhost:5000)
+
+## Running tests:
+1. Install NodeJS and npm
+2. `cd tests`
+3. `npm install`
+4. `npm test`
+

@@ -20,7 +20,10 @@ const DEFAULT_CHESS_BOARD_OPTIONS = {
     },
     interactive: true,
     showMoveMarkers: true,
+    showSquareHighlights: true,
     allowUndo: true,
+    useMoveAnimations: true,
+    animationTime: 300,
 };
 
 const MOVE_MARKER_DEFAULT_COLOR = "#22222266";
@@ -28,13 +31,17 @@ const MOVE_MARKER_CAPTURE_COLOR = "#AA222266";
 const MOVE_MARKER_DEFAULT_SCALE = 0.3;
 const MOVE_MARKER_CAPTURE_SCALE = 0.4;
 
-const MOVE_ANIMATION_TIME_MS = 300;
+const MOVING_PIECE_Z_INDEX_STRING = "20";
+const DEFAULT_PIECE_Z_INDEX_STRING = "";
 
 // Format: [[files, ranks], ...]
 const ATOMIC_EXPLOSION_VECTORS = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
 
 // Constants that represent the current state of the board
 const POSITION_STATE = Object.freeze({ VALID: 0, DRAW: 1, WHITE_WIN: 2, BLACK_WIN: 3 });
+
+// Constants for if someones king got blown up in the position
+const KING_EXPLODE = Object.freeze({ NONE: 0, WHITE: 1, BLACK: 2 });
 
 class EventEmitter {
 
@@ -65,16 +72,10 @@ class EventEmitter {
 class Position {
 
     constructor() {
-        // (square, piece: { piece: PIECES, color: COLORS }, animate) => void
-        this.pieceAdded = new EventEmitter();
-        // (square, piece: { piece: PIECES, color: COLORS }, animate) => void
-        this.pieceRemoved = new EventEmitter();
-        // (from, to, piece: { piece: PIECES, color: COLORS }, animate) => void
-        this.pieceMoved = new EventEmitter();
-        // (square, piece: { piece: PIECES, color: COLORS }, animate) => void
-        this.piecePromoted = new EventEmitter();
-        // () => void
+        this.ready = new EventEmitter();
         this.cleared = new EventEmitter();
+        this.movePlayed = new EventEmitter();
+        this.moveUndone = new EventEmitter();
 
         this._isAtomic = false;
         this.reset();
@@ -149,6 +150,10 @@ class Position {
     isLegal(move) {
         const ctm = this.colorToMove;
 
+        if (this._kingSquares[ctm] === SQUARES.INVALID) {
+            return false;
+        }
+
         const kingsideCastle = this.isKingsideCastle(move);
         const queensideCastle = this.isQueensideCastle(move);
         if (kingsideCastle || queensideCastle) {
@@ -219,8 +224,8 @@ class Position {
             if (movingPiece.piece === PIECES.KING && isNextToSquare(move.to, otherKingSquare)) {
                 return true;
             }
-            // If our king is already next to the opposition king any move is legal
-            if (isNextToSquare(ourKingSquare, otherKingSquare)) {
+            // If our king is already next to the opposition king any non-king move is legal
+            if (movingPiece && movingPiece.piece !== PIECES.KING && isNextToSquare(ourKingSquare, otherKingSquare)) {
                 return true;
             }
         }
@@ -340,12 +345,7 @@ class Position {
         this._initialize();
 
         // Send creation events
-        for (let square = 0; square < this._squares.length; square++) {
-            const piece = this.getPieceOnSquare(square);
-            if (piece) {
-                this.pieceAdded.trigger(square, piece);
-            }
-        }
+        this.ready.trigger();
     }
 
     // Clears pieces and resets castling rights
@@ -368,6 +368,7 @@ class Position {
     }
 
     // Applies a move to the position - does not check that the move is legal or even pseudo-legal
+    // also does not check if the game has already ended (someone got mated)
     applyMove(move, animate = false, sendEvents = true) {
         assert(Boolean(move), "Invalid move");
         // Save the current board state
@@ -381,16 +382,47 @@ class Position {
             isPromotion: false,
             isKingsideCastle: false,
             isQueensideCastle: false,
+            movingPiece: null,
+        };
+        const eventData = {
+            move,
+            animate,
+            movingPieces: [],
+            capturedPieces: [],
+            promotedPieces: [],
+            movingPieceCaptured: false,
         };
         const fromSquare = move.from;
         const toSquare = move.to;
         const promotion = move.promotion;
         const enpassantSquare = this.enpassantSquare;
         const movingPiece = this.getPieceOnSquare(fromSquare);
-        const isCapture = this.isCapture(move);
+        undoInfo.movingPiece = movingPiece;
         assert(Boolean(movingPiece) && movingPiece.piece !== PIECES.NONE && movingPiece.color === this.colorToMove, "Invalid move");
         const capturedPiece = this.getPieceOnSquare(toSquare);
         assert(!Boolean(capturedPiece) || capturedPiece.color !== this.colorToMove, "Invalid capture");
+
+        // If we have captured someone's rook and it was on its original square - prevent castling
+        const updateCastlingFromCapturedPiece = (capPiece, square) => {
+            if (capPiece && capPiece.piece === PIECES.ROOK) {
+                const requiredRank = capPiece.color === COLORS.WHITE ? RANKS.RANK_1 : RANKS.RANK_8;
+                const fromFile = fileOfSquare(square);
+                const fromRank = rankOfSquare(square);
+                if (fromFile === FILES.FILE_H && requiredRank === fromRank) {
+                    if (capPiece.color === COLORS.WHITE) {
+                        this._castlingRights.whiteKingside = false;
+                    } else {
+                        this._castlingRights.blackKingside = false;
+                    }
+                } else if (fromFile === FILES.FILE_A && requiredRank === fromRank) {
+                    if (capPiece.color === COLORS.WHITE) {
+                        this._castlingRights.whiteQueenside = false;
+                    } else {
+                        this._castlingRights.blackQueenside = false;
+                    }
+                }
+            }
+        };
 
         // Utility function called whenever a piece is captured
         // Handles atomic chess explosion
@@ -406,21 +438,21 @@ class Position {
                         const pieceOnSquare = this.getPieceOnSquare(newSquare);
                         // Only explode non-pawn pieces
                         if (pieceOnSquare && pieceOnSquare.piece !== PIECES.PAWN) {
-                            undoInfo.capturedPieces.push({ square: newSquare, piece: pieceOnSquare });
-                            this._squares[newSquare] = null;
-                            if (sendEvents) {
-                                this.pieceRemoved.trigger(newSquare, pieceOnSquare, animate);
+                            updateCastlingFromCapturedPiece(pieceOnSquare, newSquare);
+                            // Check if the enemy king got blown up
+                            if (pieceOnSquare.piece === PIECES.KING) {
+                                this._kingSquares[otherColor(this.colorToMove)] = SQUARES.INVALID;
                             }
+                            undoInfo.capturedPieces.push({ square: newSquare, piece: pieceOnSquare });
+                            eventData.capturedPieces.push({ square: newSquare, piece: pieceOnSquare });
+                            this._squares[newSquare] = null;
                         }
                     }
                 }
                 // Explode the moving piece
                 this._squares[explosionSquare] = null;
-                undoInfo.capturedPieces.push({ square: captureFrom, piece: capturingPiece });
-                if (sendEvents) {
-                    // Trigger the event as if it was from the "from square" since the piece never actually moves
-                    this.pieceRemoved.trigger(captureFrom, capturingPiece, animate);
-                }
+                undoInfo.capturedPieces.push({ square: captureFrom, piece: capturingPiece, isMovingPiece: true });
+                eventData.movingPieceCaptured = true;
             }
         };
 
@@ -434,10 +466,8 @@ class Position {
 
         if (capturedPiece) {
             undoInfo.capturedPieces.push({ square: toSquare, piece: capturedPiece });
+            eventData.capturedPieces.push({ square: toSquare, piece: capturedPiece });
             explode(movingPiece, fromSquare, toSquare);
-            if (sendEvents) {
-                this.pieceRemoved.trigger(toSquare, capturedPiece, animate);
-            }
         }
 
         // Enpassant
@@ -445,25 +475,16 @@ class Position {
             const captureSquare = getBackwardSquare(toSquare, this.colorToMove);
             const capturedPawn = { piece: PIECES.PAWN, color: otherColor(this.colorToMove) };
             undoInfo.capturedPieces.push({ square: captureSquare, piece: capturedPawn });
+            eventData.capturedPieces.push({ square: captureSquare, piece: capturedPawn });
             this._squares[captureSquare] = null;
             explode(movingPiece, fromSquare, toSquare);
-            if (sendEvents) {
-                this.pieceRemoved.trigger(captureSquare, capturedPawn, animate);
-            }
-        }
-
-        // A piece only "moves" in atomic if it is not a capture (otherwise it is exploded)
-        if (sendEvents && (!this.isAtomic || !isCapture)) {
-            this.pieceMoved.trigger(fromSquare, toSquare, movingPiece, animate);
         }
 
         // Update promotion
         if (promotion !== PIECES.NONE && movingPiece.piece === PIECES.PAWN) {
             this._squares[toSquare] = { piece: promotion, color: this.colorToMove };
             undoInfo.isPromotion = true;
-            if (sendEvents) {
-                this.piecePromoted.trigger(toSquare, this._squares[toSquare], animate);
-            }
+            eventData.promotedPieces.push({ square: toSquare, piece: this._squares[toSquare] });
         }
 
         // If we double push a pawn - set the enpassant square
@@ -504,24 +525,7 @@ class Position {
         }
 
         // If we capture the opponent's rook on its initial square revoke their castling rights
-        if (capturedPiece && capturedPiece.piece === PIECES.ROOK) {
-            const requiredRank = this.colorToMove === COLORS.WHITE ? RANKS.RANK_8 : RANKS.RANK_1;
-            const fromFile = fileOfSquare(toSquare);
-            const fromRank = rankOfSquare(toSquare);
-            if (fromFile === FILES.FILE_H && requiredRank === fromRank) {
-                if (this.colorToMove === COLORS.WHITE) {
-                    this._castlingRights.blackKingside = false;
-                } else {
-                    this._castlingRights.whiteKingside = false;
-                }
-            } else if (fromFile === FILES.FILE_A && requiredRank === fromRank) {
-                if (this.colorToMove === COLORS.WHITE) {
-                    this._castlingRights.blackQueenside = false;
-                } else {
-                    this._castlingRights.whiteQueenside = false;
-                }
-            }
-        }
+        updateCastlingFromCapturedPiece(capturedPiece, toSquare);
 
         // Castling
         if (movingPiece.piece === PIECES.KING) {
@@ -536,10 +540,7 @@ class Position {
                 const toRookSquare = createSquare(FILES.FILE_F, rank);
                 this._squares[fromRookSquare] = null;
                 this._squares[toRookSquare] = { piece: PIECES.ROOK, color: this.colorToMove };
-                if (sendEvents) {
-                    // Always animate rook moves in castling
-                    this.pieceMoved.trigger(fromRookSquare, toRookSquare, this._squares[toRookSquare], true);
-                }
+                eventData.movingPieces.push({ from: fromRookSquare, to: toRookSquare, piece: this._squares[toRookSquare] });
             } else if (fromFile === FILES.FILE_E && toFile === FILES.FILE_C) {
                 // Queenside castling
                 // Move the rook
@@ -548,10 +549,7 @@ class Position {
                 const toRookSquare = createSquare(FILES.FILE_D, rank);
                 this._squares[fromRookSquare] = null;
                 this._squares[toRookSquare] = { piece: PIECES.ROOK, color: this.colorToMove };
-                if (sendEvents) {
-                    // Always animate rook moves in castling
-                    this.pieceMoved.trigger(fromRookSquare, toRookSquare, this._squares[toRookSquare], true);
-                }
+                eventData.movingPieces.push({ from: fromRookSquare, to: toRookSquare, piece: this._squares[toRookSquare] });
             }
         }
 
@@ -569,6 +567,10 @@ class Position {
         // Swap moving color
         this._colorToMove = otherColor(this.colorToMove);
 
+        if (sendEvents) {
+            this.movePlayed.trigger(eventData);
+        }
+
         return undoInfo;
     }
 
@@ -576,6 +578,13 @@ class Position {
         assert(Boolean(move) && Boolean(undoInfo), "Invalid arguments");
 
         if (sendEvents) {
+            const eventData = {
+                move,
+                animate,
+                movingPieces: [],
+                addedPieces: [],
+                promotedPieces: [],
+            };
             const fromSquare = move.to;
             const toSquare = move.from;
             const movingPiece = this.getPieceOnSquare(fromSquare);
@@ -583,24 +592,27 @@ class Position {
             // There must be a piece on the square unless it is atomic in which case it may have been exploded
             assert(Boolean(movingPiece) || this.isAtomic, "Invalid move");
             if (movingPiece) {
-                this.pieceMoved.trigger(fromSquare, toSquare, movingPiece, animate);
+                eventData.movingPieces.push({ from: fromSquare, to: toSquare, piece: undoInfo.movingPiece });
+            } else {
+                eventData.movingPieces.push({ from: toSquare, to: toSquare, piece: undoInfo.movingPiece });
             }
             for (const piece of undoInfo.capturedPieces) {
-                this.pieceAdded.trigger(piece.square, piece.piece);
+                eventData.addedPieces.push({ square: piece.square, piece: piece.piece, isMovingPiece: piece.isMovingPiece });
             }
             if (undoInfo.isPromotion) {
-                this.piecePromoted.trigger(toSquare, { piece: PIECES.PAWN, color }, animate);
+                eventData.promotedPieces.push({ square: toSquare, piece: { piece: PIECES.PAWN, color } });
             }
             if (undoInfo.isKingsideCastle) {
                 // Move the rook back
                 const rank = rankOfSquare(fromSquare);
-                this.pieceMoved.trigger(createSquare(FILES.FILE_F, rank), createSquare(FILES.FILE_H, rank), { piece: PIECES.ROOK, color }, animate);
+                eventData.movingPieces.push({ from: createSquare(FILES.FILE_F, rank), to: createSquare(FILES.FILE_H, rank), piece: { piece: PIECES.ROOK, color } });
             }
             if (undoInfo.isQueensideCastle) {
                 // Move the rook back
                 const rank = rankOfSquare(fromSquare);
-                this.pieceMoved.trigger(createSquare(FILES.FILE_D, rank), createSquare(FILES.FILE_A, rank), { piece: PIECES.ROOK, color }, animate);
+                eventData.movingPieces.push({ from: createSquare(FILES.FILE_D, rank), to: createSquare(FILES.FILE_A, rank), piece: { piece: PIECES.ROOK, color } });
             }
+            this.moveUndone.trigger(eventData);
         }
 
         // Restore board state from undoInfo
@@ -614,8 +626,43 @@ class Position {
     }
 
     // Determine whether the position is a draw or checkmate or still valid
+    // This function is quite as expensive, as it calls isLegal() multiple times
+    // performance is fine though 
     getResult() {
-        // TODO: determine checkmate
+        // Check if someones king got blown up
+        if (this._kingSquares[COLORS.WHITE] === SQUARES.INVALID || this._kingSquares[COLORS.BLACK] === SQUARES.INVALID) {
+            return this._kingSquares[COLORS.BLACK] === SQUARES.INVALID ? POSITION_STATE.WHITE_WIN : POSITION_STATE.BLACK_WIN;
+        }
+
+        // If only kings remain it is a draw
+        let valid = false;
+        for (const piece of this._squares) {
+            if (piece && piece.piece !== PIECES.KING) {
+                valid = true;
+                break;
+            }
+        }
+        if (!valid) {
+            return POSITION_STATE.DRAW;
+        }
+
+        const moves = generatePseudoLegalMoves(this);
+        let hasLegalMove = false;
+        for (const mv of moves) {
+            if (this.isLegal(mv)) {
+                hasLegalMove = true;
+                break;
+            }
+        }
+
+        if (this.inCheck && !hasLegalMove) {
+            return this.colorToMove === COLORS.BLACK ? POSITION_STATE.WHITE_WIN : POSITION_STATE.BLACK_WIN;
+        }
+
+        if (!this.inCheck && !hasLegalMove) {
+            return POSITION_STATE.DRAW;
+        }
+
         return POSITION_STATE.VALID;
     }
 
@@ -627,7 +674,18 @@ class Position {
                 this._kingSquares[piece.color] = square;
             }
         }
-        // TODO: Detect if position is in check
+        // Detect check
+        this._inCheck = false;
+        const kingSquare = this.getKingSquare(this.colorToMove);
+        this._colorToMove = otherColor(this.colorToMove);
+        const moves = generatePseudoLegalMoves(this);
+        for (const move of moves) {
+            if (move.to === kingSquare && this.isLegal(move)) {
+                this._inCheck = true;
+                break;
+            }
+        }
+        this._colorToMove = otherColor(this.colorToMove);
     }
 
 }
@@ -644,10 +702,18 @@ class ChessPiece {
     }
 
     // Used when a piece is promoted - updates <img> src
-    setImageUri(uri) {
+    setImageUri(uri, promise) {
         this.imageUri = uri;
-        if (this.div) {
-            this.div.children[0].src = this.imageUri;
+        if (promise) {
+            promise.then(() => {
+                if (this.div) {
+                    this.div.children[0].src = this.imageUri;
+                }
+            });
+        } else {
+            if (this.div) {
+                this.div.children[0].src = this.imageUri;
+            }
         }
     }
 
@@ -656,8 +722,9 @@ class ChessPiece {
 // Helper class for highlighting squares on the chess board
 class SquareEmphasizer {
 
-    constructor(chessBoard) {
+    constructor(chessBoard, enabled) {
         this._chessBoard = chessBoard;
+        this._enabled = enabled;
 
         // Square of the piece last grabbed by user
         this._lastGrab = null;
@@ -665,72 +732,78 @@ class SquareEmphasizer {
         this._lastMove1 = null;
         this._lastMove2 = null;
 
-        this._emphasizedSquares = [];
+    }
+
+    get enabled() {
+        return this._enabled;
+    }
+
+    set enabled(enabled) {
+        this._enabled = enabled;
+        if (!enabled) {
+            this.clear();
+        }
     }
 
     // Call this when the user clicks on a piece
     onGrab(square) {
-        const color = squareColor(square) === COLORS.BLACK ? this._chessBoard._options.darkSquareHighlightColor : this._chessBoard._options.lightSquareHighlightColor;
-        this._emphasizeSquare(square, color);
+        if (this.enabled) {
+            if (this._lastGrab !== null) {
+                this._deemphasizeSquare(this._lastGrab);
+            }
 
-        if (this._lastGrab !== null) {
-            this._deemphasizeSquare(this._lastGrab);
+            const color = squareColor(square) === COLORS.BLACK ? this._chessBoard.options.darkSquareHighlightColor : this._chessBoard.options.lightSquareHighlightColor;
+            this._emphasizeSquare(square, color);
+
+            this._lastGrab = square;
         }
-        this._lastGrab = square;
     }
 
     // Call this when the user moves a piece to a square
     onMove(square) {
-        if (this._lastMove1 !== null) {
-            this._deemphasizeSquare(this._lastMove1);
-        }
-        if (this._lastMove2 !== null) {
-            this._deemphasizeSquare(this._lastMove2);
-        }
+        if (this.enabled) {
+            if (this._lastMove1 !== null) {
+                this._deemphasizeSquare(this._lastMove1);
+            }
+            if (this._lastMove2 !== null) {
+                this._deemphasizeSquare(this._lastMove2);
+            }
 
-        const color = squareColor(square) === COLORS.BLACK ? this._chessBoard._options.darkSquareHighlightColor : this._chessBoard._options.lightSquareHighlightColor;
-        this._emphasizeSquare(square, color);
+            const color = squareColor(square) === COLORS.BLACK ? this._chessBoard.options.darkSquareHighlightColor : this._chessBoard.options.lightSquareHighlightColor;
+            this._emphasizeSquare(square, color);
 
-        this._lastMove1 = this._lastGrab;
-        this._lastMove2 = square;
-        this._lastGrab = null;
+            this._lastMove1 = this._lastGrab;
+            this._lastMove2 = square;
+            this._lastGrab = null;
+        }
     }
 
     clear() {
-        for (const emph of this._emphasizedSquares) {
-            emph.div.remove();
-        }
         this._lastGrab = null;
         this._lastMove1 = null;
         this._lastMove2 = null;
-        this._emphasizedSquares = [];
+
+        for (let square = 0; square < SQUARE_COUNT; square++) {
+            this._deemphasizeSquare(square);
+        }
     }
 
     _emphasizeSquare(square, color) {
-        const squareWidth = this._chessBoard.squareClientWidth;
-        const squareHeight = this._chessBoard.squareClientHeight;
-
-        const div = document.createElement("div");
-        div.className = "highlight-square";
-        const clientPosition = this._chessBoard.squareToBoardPosition(square);
-        div.style.transform = `translate(${clientPosition.x}px, ${clientPosition.y}px)`;
-        div.style.width = `${squareWidth}px`;
-        div.style.height = `${squareHeight}px`;
-        div.style.backgroundColor = color;
-
-        this._chessBoard._parentElement.appendChild(div);
-        this._emphasizedSquares.push({ "square": square, "div": div });
+        let row = RANK_COUNT - rankOfSquare(square) - 1;
+        let col = fileOfSquare(square);
+        if (this._chessBoard.isFlipped) {
+            row = RANK_COUNT - row - 1;
+            col = FILE_COUNT - col - 1;
+        }
+        const table = this._chessBoard._parentElement.getElementsByTagName("table")[0];
+        const tr = table.getElementsByTagName("tr")[row];
+        const td = tr.getElementsByTagName("td")[col];
+        td.style.backgroundColor = color;
     }
 
     _deemphasizeSquare(square) {
-        const emph = this._emphasizedSquares;
-        for (const index in emph) {
-            if (emph[index].square == square) {
-                emph[index].div.remove();
-                emph.splice(index, 1);
-                return;
-             }
-        }
+        const color = squareColor(square) === COLORS.BLACK ? this._chessBoard._options.darkSquareColor : this._chessBoard._options.lightSquareColor;
+        this._emphasizeSquare(square, color);
     }
 }
 
@@ -742,9 +815,10 @@ class ChessBoard {
         this._options = assignDefaults(options, DEFAULT_CHESS_BOARD_OPTIONS);
         const targetElement = getElement(this._options.target);
         this._parentElement = null;
+        this._boardElement = null;
         this._position = new Position();
         this._pieces = [];
-        this._squareEmphasizer = new SquareEmphasizer(this);
+        this._squareEmphasizer = new SquareEmphasizer(this, this._options.showSquareHighlights);
 
         // If flipped then we are seeing the board from Black's perspective
         this._flipped = false;
@@ -759,41 +833,138 @@ class ChessBoard {
 
         // Setup event listeners so we can update our graphics when moves are made in the position
 
-        this._position.pieceAdded.addEventListener((square, piece, animate) => {
-            const pieceObject = new ChessPiece(piece.piece, piece.color, this._getImageUri(piece.piece, piece.color), square);
-            this._createPiece(pieceObject, animate);
-        })
+        this._position.movePlayed.addEventListener((moveData) => {
+            const shouldAnimate = this._options.useMoveAnimations && moveData.animate;
 
-        this._position.pieceRemoved.addEventListener((square, piece, animate) => {
-            const pieceIndex = this._indexOfPieceOnSquare(square);
-            if (pieceIndex >= 0) {
-                const pieceObject = this._pieces[pieceIndex];
-                this._pieces.splice(pieceIndex, 1);
-                this._destroyPiece(pieceObject);
+            // 1. Logically remove the pieces that were captured on this move (does NOT clean up the graphics of these pieces)
+            const capturedPieceObjects = [];
+            for (const piece of moveData.capturedPieces) {
+                const index = this._indexOfPieceOnSquare(piece.square);
+                if (index >= 0) {
+                    capturedPieceObjects.push(this._pieces[index]);
+                    this._pieces.splice(index, 1);
+                }
             }
-        })
 
-        this._position.pieceMoved.addEventListener((from, to, piece, animate) => {
-            const pieceIndex = this._indexOfPieceOnSquare(from);
-            if (pieceIndex >= 0) {
-                const pieceObject = this._pieces[pieceIndex];
-                this._movePieceToSquare(to, pieceObject, animate);
-            }
-        })
+            const promise = wait(this._options.animationTime);
 
-        this._position.piecePromoted.addEventListener((square, piece, animate) => {
-            const image = this._getImageUri(piece.piece, piece.color);
-            const pieceIndex = this._indexOfPieceOnSquare(square);
-            if (pieceIndex >= 0) {
-                const pieceObject = this._pieces[pieceIndex];
-                pieceObject.setImageUri(image);
+            // For every other moving piece (rooks during castling) - not the primary moving piece
+            // always animate to the new square
+            for (const piece of moveData.movingPieces) {
+                const index = this._indexOfPieceOnSquare(piece.from);
+                if (index >= 0) {
+                    this._movePieceToSquare(piece.to, this._pieces[index], this._options.useMoveAnimations ? promise : null);
+                }
             }
-        })
+
+            // Find the piece that is the primary target of this move and make the move
+            const movingPieceIndex = this._indexOfPieceOnSquare(moveData.move.from);
+            let movingPieceObject = null;
+            if (movingPieceIndex >= 0) {
+                movingPieceObject = this._pieces[movingPieceIndex];
+                this._movePieceToSquare(moveData.move.to, movingPieceObject, shouldAnimate ? promise : null);
+                if (moveData.movingPieceCaptured) {
+                    // Logically remove the piece - not clean up graphics
+                    this._pieces.splice(movingPieceIndex, 1);
+                }
+            }
+
+            const cleanupGraphics = () => {
+                // After movement has completed remove graphics of captured pieces
+                for (const piece of capturedPieceObjects) {
+                    this._destroyPiece(piece);
+                }
+                // If this move resulted in the moving piece being exploded (capture in atomic chess)
+                // Now is the time to clean it up
+                if (moveData.movingPieceCaptured && movingPieceObject) {
+                    this._destroyPiece(movingPieceObject);
+                }
+            };
+
+            if (shouldAnimate) {
+                // WAIT for movement to finish
+                promise.then(cleanupGraphics);
+            } else {
+                cleanupGraphics();
+            }
+
+            // Update promotion graphics
+            for (const promotion of moveData.promotedPieces) {
+                const index = this._indexOfPieceOnSquare(promotion.square);
+                if (index >= 0) {
+                    this._pieces[index].piece = promotion.piece.piece;
+                    this._pieces[index].setImageUri(this._getImageUri(promotion.piece.piece, promotion.piece.color), shouldAnimate ? promise : null);
+                }
+            }
+
+            // Debug getResult
+            const state = this.position.getResult();
+            switch (state) {
+                case POSITION_STATE.BLACK_WIN:
+                    console.log("Black Won");
+                    break;
+                case POSITION_STATE.WHITE_WIN:
+                    console.log("White Won");
+                    break;
+                case POSITION_STATE.DRAW:
+                    console.log("Draw");
+                    break;
+            }
+        });
+
+        this._position.moveUndone.addEventListener((moveData) => {
+            const shouldAnimate = this._options.useMoveAnimations && moveData.animate;
+            // Add pieces that were captured by the previous move
+            for (const piece of moveData.addedPieces) {
+                const pieceObject = new ChessPiece(piece.piece.piece, piece.piece.color, this._getImageUri(piece.piece.piece, piece.piece.color), piece.square);
+                // In the case of atomic chess the moving piece may need to be added back (exploded when it captured another piece)
+                // In that case we still want to animate the piece moving from the capture square back to its old square
+                // However there is likely another piece already on the square (the piece we captured)
+                // Therefore before we create the piece we set its square to the capture square (move.to) and after its position has been update we set its actual square to the location it is about to move to
+                // Temporarily its graphical position and logical position are out of sync
+                if (piece.isMovingPiece) {
+                    pieceObject.currentSquare = moveData.move.to;
+                }
+                this._createPiece(pieceObject);
+                pieceObject.currentSquare = piece.square;
+            }
+
+            const promise = wait(this._options.animationTime);
+
+            // Moving pieces includes all pieces that need to be moved (including primary piece)
+            // The primary piece is guaranteed to be index 0
+            for (let i = 0; i < moveData.movingPieces.length; i++) {
+                const pieceData = moveData.movingPieces[i];
+                const index = this._indexOfPieceOnSquare(pieceData.from);
+                if (index >= 0) {
+                    // Always animate if i > 0 (rook moves from castling)
+                    const animateRook = i !== 0 && this._options.useMoveAnimations;
+                    this._movePieceToSquare(pieceData.to, this._pieces[index], animateRook || shouldAnimate ? promise : null);
+                }
+            }
+
+            // Update promoted pieces
+            for (const promotion of moveData.promotedPieces) {
+                const index = this._indexOfPieceOnSquare(promotion.square);
+                if (index >= 0) {
+                    this._pieces[index].piece = promotion.piece.piece;
+                    this._pieces[index].setImageUri(this._getImageUri(promotion.piece.piece, promotion.piece.color));
+                }
+            }
+        });
 
         this._position.cleared.addEventListener(() => {
             this._destroyPieces();
             this._moveHistory = [];
-        })
+        });
+
+        this._position.ready.addEventListener(() => {
+            this._createPieces();
+        });
+    }
+
+    get options() {
+        return this._options;
     }
 
     get position() {
@@ -802,22 +973,22 @@ class ChessBoard {
 
     // Get the offset of the board from the left-border of the page
     get boardClientX() {
-        return this._parentElement.getBoundingClientRect().x;
+        return this._boardElement.getBoundingClientRect().x;
     }
 
     // Get the offset of the board from the top-border of the page
     get boardClientY() {
-        return this._parentElement.getBoundingClientRect().y;
+        return this._boardElement.getBoundingClientRect().y;
     }
 
     // Get the board width in pixels
     get boardClientWidth() {
-        return this._parentElement.clientWidth;
+        return this._boardElement.clientWidth;
     }
 
     // Get the board height in pixels
     get boardClientHeight() {
-        return this._parentElement.clientHeight;
+        return this._boardElement.clientHeight;
     }
 
     // Get the width of a square in pixels
@@ -895,6 +1066,7 @@ class ChessBoard {
         this._destroyPieces();
         this._destroyBoard();
         this._position.reset();
+        this._boardElement = null;
         this._parentElement = null;
     }
 
@@ -938,11 +1110,11 @@ class ChessBoard {
     }
 
     // Applies a given move - first checks that the move is a legal move
-    applyMove(move) {
+    applyMove(move, animate = false) {
         const pseudoLegalMoves = generatePseudoLegalMoves(this.position);
         for (const mv of pseudoLegalMoves) {
             if (movesEqual(mv, move) && this.position.isLegal(move)) {
-                const undoInfo = this.position.applyMove(move);
+                const undoInfo = this.position.applyMove(move, animate && this._options.useMoveAnimations);
 
                 if (this._historyIndex < this._moveHistory.length - 1) {
                     const expectedMove = this._moveHistory[this._historyIndex + 1];
@@ -965,7 +1137,7 @@ class ChessBoard {
         if (this._historyIndex < this._moveHistory.length - 1) {
             this._historyIndex++;
             const moveInfo = this._moveHistory[this._historyIndex];
-            moveInfo.undo = this.position.applyMove(moveInfo.move, true);
+            moveInfo.undo = this.position.applyMove(moveInfo.move, this._options.useMoveAnimations);
             this._squareEmphasizer.onGrab(moveInfo.move.from);
             this._squareEmphasizer.onMove(moveInfo.move.to);
         }
@@ -975,7 +1147,7 @@ class ChessBoard {
         if (this._historyIndex >= 0) {
             this._squareEmphasizer.clear();
             const moveInfo = this._moveHistory[this._historyIndex];
-            this.position.undoMove(moveInfo.move, moveInfo.undo, true, true);
+            this.position.undoMove(moveInfo.move, moveInfo.undo, this._options.useMoveAnimations, true);
             this._historyIndex--;
         }
     }
@@ -1008,7 +1180,7 @@ class ChessBoard {
         const scale = isCapture ? MOVE_MARKER_CAPTURE_SCALE : MOVE_MARKER_DEFAULT_SCALE;
         const div = this._createMoveMarkerDiv(move.to, color, scale);
 
-        this._parentElement.appendChild(div);
+        this._boardElement.appendChild(div);
         this._moveMarkerDivs.push(div);
     }
 
@@ -1064,6 +1236,7 @@ class ChessBoard {
         if (this._parentElement) {
             assert(this._pieces.length === 0, "Must have destroyed all pieces before destroying board");
             this._parentElement.innerHTML = "";
+            this._boardElement = null;
         }
     }
 
@@ -1072,7 +1245,28 @@ class ChessBoard {
         this._destroyPieces();
         this._destroyBoard();
         if (this._parentElement) {
-            const board_div = document.createElement("div");
+            const parentWidth = this._parentElement.clientWidth;
+            const parentHeight = this._parentElement.clientHeight;
+            const div = document.createElement("div");
+            div.className = "chess-board";
+
+            const coordinateWidthProportion = 0.1;
+            const coordinateHeightProportion = 0.1;
+
+            const topDiv = document.createElement("div");
+            topDiv.className = "chess-board";
+            topDiv.style.display = "flex";
+            topDiv.style.height = `${parentHeight * (1 - coordinateHeightProportion)}px`;
+
+            const yCoordsDiv = document.createElement("div");
+            yCoordsDiv.style.width = `${parentWidth * coordinateWidthProportion}px`;
+
+            const xCoordsDiv = document.createElement("div");
+            xCoordsDiv.style.width = "100%";
+            xCoordsDiv.style.height = `${parentHeight * coordinateWidthProportion}px`;
+
+            const tableDiv = document.createElement("div");
+            tableDiv.className = "chess-board";
             const table = document.createElement("table");
             table.className = "chess-board";
             for (let file = 0; file < FILE_COUNT; file++) {
@@ -1084,12 +1278,9 @@ class ChessBoard {
                 }
                 table.appendChild(row);
             }
-            board_div.appendChild(table);
 
-            const x_coordinates_div = document.createElement("div");
             const x_coordinates = document.createElement("ul");
             x_coordinates.className = "coords xcoords";
-            const y_coordinates_div = document.createElement("div");
             const y_coordinates = document.createElement("ul");
             y_coordinates.className = "coords ycoords";
 
@@ -1104,19 +1295,24 @@ class ChessBoard {
                 x_coordinates.appendChild(alphabet);
                 y_coordinates.appendChild(number);
             }
-            x_coordinates_div.appendChild(x_coordinates);
-            y_coordinates_div.appendChild(y_coordinates);
+            xCoordsDiv.appendChild(x_coordinates);
+            yCoordsDiv.appendChild(y_coordinates);
 
-            this._parentElement.appendChild(board_div);
-            this._parentElement.appendChild(x_coordinates_div);
-            this._parentElement.appendChild(y_coordinates_div);
+            tableDiv.appendChild(table);
+            topDiv.appendChild(yCoordsDiv);
+            topDiv.appendChild(tableDiv);
+            div.appendChild(topDiv);
+            div.appendChild(xCoordsDiv);
+            this._parentElement.appendChild(div);
+
+            this._boardElement = tableDiv;
         }
     }
 
     // Helper function to create the HTML elements for the pieces
     _createPieces() {
         this._destroyPieces();
-        if (this._parentElement) {
+        if (this._boardElement) {
             for (let i = 0; i < SQUARE_COUNT; i++) {
                 const pieceData = this._position.getPieceOnSquare(i);
                 if (Boolean(pieceData) && pieceData.piece !== PIECES.NONE) {
@@ -1128,8 +1324,8 @@ class ChessBoard {
     }
 
     // Constructs the HTML elements for rendering a single piece
-    _createPiece(piece, animate = false) {
-        if (this._parentElement) {
+    _createPiece(piece) {
+        if (this._boardElement) {
             const div = this._createPieceDiv(piece);
             // Piece now tracks its div
             piece.div = div;
@@ -1141,7 +1337,7 @@ class ChessBoard {
             this._pieces.push(piece);
 
             // Add div to the board
-            this._parentElement.appendChild(div);
+            this._boardElement.appendChild(div);
         }
     }
 
@@ -1174,15 +1370,16 @@ class ChessBoard {
         let currentPosition = this.squareToBoardPosition(piece.currentSquare);
 
         const removeEventListeners = () => {
-            this._parentElement.onmouseup = null;
-            this._parentElement.onmousemove = null;
-            this._parentElement.ontouchend = null;
-            this._parentElement.ontouchmove = null;
+            document.onmouseup = null;
+            document.onmousemove = null;
+            document.ontouchend = null;
+            document.ontouchmove = null;
         };
 
         // Resets piece back to its original position before we started moving it
         const resetTransform = () => {
             this.hideMoveMarkers();
+            this._endMovingPiece(piece);
             piece.div.style.transform = `translate(${currentPosition.x}px, ${currentPosition.y}px)`;
         };
 
@@ -1196,6 +1393,7 @@ class ChessBoard {
 
         // Snap the piece to the closest square to its current absolute position
         const placePiece = (clientX, clientY) => {
+            this._endMovingPiece(piece);
             const square = this.boardPositionToSquare(clientX - this.boardClientX, clientY - this.boardClientY);
             let success;
             if (square !== SQUARES.INVALID && square !== piece.currentSquare) {
@@ -1207,6 +1405,8 @@ class ChessBoard {
                 if (success) {
                     // Set piece position to the square's position
                     currentPosition = this.squareToBoardPosition(square);
+                    // Highlight the move
+                    this._squareEmphasizer.onMove(square);
                 }
             }
             // Update piece transform
@@ -1215,20 +1415,16 @@ class ChessBoard {
         };
 
         piece.div.onmousedown = (e) => {
-            e.preventDefault();
-
-            // Highlight the square the grabbed piece is on
-            this._squareEmphasizer.onGrab(piece.currentSquare);
-
-            // Draw the piece we are holding in front of the other pieces
-            piece.div.style.zIndex = "20";
-            // Show the available moves
-            this.showMoveMarkers(piece.currentSquare);
             // If we are dragging another piece ignore this drag
-            if (this._parentElement.onmouseup) {
+            if (document.onmouseup) {
                 return;
             }
+            e.preventDefault();
+            // Focus the board element
             this.focus();
+            // Highlight the square the grabbed piece is on
+            this._squareEmphasizer.onGrab(piece.currentSquare);
+            this._beginMovingPiece(piece);
             // When we hold down the mouse on a piece, start dragging it
             // Show the available moves
             this.showMoveMarkers(piece.currentSquare);
@@ -1238,22 +1434,15 @@ class ChessBoard {
             setTransform(e.clientX, e.clientY);
 
             // Setup event listeners
-            this._parentElement.onmouseup = (e) => {
+            document.onmouseup = (e) => {
                 // When we drop the piece - snap to nearest square
                 // If we dropped it outside of the board it will return to the original position
-                if (placePiece(e.clientX, e.clientY)) {
-                    // Highlight the move
-                    const square = this.boardPositionToSquare(e.clientX - this.boardClientX, e.clientY - this.boardClientY);
-                    this._squareEmphasizer.onMove(square);
-                }
+                placePiece(e.clientX, e.clientY);
                 // Cleanup event listeners
                 removeEventListeners();
-
-                // Set the z-index of the piece back to its default
-                piece.div.style.zIndex = "";
             };
 
-            this._parentElement.onmousemove = (e) => {
+            document.onmousemove = (e) => {
                 e.preventDefault();
                 // Move piece to new mouse location
                 setTransform(e.clientX, e.clientY);
@@ -1263,14 +1452,16 @@ class ChessBoard {
         // Support mobile inputs
         piece.div.ontouchstart = (e) => {
             if (e.touches.length === 1) {
-                e.preventDefault();
-
                 // If we are dragging another piece ignore this drag
-                if (this._parentElement.ontouchend) {
+                if (document.ontouchend) {
                     return;
                 }
-
+                e.preventDefault();
+                // Focus board element
                 this.focus();
+                // Highlight the square the grabbed piece is on
+                this._squareEmphasizer.onGrab(piece.currentSquare);
+                this._beginMovingPiece(piece);
                 // Show the available moves
                 this.showMoveMarkers(piece.currentSquare);
                 // Store current position
@@ -1278,7 +1469,7 @@ class ChessBoard {
                 // Move the piece to the mouse location
                 setTransform(e.touches[0].clientX, e.touches[0].clientY);
 
-                this._parentElement.ontouchend = (e) => {
+                document.ontouchend = (e) => {
                     if (e.changedTouches.length === 1) {
                         placePiece(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
                     } else {
@@ -1287,7 +1478,7 @@ class ChessBoard {
                     removeEventListeners();
                 };
 
-                this._parentElement.ontouchmove = (e) => {
+                document.ontouchmove = (e) => {
                     if (e.changedTouches.length === 1) {
                         // Move piece to new location (track touches)
                         setTransform(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
@@ -1304,17 +1495,32 @@ class ChessBoard {
         piece.div.style.pointerEvents = "none";
     }
 
+    _beginMovingPiece(piece) {
+        if (piece.div) {
+            // Draw the piece we are holding in front of the other pieces
+            piece.div.style.zIndex = MOVING_PIECE_Z_INDEX_STRING;
+        }
+    }
+
+    _endMovingPiece(piece) {
+        if (piece.div) {
+            piece.div.style.zIndex = DEFAULT_PIECE_Z_INDEX_STRING;
+        }
+    }
+
     // Sets the piece transform for a given square
-    _movePieceToSquare(square, piece, animate) {
+    _movePieceToSquare(square, piece, animationPromise) {
         if (piece.div) {
             const position = this.squareToBoardPosition(square);
-            if (animate) {
-                piece.div.style.transition = `${MOVE_ANIMATION_TIME_MS}ms`;
-                setTimeout(() => {
+            if (animationPromise) {
+                this._beginMovingPiece(piece);
+                piece.div.style.transition = `${this._options.animationTime}ms`;
+                animationPromise.then(() => {
                     if (piece.div) {
                         piece.div.style.transition = "";
                     }
-                }, MOVE_ANIMATION_TIME_MS);
+                    this._endMovingPiece(piece);
+                });
             }
             piece.div.style.transform = `translate(${position.x}px, ${position.y}px)`;
         }
@@ -1342,10 +1548,3 @@ class ChessBoard {
     }
 
 }
-
-// Create a chess board inside the #board element
-const board = new ChessBoard({ target: "#board" });
-board.setAtomic(true);
-// Set position from FEN (initial starting position)
-board.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-// board.setFromFen("8/8/8/3N4/4n3/8/8/8 w - - 0 1");

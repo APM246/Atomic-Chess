@@ -108,7 +108,7 @@ function createMove(fromSquare, toSquare, promotion = PIECES.NONE) {
         from: fromSquare,
         to: toSquare,
         promotion,
-    }
+    };
 }
 
 // Compares the equality of 2 moves
@@ -128,7 +128,7 @@ function generatePawnMoves(square, color, position) {
     const doublePushRank = color === COLORS.WHITE ? RANKS.RANK_2 : RANKS.RANK_7;
     const forwardSquare = getForwardSquare(square, color);
     const toRank = rankOfSquare(forwardSquare);
-    const isPromotion = toRank === promotionRank
+    const isPromotion = toRank === promotionRank;
     // If there is no piece directly in front of us then we can move forward
     if (!position.isSquareOccupied(forwardSquare)) {
         // Handle pushing to promote
@@ -238,7 +238,7 @@ function generateQueenMoves(square, color, position) {
 // Generates all pseudo-legal king moves from a given square
 function generateKingMoves(square, color, position) {
     const moves = generateMovesFromNonSlidingVectors(square, color, position, KING_MOVE_VECTORS);
-    // TODO: Castling moves
+
     const rank = rankOfSquare(square);
     if (position.canCastleKingside(color)) {
         const isEmptyPath = [createSquare(FILES.FILE_F, rank), createSquare(FILES.FILE_G, rank)].every(square => !position.isSquareOccupied(square));
@@ -323,8 +323,16 @@ function moveToString(move) {
 // Perft is a function to test move generation, applyMove and undoMove
 // Given a position and depth it recursively applied all possible moves and returns the total number of moves
 // Compare with known results from https://www.chessprogramming.org/Perft_Results
-function perft(position, depth) {
+function perft(position, depth, log = false, comparisonData = null) {
     const moveData = {};
+    const comparison = {};
+    if (comparisonData) {
+        const lines = comparisonData.split("\n");
+        for (const line of lines) {
+            const parts = line.split(":")
+            comparison[parts[0]] = Number(parts.slice(1));
+        }
+    }
     const internalPerft = (dpth) => {
         if (dpth <= 0) {
             return 1;
@@ -338,17 +346,24 @@ function perft(position, depth) {
             const undo = position.applyMove(move, false, false);
             const c = internalPerft(dpth - 1);
             count += c;
-            position.undoMove(move, undo);
+            position.undoMove(move, undo, false, false);
             if (dpth === depth) {
                 moveData[moveToString(move)] = c;
             }
         }
         return count;
-    }
+    };
     const total = internalPerft(depth);
-    for (const key of Object.keys(moveData)) {
-        console.log(`${key}: ${moveData[key]}`);
+    if (log) {
+        for (const key of Object.keys(moveData)) {
+            console.log(`${key}: ${moveData[key]}`);
+            if (Object.keys(comparison).length > 0) {
+                if (comparison[key] !== moveData[key]) {
+                    console.warn(`${key} ERROR ${moveData[key]} !== ${comparison[key]}`);
+                }
+            }
+        }
+        console.log(total);
     }
-    console.log(total);
     return total;
 }

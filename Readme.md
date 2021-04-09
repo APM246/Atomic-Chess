@@ -1,3 +1,4 @@
+[![Run-Tests](https://github.com/APM246/Atomic-Chess/actions/workflows/run-tests.yml/badge.svg)](https://github.com/APM246/Atomic-Chess/actions/workflows/run-tests.yml)
 # Atomic Chess
 Website designed to teach people how to play the chess variant [Atomic](https://en.wikipedia.org/wiki/Atomic_chess).
 

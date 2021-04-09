@@ -1247,6 +1247,7 @@ class ChessBoard {
         if (this._parentElement) {
             const parentWidth = this._parentElement.clientWidth;
             const parentHeight = this._parentElement.clientHeight;
+            console.log(parentWidth, parentHeight);
             const div = document.createElement("div");
             div.className = "chess-board";
 

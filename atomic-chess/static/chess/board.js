@@ -1072,6 +1072,7 @@ class ChessBoard {
         this._destroyPieces();
         this._destroyBoard();
         if (this._parentElement) {
+            const board_div = document.createElement("div");
             const table = document.createElement("table");
             table.className = "chess-board";
             for (let file = 0; file < FILE_COUNT; file++) {
@@ -1083,7 +1084,32 @@ class ChessBoard {
                 }
                 table.appendChild(row);
             }
-            this._parentElement.appendChild(table);
+            board_div.appendChild(table);
+
+            const x_coordinates_div = document.createElement("div");
+            const x_coordinates = document.createElement("ul");
+            x_coordinates.className = "coords xcoords";
+            const y_coordinates_div = document.createElement("div");
+            const y_coordinates = document.createElement("ul");
+            y_coordinates.className = "coords ycoords";
+
+            const NUM_COORDS = 8;
+            for (let i = 0; i < NUM_COORDS; i++)
+            {
+                const alphabet = document.createElement("li");
+                const number = document.createElement("li");
+
+                alphabet.innerHTML = String.fromCharCode(97 + i);
+                number.innerHTML = 8-i;
+                x_coordinates.appendChild(alphabet);
+                y_coordinates.appendChild(number);
+            }
+            x_coordinates_div.appendChild(x_coordinates);
+            y_coordinates_div.appendChild(y_coordinates);
+
+            this._parentElement.appendChild(board_div);
+            this._parentElement.appendChild(x_coordinates_div);
+            this._parentElement.appendChild(y_coordinates_div);
         }
     }
 

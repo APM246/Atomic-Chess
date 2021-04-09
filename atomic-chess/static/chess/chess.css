@@ -1,7 +1,8 @@
 .chess-board {
     width: 100%;
-    height: 100%;
+    height: 600px;
     border-spacing: 0;
+    position: relative;
 }
 
 .chess-piece {
@@ -19,4 +20,23 @@
 .highlight-square {
     position: absolute;
     z-index: 1;
+}
+
+.coords {
+    list-style-type: none;
+    color: brown;
+    font-weight: bold;
+    font-size: 14pt;
+    width: 100%;
+    height: 100%;
+}
+
+.xcoords li {
+    float: left;
+    width: 75px;
+}
+
+.ycoords {
+    position: absolute;
+    left: 40px;
 }

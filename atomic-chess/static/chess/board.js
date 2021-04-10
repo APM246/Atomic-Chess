@@ -983,22 +983,22 @@ class ChessBoard {
 
     // Get the board width in pixels
     get boardClientWidth() {
-        return this._boardElement.clientWidth;
+        return (8/9) * this._boardElement.clientWidth;
     }
 
     // Get the board height in pixels
     get boardClientHeight() {
-        return this._boardElement.clientHeight;
+        return (8/9) * this._boardElement.clientHeight;
     }
 
     // Get the width of a square in pixels
     get squareClientWidth() {
-        return this.boardClientWidth / FILE_COUNT;
+        return this.boardClientWidth/ FILE_COUNT;
     }
 
     // Get the height of a square in pixels
     get squareClientHeight() {
-        return this.boardClientHeight / RANK_COUNT;
+        return this.boardClientHeight/ RANK_COUNT;
     }
 
     get isFlipped() {
@@ -1074,7 +1074,7 @@ class ChessBoard {
     // Handles the orientation of the board
     squareToBoardPosition(square) {
         const file = fileOfSquare(square);
-        const rank = rankOfSquare(square);
+        const rank = rankOfSquare(square) + 1;
         const squareWidth = this.squareClientWidth;
         const squareHeight = this.squareClientHeight;
 
@@ -1094,7 +1094,7 @@ class ChessBoard {
         const realX = this._flipped ? this.boardClientWidth - x : x;
         const realY = this._flipped ? y : this.boardClientHeight - y;
         const xIndex = Math.floor(realX / this.squareClientWidth);
-        const yIndex = Math.floor(realY / this.squareClientHeight);
+        const yIndex = Math.floor(realY / this.squareClientHeight) - 1;
         if (xIndex < 0 || xIndex >= FILE_COUNT || yIndex < 0 || yIndex >= RANK_COUNT) {
             return SQUARES.INVALID;
         }
@@ -1245,27 +1245,6 @@ class ChessBoard {
         this._destroyPieces();
         this._destroyBoard();
         if (this._parentElement) {
-            const parentWidth = this._parentElement.clientWidth;
-            const parentHeight = this._parentElement.clientHeight;
-            console.log(parentWidth, parentHeight);
-            const div = document.createElement("div");
-            div.className = "chess-board";
-
-            const coordinateWidthProportion = 0.1;
-            const coordinateHeightProportion = 0.1;
-
-            const topDiv = document.createElement("div");
-            topDiv.className = "chess-board";
-            topDiv.style.display = "flex";
-            topDiv.style.height = `${parentHeight * (1 - coordinateHeightProportion)}px`;
-
-            const yCoordsDiv = document.createElement("div");
-            yCoordsDiv.style.width = `${parentWidth * coordinateWidthProportion}px`;
-
-            const xCoordsDiv = document.createElement("div");
-            xCoordsDiv.style.width = "100%";
-            xCoordsDiv.style.height = `${parentHeight * coordinateWidthProportion}px`;
-
             const tableDiv = document.createElement("div");
             tableDiv.className = "chess-board";
             const table = document.createElement("table");
@@ -1277,34 +1256,26 @@ class ChessBoard {
                     cell.style.backgroundColor = (file + rank) % 2 === 0 ? this._options.lightSquareColor : this._options.darkSquareColor;
                     row.appendChild(cell);
                 }
+                const yCoord = document.createElement("td");
+                yCoord.className = "coords yCoords";
+                yCoord.innerHTML = 8 - file;
+                row.append(yCoord);
                 table.appendChild(row);
             }
 
-            const x_coordinates = document.createElement("ul");
-            x_coordinates.className = "coords xcoords";
-            const y_coordinates = document.createElement("ul");
-            y_coordinates.className = "coords ycoords";
-
             const NUM_COORDS = 8;
+            const xCoords = document.createElement("tr");
             for (let i = 0; i < NUM_COORDS; i++)
             {
-                const alphabet = document.createElement("li");
-                const number = document.createElement("li");
-
-                alphabet.innerHTML = String.fromCharCode(97 + i);
-                number.innerHTML = 8-i;
-                x_coordinates.appendChild(alphabet);
-                y_coordinates.appendChild(number);
+                const xCoord = document.createElement("td");
+                xCoord.className = "coords xCoords";
+                xCoord.innerHTML = String.fromCharCode(97 + i);
+                xCoords.appendChild(xCoord);
             }
-            xCoordsDiv.appendChild(x_coordinates);
-            yCoordsDiv.appendChild(y_coordinates);
 
+            table.appendChild(xCoords);
             tableDiv.appendChild(table);
-            topDiv.appendChild(yCoordsDiv);
-            topDiv.appendChild(tableDiv);
-            div.appendChild(topDiv);
-            div.appendChild(xCoordsDiv);
-            this._parentElement.appendChild(div);
+            this._parentElement.appendChild(tableDiv);
 
             this._boardElement = tableDiv;
         }
@@ -1387,8 +1358,8 @@ class ChessBoard {
         // Set the piece position based on an absolute mouse position (from mousemove event)
         // Used to make the piece follow the cursor
         const setTransform = (clientX, clientY) => {
-            const x = clientX - this.boardClientX - this.squareClientWidth / 2;
-            const y = clientY - this.boardClientY - this.boardClientHeight - this.squareClientHeight / 2;
+            const x = clientX - this.boardClientX - 9/8*this.squareClientWidth / 2;
+            const y = clientY - this.boardClientY - 9/8*this.boardClientHeight - this.squareClientHeight / 2;
             piece.div.style.transform = `translate(${x}px, ${y}px)`;
         };
 

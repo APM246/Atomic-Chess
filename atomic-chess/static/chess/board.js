@@ -1245,25 +1245,8 @@ class ChessBoard {
         this._destroyPieces();
         this._destroyBoard();
         if (this._parentElement) {
-            const parentWidth = this._parentElement.clientWidth;
-            const parentHeight = this._parentElement.clientHeight;
             const div = document.createElement("div");
             div.className = "chess-board";
-
-            const coordinateWidthProportion = 0.1;
-            const coordinateHeightProportion = 0.1;
-
-            const topDiv = document.createElement("div");
-            topDiv.className = "chess-board";
-            topDiv.style.display = "flex";
-            topDiv.style.height = `${parentHeight * (1 - coordinateHeightProportion)}px`;
-
-            const yCoordsDiv = document.createElement("div");
-            yCoordsDiv.style.width = `${parentWidth * coordinateWidthProportion}px`;
-
-            const xCoordsDiv = document.createElement("div");
-            xCoordsDiv.style.width = "100%";
-            xCoordsDiv.style.height = `${parentHeight * coordinateWidthProportion}px`;
 
             const tableDiv = document.createElement("div");
             tableDiv.className = "chess-board";
@@ -1279,10 +1262,7 @@ class ChessBoard {
                 table.appendChild(row);
             }
             tableDiv.appendChild(table);
-            topDiv.appendChild(yCoordsDiv);
-            topDiv.appendChild(tableDiv);
-            div.appendChild(topDiv);
-            div.appendChild(xCoordsDiv);
+            div.appendChild(tableDiv);
             this._parentElement.appendChild(div);
 
             this._boardElement = tableDiv;

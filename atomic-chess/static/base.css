@@ -10,7 +10,21 @@
     display: flex;
 }
 
-/*ul li {
+ul li {
     float: left;
     list-style-type: none;
-}*/
+}
+
+.navbar-custom {
+    height: 90px;
+}
+
+.navbar-inverse .navbar-nav>li>a {
+    color: white;
+    font-size: 16pt;
+    padding-top: 30px;
+}
+
+.navbar-inverse .navbar-nav>li>a:hover {
+    background-color: rgba(225, 211, 14, 0.4);   
+}

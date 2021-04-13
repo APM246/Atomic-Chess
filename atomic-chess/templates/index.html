@@ -21,27 +21,6 @@
         <script src="{{ url_for('static', filename='chess/chess.js') }}"></script>
         <script src="{{ url_for('static', filename='chess/board.js') }}"></script>
 
-        <script>
-            let board;
-            let normal;
-            window.onload = () => {
-                // Create a chess board inside the #board element
-                board = new ChessBoard({ target: "#board" });
-                board.setAtomic(true);
-                // Set position from FEN (initial starting position)
-                board.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-                // board.setFromFen("8/8/8/3N4/4n3/8/8/8 w - - 0 1");
-
-                window.test = (depth, comparison) => {
-                    perft(board.position, depth, true, comparison);
-                }
-
-                normal = new ChessBoard({ target: "#secondBoard", useMoveAnimations: false });
-                normal.setAtomic(false);
-                normal.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-            };
-        </script>
-
         <title>Atomic Chess</title>
     </head>
     <body>
@@ -63,7 +42,14 @@
             </div>
           </nav>
 
-       
+        <footer id="footer" style="display:flex;">
+            <div class="glyphicon glyphicon-font" style="font-size: 4em;"> </div>
+              <div class="footer-content">
+                <p> Developed by Jun Lim, Arun Muthu and Jordan Morrison. 
+                  <br> Contact us at <address> <a href="mailto:emailaddress@gmail.com"> emailaddress@gmail.com </a> </address>
+                </p> 
+              </div>
+        </footer>      
 
     </body>
 </html>

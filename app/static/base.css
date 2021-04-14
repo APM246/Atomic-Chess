@@ -1,3 +1,13 @@
+body {
+    position: relative;
+}
+
+body::after {
+    content:'';
+   display:block;
+   height: 150px; 
+}
+
 .board {
     outline: none;
     user-select: none;

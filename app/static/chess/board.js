@@ -5,18 +5,19 @@ const DEFAULT_CHESS_BOARD_OPTIONS = {
     lightSquareHighlightColor: "#F6F669",
     darkSquareHighlightColor: "#BACA2B",
     pieceImages: {
-        whitePawn:   "static/pieces/white_pawn.png",
-        whiteKnight: "static/pieces/white_knight.png",
-        whiteBishop: "static/pieces/white_bishop.png",
-        whiteRook:   "static/pieces/white_rook.png",
-        whiteQueen:  "static/pieces/white_queen.png",
-        whiteKing:   "static/pieces/white_king.png",
-        blackPawn:   "static/pieces/black_pawn.png",
-        blackKnight: "static/pieces/black_knight.png",
-        blackBishop: "static/pieces/black_bishop.png",
-        blackRook:   "static/pieces/black_rook.png",
-        blackQueen:  "static/pieces/black_queen.png",
-        blackKing:   "static/pieces/black_king.png",
+        basePath:    "/static/pieces/",
+        whitePawn:   "white_pawn.png",
+        whiteKnight: "white_knight.png",
+        whiteBishop: "white_bishop.png",
+        whiteRook:   "white_rook.png",
+        whiteQueen:  "white_queen.png",
+        whiteKing:   "white_king.png",
+        blackPawn:   "black_pawn.png",
+        blackKnight: "black_knight.png",
+        blackBishop: "black_bishop.png",
+        blackRook:   "black_rook.png",
+        blackQueen:  "black_queen.png",
+        blackKing:   "black_king.png",
     },
     interactive: true,
     showMoveMarkers: true,
@@ -812,6 +813,8 @@ class SquareEmphasizer {
 class ChessBoard {
 
     constructor(options) {
+        this.movePlayed = new EventEmitter();
+
         this._options = assignDefaults(options, DEFAULT_CHESS_BOARD_OPTIONS);
         const targetElement = getElement(this._options.target);
         this._parentElement = null;
@@ -910,6 +913,8 @@ class ChessBoard {
                     console.log("Draw");
                     break;
             }
+
+            this.movePlayed.trigger(moveData.move);
         });
 
         this._position.moveUndone.addEventListener((moveData) => {
@@ -1490,19 +1495,22 @@ class ChessBoard {
     // Get the URI for the image
     _getImageUri(piece, color) {
         const isWhite = color === COLORS.WHITE;
+        const getFullPath = (path) => {
+            return this._options.pieceImages.basePath + path
+        };
         switch (piece) {
             case PIECES.PAWN:
-                return isWhite ? this._options.pieceImages.whitePawn : this._options.pieceImages.blackPawn;
+                return getFullPath(isWhite ? this._options.pieceImages.whitePawn : this._options.pieceImages.blackPawn);
             case PIECES.KNIGHT:
-                return isWhite ? this._options.pieceImages.whiteKnight : this._options.pieceImages.blackKnight;
+                return getFullPath(isWhite ? this._options.pieceImages.whiteKnight : this._options.pieceImages.blackKnight);
             case PIECES.BISHOP:
-                return isWhite ? this._options.pieceImages.whiteBishop : this._options.pieceImages.blackBishop;
+                return getFullPath(isWhite ? this._options.pieceImages.whiteBishop : this._options.pieceImages.blackBishop);
             case PIECES.ROOK:
-                return isWhite ? this._options.pieceImages.whiteRook : this._options.pieceImages.blackRook;
+                return getFullPath(isWhite ? this._options.pieceImages.whiteRook : this._options.pieceImages.blackRook);
             case PIECES.QUEEN:
-                return isWhite ? this._options.pieceImages.whiteQueen : this._options.pieceImages.blackQueen;
+                return getFullPath(isWhite ? this._options.pieceImages.whiteQueen : this._options.pieceImages.blackQueen);
             case PIECES.KING:
-                return isWhite ? this._options.pieceImages.whiteKing : this._options.pieceImages.blackKing;
+                return getFullPath(isWhite ? this._options.pieceImages.whiteKing : this._options.pieceImages.blackKing);
         }
         return "";
     }

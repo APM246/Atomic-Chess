@@ -17,9 +17,15 @@
         <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
         <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='chess/chess.css') }}">
 
+        {% block styles %}
+        {% endblock %}
+
         <script src="{{ url_for('static', filename='chess/utils.js') }}"></script>
         <script src="{{ url_for('static', filename='chess/chess.js') }}"></script>
         <script src="{{ url_for('static', filename='chess/board.js') }}"></script>
+
+        {% block scripts %}
+        {% endblock %}
 
         <title>Atomic Chess</title>
     </head>
@@ -27,7 +33,7 @@
         <nav class="navbar navbar-inverse navbar-custom">
             <div class="container-fluid">
               <div class="navbar-header">
-                <a class="navbar-brand" href="#"> <img src="{{url_for('static', filename='logo/atomic_chess.png')}}" width='65'
+                <a class="navbar-brand" href="{{ url_for('index') }}"> <img src="{{url_for('static', filename='logo/atomic_chess.png')}}" width='65'
                     height='65' alt='atomic chess logo'> </a>
               </div>
               <ul class="nav navbar-nav">
@@ -52,14 +58,14 @@
                     <span> <a target="_blank" href="https://github.com/APM246/Atomic-Chess"> Github <img src="{{ url_for('static', filename='logo/github.png') }}" 
                       style="max-width: 30px; max-height:30px;"> </img> </a> </span>
                     <span style="font-size:1.5em;"> | </span>
-                    <span> <a target="_blank" href="https://teaching.csse.uwa.edu.au/units/CITS3403/"> Project Specification </a> </span> 
+                    <span> <a target="_blank" href="https://teaching.csse.uwa.edu.au/units/CITS3403/"> Project Specification </a> </span>
                 </div>
 
                 <p> Developed by Jun Lim, Arun Muthu and Jordan Morrison. 
                   <address> Contact us at <a href="mailto:emailaddress@gmail.com"> emailaddress@gmail.com </a> </address>
-                </p> 
+                </p>
               </div>
-        </footer>      
+        </footer>
 
     </body>
 </html>

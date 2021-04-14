@@ -1,4 +1,7 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
   {% block content %} 
     <p> Learn page </p>
+    <ul>
+      <li><a href="{{ url_for('lesson', name='intro') }}">intro</a></li>
+    </ul>
   {% endblock %}

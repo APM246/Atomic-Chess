@@ -315,9 +315,37 @@ function pieceToString(piece) {
     return "";
 }
 
+function pieceFromString(str) {
+    switch (str) {
+        case "n":
+            return PIECES.KNIGHT;
+        case "b":
+            return PIECES.BISHOP;
+        case "r":
+            return PIECES.ROOK;
+        case "q":
+            return PIECES.QUEEN;
+    }
+    return PIECES.NONE;
+}
+
 // Converts a move into a UCI string
 function moveToString(move) {
     return squareToString(move.from) + squareToString(move.to) + (move.promotion !== PIECES.NONE ? pieceToString(move.promotion) : "");
+}
+
+// Converts a UCI string into a move (eg. e2e4, c2c1q)
+function moveFromString(str) {
+    if (str.length >= 4) {
+        const from = squareFromString(str.substr(0, 2));
+        const to = squareFromString(str.substr(2, 2));
+        let promotion = PIECES.NONE;
+        if (str.length === 5) {
+            promotion = pieceFromString(str[4]);
+        }
+        return createMove(from, to, promotion);
+    }
+    return null;
 }
 
 // Perft is a function to test move generation, applyMove and undoMove

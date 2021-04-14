@@ -4,8 +4,6 @@ jobs:
   run-tests:
     runs-on: ubuntu-latest
     steps:
-      - name: Update
-        run: sudo apt-get update
       - name: Checkout Atomic-Chess
         uses: actions/checkout@v2
       - name: Setup NodeJs

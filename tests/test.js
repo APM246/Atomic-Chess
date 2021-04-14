@@ -8,9 +8,9 @@ function importScript(filename) {
     vm.runInThisContext(data);
 }
 
-importScript("../atomic-chess/static/chess/utils.js");
-importScript("../atomic-chess/static/chess/chess.js");
-importScript("../atomic-chess/static/chess/board.js");
+importScript("../app/static/chess/utils.js");
+importScript("../app/static/chess/chess.js");
+importScript("../app/static/chess/board.js");
 
 mocha.describe("Chess Position", function() {
     mocha.describe("Get Result", function() {

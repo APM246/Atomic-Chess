@@ -21,50 +21,17 @@
 {% block scripts %}
 <script>
     window.onload = () => {
-        const correctMoves = [[moveFromString("e4f3")]];
-        const positions = [
-            "8/8/8/8/4K3/8/8/8 w - - 0 1"
-        ];
-
-        const board = new ChessBoard({
-            target: "#board0",
-            allowUndo: false,
+        const puzzle = new Puzzle({
+            boardOptions: { target: "#board", allowUndo: false },
+            fen: "8/8/8/8/4K3/8/8/8 w - - 0 1",
+            moveTree: createLinearMoveTree([moveFromString("e4f3")]),
         });
-        board.setFromFen(positions[0]);
-
-        function resetPosition() {
-            if (positions.length > 0) {
-                board.setFromFen(positions[0]);
-            }
-        }
-
-        function nextPosition() {
-            if (positions.length > 1) {
-                positions.splice(0, 1);
-                const pos = positions[0];
-                board.setFromFen(pos);
-            } else {
-                if (positions.length > 0) {
-                    positions.splice(0, 1);
-                }
-                board.clear();
-            }
-        }
-
-        board.movePlayed.addEventListener((move) => {
-            const expectedMoves = correctMoves[0];
-            let correct = false;
-            for (const expectedMove of expectedMoves) {
-                if (movesEqual(move, expectedMove)) {
-                    correct = true;
-                    break;
-                }
-            }
-            if (correct) {
-                correctMoves.splice(0, 1);
-            } else {
-                resetPosition();
-            }
+        console.log(puzzle._currentMoveTree)
+        puzzle.correctMovePlayed.addEventListener((move) => {
+            
+        });
+        puzzle.incorrectMovePlayed.addEventListener((move) => {
+            puzzle.undoLastMove()
         });
     }
 </script>
@@ -75,7 +42,7 @@
         <div class="lesson-content">
             <h1>Introduction to Chess</h1>
             <p>Atomic chess is a variant of the classic game of chess. In order to begin playing atomic chess, you are first going to need to understand the basics of how chess pieces move.</p>
-            <div id="board0" class="board lesson-board" tabindex="0"></div>
+            <div id="board" class="board lesson-board" tabindex="0"></div>
         </div>
     </div>
 {% endblock %}

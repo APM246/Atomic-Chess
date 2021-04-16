@@ -913,8 +913,6 @@ class ChessBoard {
                     console.log("Draw");
                     break;
             }
-
-            this.movePlayed.trigger(moveData.move);
         });
 
         this._position.moveUndone.addEventListener((moveData) => {
@@ -1131,6 +1129,8 @@ class ChessBoard {
 
                 this._moveHistory.push({ move, undo: undoInfo });
                 this._historyIndex++;
+
+                this.movePlayed.trigger(move);
                 return undoInfo;
             }
         }
@@ -1148,11 +1148,11 @@ class ChessBoard {
         }
     }
 
-    undoLastMove() {
+    undoLastMove(tryAnimate = true) {
         if (this._historyIndex >= 0) {
             this._squareEmphasizer.clear();
             const moveInfo = this._moveHistory[this._historyIndex];
-            this.position.undoMove(moveInfo.move, moveInfo.undo, this._options.useMoveAnimations, true);
+            this.position.undoMove(moveInfo.move, moveInfo.undo, this._options.useMoveAnimations && tryAnimate, true);
             this._historyIndex--;
         }
     }
@@ -1375,7 +1375,10 @@ class ChessBoard {
                 }
             }
             // Update piece transform
-            resetTransform();
+            this.hideMoveMarkers();
+            if (!success) {
+                resetTransform();
+            }
             return success;
         };
 

@@ -1,7 +1,75 @@
 {% extends "base.html" %}
-  {% block content %} 
-    <p> Learn page </p>
-    <ul>
-      <li><a href="{{ url_for('lesson', name='intro') }}">intro</a></li>
-    </ul>
-  {% endblock %}
+
+{% block styles %}
+<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='progress_bar/progress_bar.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='progress_bar/initialize.js') }}"></script>
+{% endblock %}
+
+{% block body_attributes %}
+onLoad="InitializeProgressBar()"
+{% endblock %}
+
+{% block content %}
+<ul class="my-progress-bar nav nav-tabs">
+  <li class="completed">
+    <a class="node" data-toggle="tab" href="#lesson-1"></a>
+    Rules
+  </li>
+  <li class="completed">
+    <a class="node" data-toggle="tab" href="#lesson-2"></a>
+    Win Conditions
+  </li>
+  <li>
+    <a class="node" data-toggle="tab" href="#lesson-3"></a>
+    Opening Traps
+  </li>
+  <li>
+    <a class="node" data-toggle="tab" href="#lesson-4"></a>
+    Checks
+  </li>
+  <li class="completed">
+    <a class="node" data-toggle="tab" href="#lesson-5"></a>
+    Piece Safety
+  </li>
+  <li>
+    <a class="node" data-toggle="tab" href="#lesson-6"></a>
+    Kings Touching
+  </li>
+</ul>
+
+<div class="tab-content">
+  <div class="tab-pane fade" id=lesson-1>
+    <h1>
+      Lesson 1: Rules
+    </h1>
+  </div>
+  <div class="tab-pane fade" id=lesson-2>
+    <h1>
+      Lesson 2: Win Conditions
+    </h1>
+  </div>
+  <div class="tab-pane fade" id=lesson-3>
+    <h1>
+      Lesson 3: Opening Traps
+    </h1>
+  </div>
+  <div class="tab-pane fade" id=lesson-4>
+    <h1>
+      Lesson 4: Checks
+    </h1>
+  </div>
+  <div class="tab-pane fade" id=lesson-5>
+    <h1>
+      Lesson 5: Piece Safety
+    </h1>
+  </div>
+  <div class="tab-pane fade" id=lesson-6>
+    <h1>
+      Lesson 6: Kings Touching
+    </h1>
+  </div>
+</div>
+{% endblock %}

@@ -48,18 +48,84 @@
 {% block scripts %}
 <script>
     window.onload = () => {
-        const puzzle = new Puzzle({
-            boardOptions: { target: "#board", allowUndo: false },
-            fen: "8/8/8/8/4K3/8/8/8 w - - 0 1",
-            moveTree: createLinearMoveTree([moveFromString("e4f3")]),
-        });
-        console.log(puzzle._currentMoveTree)
+        const puzzleData = [
+            {
+                fen: "8/8/8/8/4K3/8/8/8 w - - 0 1",
+                moveTree: createLinearMoveTree([moveFromString("e4f3")]),
+                text: "The king can move to any square directly adjacent to it. Move the king towards the bottom right corner of the board."
+            },
+            {
+                fen: "8/8/8/8/8/2P5/8/8 w - - 0 1",
+                moveTree: createLinearMoveTree([moveFromString("c3c4")]),
+                text: "Pawns can only move forward. Move the pawn 1 square forward."
+            },
+            {
+                fen: "8/8/8/8/8/8/2P5/8 w - - 0 1",
+                moveTree: createLinearMoveTree([moveFromString("c2c4")]),
+                text: "If a pawn is on it's starting rank it can move up to 2 squares forward. Move the pawn 2 squares forward."
+            },
+            {
+                fen: "8/8/8/3N4/8/8/8/8 w - - 0 1",
+                moveTree: [
+                    { move: moveFromString("d5b6") },
+                    { move: moveFromString("d5c7") },
+                    { move: moveFromString("d5e7") },
+                    { move: moveFromString("d5f6") },
+                    { move: moveFromString("d5f4") },
+                    { move: moveFromString("d5e3") },
+                    { move: moveFromString("d5c3") },
+                    { move: moveFromString("d5b4") },
+                ],
+                text: "The knight moves in an L pattern ignoring any pieces between its current and square and the destination square. Move the knight to any legal square."
+            },
+            {
+                fen: "8/8/6P1/8/8/3B4/8/8 w - - 0 1",
+                moveTree: createLinearMoveTree([moveFromString("d3f5")]),
+                text: "Bishops move diagonally but their movement is blocked by your own pieces. Move the bishop as close as possible to the pawn."
+            },
+        ];
+        let index = 0;
+
+        const nextButton = document.getElementById("next-button");
+
+        function showButton(puzzle, passed) {
+            nextButton.style.display = "block";
+            nextButton.className = "btn " + (passed ? "btn-success" : "btn-danger") + " next-button";
+            nextButton.innerText = passed ? "Next" : "Retry";
+            nextButton.onclick = () => {
+                if (passed) {
+                    nextPuzzle();
+                } else {
+                    puzzle.undoLastMove();
+                }
+                hideButton();
+            };
+        }
+
+        function hideButton() {
+            nextButton.style.display = "none";
+        }
+
+        const lessonTextDiv = document.getElementById("lesson-text");
+
+        let puzzle = new Puzzle({ ...puzzleData[0], boardOptions: { target: "#board", allowUndo: false } });
+        lessonTextDiv.innerText = puzzleData[0].text;
+        puzzle.board.position.sandbox = true;
         puzzle.correctMovePlayed.addEventListener((move) => {
-            
+            showButton(puzzle, true);
         });
         puzzle.incorrectMovePlayed.addEventListener((move) => {
-            puzzle.undoLastMove()
+            showButton(puzzle, false);
         });
+        function nextPuzzle() {
+            index++;
+            if (index < puzzleData.length) {
+                puzzle.setFromData(puzzleData[index]);
+                lessonTextDiv.innerText = puzzleData[index].text;
+            }
+        }
+
+        hideButton();
     }
 </script>
 {% endblock %}
@@ -74,13 +140,13 @@
                 <div class="puzzle-helper">
                     <h3>Moving pieces</h3>
                     <div>
-                        Pickup a piece using the left mouse button to see the piece's legal moves. Follow the instructions below to progress.
+                        Pick up a piece using the left mouse button to see the piece's legal moves. Follow the instructions below to progress.
                     </div>
-                    <div class="lesson-task">
-                        Move the king towards the bottom right corner of the board.
+                    <div id="lesson-text" class="lesson-task">
+                        The king can move to any square directly adjacent to it. Move the king towards the bottom right corner of the board.
                     </div>
                     <div class="next-button-container">
-                        <button type="button" class="btn btn-success next-button">Next</button>
+                        <button id="next-button" style="display: none;" type="button" class="btn btn-success next-button">Next</button>
                     </div>
                 </div>
             </div>

@@ -15,7 +15,7 @@ onLoad="InitializeProgressBar()"
 {% block content %}
 <ul class="my-progress-bar nav nav-tabs">
   <li class="completed">
-    <a class="node" data-toggle="tab" href="#lesson-1"></a>
+    <a class="node" href="{{ url_for('lessons', name='intro') }}"></a>
     Rules
   </li>
   <li class="completed">

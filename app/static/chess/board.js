@@ -79,6 +79,7 @@ class Position {
         this.moveUndone = new EventEmitter();
 
         this._isAtomic = false;
+        this._sandbox = false;
         this.reset();
     }
 
@@ -88,6 +89,14 @@ class Position {
 
     set isAtomic(enabled) {
         this._isAtomic = enabled;
+    }
+
+    get sandbox() {
+        return this._sandbox;
+    }
+
+    set sandbox(enabled) {
+        this._sandbox = enabled;
     }
 
     get colorToMove() {
@@ -151,7 +160,7 @@ class Position {
     isLegal(move) {
         const ctm = this.colorToMove;
 
-        if (this._kingSquares[ctm] === SQUARES.INVALID) {
+        if (this._kingSquares[ctm] === SQUARES.INVALID && !this.sandbox) {
             return false;
         }
 
@@ -959,6 +968,7 @@ class ChessBoard {
         this._position.cleared.addEventListener(() => {
             this._destroyPieces();
             this._moveHistory = [];
+            this._historyIndex = -1;
         });
 
         this._position.ready.addEventListener(() => {

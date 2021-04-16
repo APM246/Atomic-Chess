@@ -46,6 +46,12 @@ class Puzzle {
         return this._board;
     }
 
+    setFromData(data) {
+        this._options.fen = data.fen;
+        this._options.moveTree = data.moveTree;
+        this.reset();
+    }
+
     reset() {
         if (this._options.fen) {
             this.board.setFromFen(this._options.fen);

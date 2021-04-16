@@ -84,6 +84,6 @@ li.completed > a.node {
 	z-index: 10;
 }
 
-.my-progress-bar li.completed + li::after {
+.my-progress-bar li.fill-bar + li::after {
 	background-color: #55b776;
 }

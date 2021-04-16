@@ -1035,6 +1035,10 @@ class ChessBoard {
                     }
                 }
             };
+
+            window.onresize = () => {
+                this.redraw();
+            };
         }
     }
 

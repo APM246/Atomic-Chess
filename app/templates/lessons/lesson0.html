@@ -6,14 +6,41 @@
         width: 700px;
         height: 700px;
         border: 2px solid black;
-        margin: auto;
+        margin-left: auto;
     }
 
     .lesson-content {
         margin-left: 10px;
         padding-bottom: 15px;
-        width: 800px;
+    }
+
+    .puzzle-container {
+        display: flex;
         margin: auto;
+    }
+
+    .puzzle-helper {
+        margin-left: 5px;
+        width: 400px;
+        margin-right: auto;
+        border: 2px solid black;
+        position: relative;
+    }
+
+    .lesson-task {
+        margin-top: 50px;
+    }
+
+    .next-button-container {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+    }
+
+    .next-button {
+        width: 100%;
+        border-radius: 0;
+        height: 50px;
     }
 </style>
 {% endblock %}
@@ -42,7 +69,21 @@
         <div class="lesson-content">
             <h1>Introduction to Chess</h1>
             <p>Atomic chess is a variant of the classic game of chess. In order to begin playing atomic chess, you are first going to need to understand the basics of how chess pieces move.</p>
-            <div id="board" class="board lesson-board" tabindex="0"></div>
+            <div class="puzzle-container">
+                <div id="board" class="board lesson-board" tabindex="0"></div>
+                <div class="puzzle-helper">
+                    <h3>Moving pieces</h3>
+                    <div>
+                        Pickup a piece using the left mouse button to see the piece's legal moves. Follow the instructions below to progress.
+                    </div>
+                    <div class="lesson-task">
+                        Move the king towards the bottom right corner of the board.
+                    </div>
+                    <div class="next-button-container">
+                        <button type="button" class="btn btn-success next-button">Next</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}

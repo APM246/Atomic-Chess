@@ -1,0 +1,60 @@
+.my-progress-bar-container {
+	width: 100%;
+	margin: 0;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	padding: 0px;
+	margin: 0px;
+}
+.my-progress-bar {
+	width: 100%;
+	height: 100%;
+	padding: 0px;
+	margin: 0px;
+}
+.my-progress-bar li {
+	list-style-type: none;
+	width: 16.66%;
+	float: left;
+	font-size: 12px;
+	position: relative;
+	text-align: center;
+	color: #7d7d7d;
+}
+.my-progress-bar li::before {
+	width: 30px;
+	height: 30px;
+	content: '';
+	line-height: 33px;
+	border: 2px solid #7d7d7d;
+	display: block;
+	text-align: center;
+	margin: 0 auto 10px auto;
+	border-radius: 50%;
+	background-color: white;
+}
+.my-progress-bar li::after {
+	width: 100%;
+	height: 10px;
+	content: '';
+	position: absolute;
+	background-color: #7d7d7d;
+	top: 10px;
+	left: -50%;
+	z-index: -1;
+}
+.my-progress-bar li:first-child::after {
+	content: none;
+}
+.my-progress-bar li.active {
+	color: #55b776;
+}
+.my-progress-bar li.active::before {
+	content: url(check.svg);
+	border-color: #55b776;
+}
+.my-progress-bar li.active + li::after {
+	background-color: #55b776;
+}

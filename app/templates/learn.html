@@ -1,7 +1,22 @@
 {% extends "base.html" %}
-  {% block content %} 
-    <p> Learn page </p>
-    <ul>
-      <li><a href="{{ url_for('lesson', name='intro') }}">intro</a></li>
-    </ul>
-  {% endblock %}
+
+{% block styles %}
+<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='progress_bar/progress_bar.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='progress_bar/progress_bar.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="my-progress-bar-container">
+  <ul class="my-progress-bar">
+    <li class="active">Rules</li>
+    <li class="active">Win Conditions</li>
+    <li class="active">Opening Traps</li>
+    <li class="active">Checks</li>
+    <li>Piece Safey</li>
+    <li>Kings Touching</li>
+  </ul>
+</div>
+{% endblock %}

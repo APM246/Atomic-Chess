@@ -78,7 +78,7 @@ ul li {
     bottom: 0px;
     width: 100%;
     height: 85px;
-    background-color: rgba(0, 0, 0, 0.85);
+    background-color: rgb(34, 34, 34);
     color: rgb(16, 143, 216);
     overflow: hidden;
 }

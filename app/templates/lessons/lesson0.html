@@ -95,7 +95,7 @@
             {
                 fen: "8/8/8/8/8/3R4/8/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("d3d8")]),
-                text: "Rooks move horizontally. Move the rook all the way to the top of the board.",
+                text: "Rooks cam move horizontally and vertically. Move the rook all the way to the top of the board.",
                 title: "Moving Pieces",
             },
             {
@@ -120,14 +120,14 @@
                 fen: "6k1/5p1p/6p1/8/8/4Q3/8/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("e3e8")]),
                 text: `To win a game of chess you must capture the opposition's king (or create a situation where avoiding the capture is impossible, known as checkmate). An important step in doing this is putting the king in check.
-                 This means moving a piece such that on the <b>next turn</b> you could capture the king (if the opponent were to do nothing). Move the queen to put the king in check.`,
+                 This means moving a piece such that on the <b>next turn</b> you could capture the king (if the opponent does nothing). Move the queen to put the black king in check.`,
                 title: "Check",
             },
             {
                 fen: "8/8/8/8/8/8/8/4K2R w K - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("e1g1")]),
-                text: `There a a couple of special rules that govern how pieces can move in chess. The first of which is castling if neither your king or rook have moved from their starting position and 
-                there is a clear path between your king and the rook you can castle the king by moving it 2 squares towards the rook. Castle the king.`,
+                text: `There are a couple of special rules that govern how pieces can move in chess. The first of which is castling. If neither your king or rook have moved from their starting position and 
+                there is a clear path between your king and the rook you can castle your king by moving it 2 squares towards the rook. Castle the king.`,
                 title: "Special Rules",
             },
             {
@@ -162,11 +162,12 @@
 
         lessonTextDiv.innerText = puzzleData[0].text;
 
-        function showNextButton(puzzle, passed) {
+        function showNextButton(puzzle, passed, isLast = false) {
             nextButton.style.display = "block";
             nextButton.className = "btn " + (passed ? "btn-success" : "btn-danger") + " full-button";
-            nextButton.innerText = passed ? "Next" : "Retry";
+            nextButton.innerText = passed ? (isLast ? "Complete!" : "Next") : "Retry";
             nextButton.onclick = () => {
+                hideNextButton();
                 if (passed) {
                     nextPuzzle();
                 } else {
@@ -174,7 +175,7 @@
                     puzzle.undoLastMove();
                 }
                 puzzle.board.emphasizer.resetColors();
-                hideNextButton();
+                puzzle.board.emphasizer.clear();
             };
         }
 
@@ -194,7 +195,7 @@
             puzzle.board.disableInteraction();
             if (puzzle.isComplete()) {
                 showResetButton();
-                showNextButton(puzzle, true);
+                showNextButton(puzzle, true, index >= puzzleData.length - 1);
             } else {
                 wait(300).then(() => {
                     puzzle.board.emphasizer.resetColors();
@@ -230,6 +231,9 @@
                 puzzle.board.enableInteraction();
                 lessonTextDiv.innerHTML = puzzleData[index].text;
                 lessonTitleDiv.innerHTML = puzzleData[index].title;
+            } else {
+                hideResetButton();
+                // Complete
             }
         }
 

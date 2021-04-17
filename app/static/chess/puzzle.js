@@ -2,6 +2,7 @@
 // const tree = [{ move: createMove(), continuation: [{ move: createMove() }] }]
 
 const DEFAULT_PUZZLE_OPTIONS = {
+    eventColor: null,
     fen: null,
     moveTree: null,
     boardOptions: DEFAULT_CHESS_BOARD_OPTIONS,
@@ -12,9 +13,9 @@ function createLinearMoveTree(moves) {
     if (moves.length > 0) {
         let current = { move: moves[0] };
         result.push(current);
-        for (let i = 0; i < moves.length; i++) {
+        for (let i = 1; i < moves.length; i++) {
             current.continuation = [{ move: moves[i] }];
-            current = current.continuation;
+            current = current.continuation[0];
         }
     }
     return result
@@ -26,6 +27,7 @@ class Puzzle {
         this.correctMovePlayed = new EventEmitter();
         this.incorrectMovePlayed = new EventEmitter();
         this.puzzleComplete = new EventEmitter();
+        this.puzzleReset = new EventEmitter();
 
         this._options = assignDefaults(options, DEFAULT_PUZZLE_OPTIONS);
         this._board = new ChessBoard(this._options.boardOptions);
@@ -33,7 +35,9 @@ class Puzzle {
         this.board.movePlayed.addEventListener((move) => {
             if (this.isCorrect(move)) {
                 this._advanceMoveTree(move);
-                this.correctMovePlayed.trigger(move);
+                if (this._options.eventColor === null || this.board.position.colorToMove === otherColor(this._options.eventColor)) {
+                    this.correctMovePlayed.trigger(move);
+                }
             } else {
                 this.incorrectMovePlayed.trigger(move);
             }
@@ -46,13 +50,17 @@ class Puzzle {
         return this._board;
     }
 
+    get playerToMove() {
+        return this._options.eventColor === null || this.board.position.colorToMove === this._options.eventColor;
+    }
+
     setFromData(data) {
         this._options.fen = data.fen;
         this._options.moveTree = data.moveTree;
         this.reset();
     }
 
-    reset() {
+    reset(sendEvent = true) {
         if (this._options.fen) {
             this.board.setFromFen(this._options.fen);
         } else {
@@ -61,6 +69,9 @@ class Puzzle {
         this._currentMoveTree = null;
         if (this._options.moveTree) {
             this._currentMoveTree = this._options.moveTree;
+        }
+        if (sendEvent) {
+            this.puzzleReset.trigger();
         }
     }
 
@@ -82,6 +93,13 @@ class Puzzle {
             }
         }
         return false;
+    }
+
+    playContinuation() {
+        if (!this.isComplete()) {
+            // Animate move
+            this.board.applyMove(this.getCorrectMoves()[0], true);
+        }
     }
 
     undoLastMove() {

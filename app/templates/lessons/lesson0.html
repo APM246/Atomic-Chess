@@ -37,7 +37,7 @@
         width: 100%;
     }
 
-    .next-button {
+    .full-button {
         width: 100%;
         border-radius: 0;
         height: 50px;
@@ -50,21 +50,28 @@
     window.onload = () => {
         const puzzleData = [
             {
+                eventColor: COLORS.WHITE,
                 fen: "8/8/8/8/4K3/8/8/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("e4f3")]),
-                text: "The king can move to any square directly adjacent to it. Move the king towards the bottom right corner of the board."
+                text: "The king can move to any square directly adjacent to it. Move the king towards the bottom right corner of the board.",
+                title: "Moving Pieces",
             },
             {
+                eventColor: COLORS.WHITE,
                 fen: "8/8/8/8/8/2P5/8/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("c3c4")]),
-                text: "Pawns can only move forward. Move the pawn 1 square forward."
+                text: "Pawns can only move forward. Move the pawn 1 square forward.",
+                title: "Moving Pieces",
             },
             {
+                eventColor: COLORS.WHITE,
                 fen: "8/8/8/8/8/8/2P5/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("c2c4")]),
-                text: "If a pawn is on it's starting rank it can move up to 2 squares forward. Move the pawn 2 squares forward."
+                text: "If a pawn is on it's starting rank it can move up to 2 squares forward. Move the pawn 2 squares forward.",
+                title: "Moving Pieces",
             },
             {
+                eventColor: COLORS.WHITE,
                 fen: "8/8/8/3N4/8/8/8/8 w - - 0 1",
                 moveTree: [
                     { move: moveFromString("d5b6") },
@@ -76,56 +83,157 @@
                     { move: moveFromString("d5c3") },
                     { move: moveFromString("d5b4") },
                 ],
-                text: "The knight moves in an L pattern ignoring any pieces between its current and square and the destination square. Move the knight to any legal square."
+                text: "The knight moves in an L pattern ignoring any pieces between its current and square and the destination square. Move the knight to any legal square.",
+                title: "Moving Pieces",
             },
             {
                 fen: "8/8/6P1/8/8/3B4/8/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("d3f5")]),
-                text: "Bishops move diagonally but their movement is blocked by your own pieces. Move the bishop as close as possible to the pawn."
+                text: "Bishops move diagonally but their movement is blocked by other pieces. Move the bishop as close as possible to the pawn.",
+                title: "Moving Pieces",
+            },
+            {
+                fen: "8/8/8/8/8/3R4/8/8 w - - 0 1",
+                moveTree: createLinearMoveTree([moveFromString("d3d8")]),
+                text: "Rooks move horizontally. Move the rook all the way to the top of the board.",
+                title: "Moving Pieces",
+            },
+            {
+                fen: "8/8/8/8/8/2Q5/8/8 w - - 0 1",
+                moveTree: createLinearMoveTree([moveFromString("c3h8")]),
+                text: "The queen has the movement of both a rook and a bishop. Move the queen to the very top right corner of the board.",
+                title: "Moving Pieces",
+            },
+            {
+                fen: "8/5p2/8/4N3/8/8/8/8 w - - 0 1",
+                moveTree: createLinearMoveTree([moveFromString("e5f7")]),
+                text: "If you move one of your pieces to the same square as an opposition piece, you capture it, removing it from the board. Move the knight to capture the black pawn.",
+                title: "Capturing Pieces",
+            },
+            {
+                fen: "8/8/8/3n4/4P3/8/8/8 w - - 0 1",
+                moveTree: createLinearMoveTree([moveFromString("e4d5")]),
+                text: "Pawns are special in that normally they can only move straight forward, however, if there is an opposition piece diagonally in front of it the pawn can capture it. Capture the black knight.",
+                title: "Capturing Pieces",
+            },
+            {
+                fen: "6k1/5p1p/6p1/8/8/4Q3/8/8 w - - 0 1",
+                moveTree: createLinearMoveTree([moveFromString("e3e8")]),
+                text: `To win a game of chess you must capture the opposition's king (or create a situation where avoiding the capture is impossible, known as checkmate). An important step in doing this is putting the king in check.
+                 This means moving a piece such that on the <b>next turn</b> you could capture the king (if the opponent were to do nothing). Move the queen to put the king in check.`,
+                title: "Check",
+            },
+            {
+                fen: "8/8/8/8/8/8/8/4K2R w K - 0 1",
+                moveTree: createLinearMoveTree([moveFromString("e1g1")]),
+                text: `There a a couple of special rules that govern how pieces can move in chess. The first of which is castling if neither your king or rook have moved from their starting position and 
+                there is a clear path between your king and the rook you can castle the king by moving it 2 squares towards the rook. Castle the king.`,
+                title: "Special Rules",
+            },
+            {
+                fen: "8/8/8/8/8/8/8/R3K3 w Q - 0 1",
+                moveTree: createLinearMoveTree([moveFromString("e1c1")]),
+                text: `You can also castle to the other side of the board. Castle the king.`,
+                title: "Special Rules",
+            },
+            {
+                fen: "8/4p3/8/3P4/8/8/8/8 b - - 0 1",
+                moveTree: createLinearMoveTree([moveFromString("e7e5"), moveFromString("d5e6")]),
+                text: `A second special rule is En passant. If an opposition pawn moves 2 squares forward and ends up directly next to our pawn, our pawn can move diagonally forward to the square behind the opposition pawn and capture it.
+                 Capture the black pawn using the En passant rule.`,
+                title: "Special Rules",
             },
         ];
         let index = 0;
 
-        const nextButton = document.getElementById("next-button");
+        let puzzle = new Puzzle({ ...puzzleData[0], boardOptions: { target: "#board", allowUndo: false } });
+        // Disable checks for whether we/they have a king
+        puzzle.board.position.sandbox = true;
 
-        function showButton(puzzle, passed) {
+        const lessonTextDiv = document.getElementById("lesson-text");
+        const lessonTitleDiv = document.getElementById("lesson-title");
+        const nextButton = document.getElementById("next-button");
+        const resetButton = document.getElementById("reset-button");
+        resetButton.onclick = () => {
+            hideResetButton();
+            hideNextButton();
+            puzzle.reset();
+        }
+
+        lessonTextDiv.innerText = puzzleData[0].text;
+
+        function showNextButton(puzzle, passed) {
             nextButton.style.display = "block";
-            nextButton.className = "btn " + (passed ? "btn-success" : "btn-danger") + " next-button";
+            nextButton.className = "btn " + (passed ? "btn-success" : "btn-danger") + " full-button";
             nextButton.innerText = passed ? "Next" : "Retry";
             nextButton.onclick = () => {
                 if (passed) {
                     nextPuzzle();
                 } else {
+                    puzzle.board.enableInteraction();
                     puzzle.undoLastMove();
                 }
-                hideButton();
+                puzzle.board.emphasizer.resetColors();
+                hideNextButton();
             };
         }
 
-        function hideButton() {
+        function hideNextButton() {
             nextButton.style.display = "none";
         }
 
-        const lessonTextDiv = document.getElementById("lesson-text");
+        function showResetButton() {
+            resetButton.style.display = "block";
+        }
 
-        let puzzle = new Puzzle({ ...puzzleData[0], boardOptions: { target: "#board", allowUndo: false } });
-        lessonTextDiv.innerText = puzzleData[0].text;
-        puzzle.board.position.sandbox = true;
+        function hideResetButton() {
+            resetButton.style.display = "none";
+        }
+
         puzzle.correctMovePlayed.addEventListener((move) => {
-            showButton(puzzle, true);
+            puzzle.board.disableInteraction();
+            if (puzzle.isComplete()) {
+                showResetButton();
+                showNextButton(puzzle, true);
+            } else {
+                wait(300).then(() => {
+                    puzzle.board.emphasizer.resetColors();
+                    puzzle.playContinuation();
+                    puzzle.board.enableInteraction();
+                })
+            }
+            puzzle.board.emphasizer.setColors("#00ff0088", "#00aa0088");
         });
         puzzle.incorrectMovePlayed.addEventListener((move) => {
-            showButton(puzzle, false);
+            puzzle.board.disableInteraction();
+            showNextButton(puzzle, false);
+            puzzle.board.emphasizer.setColors("#ff000088", "#aa000088");
         });
+        puzzle.puzzleReset.addEventListener(() => {
+            puzzle.board.emphasizer.resetColors();
+            if (!puzzle.playerToMove) {
+                showResetButton();
+                wait(200).then(() => {
+                    if (!puzzle.playerToMove) {
+                        puzzle.playContinuation();
+                    }
+                });
+            } else {
+                puzzle.board.enableInteraction();
+            }
+        })
         function nextPuzzle() {
+            hideResetButton();
             index++;
             if (index < puzzleData.length) {
                 puzzle.setFromData(puzzleData[index]);
-                lessonTextDiv.innerText = puzzleData[index].text;
+                puzzle.board.enableInteraction();
+                lessonTextDiv.innerHTML = puzzleData[index].text;
+                lessonTitleDiv.innerHTML = puzzleData[index].title;
             }
         }
 
-        hideButton();
+        hideNextButton();
     }
 </script>
 {% endblock %}
@@ -138,7 +246,7 @@
             <div class="puzzle-container">
                 <div id="board" class="board lesson-board" tabindex="0"></div>
                 <div class="puzzle-helper">
-                    <h3>Moving pieces</h3>
+                    <h3 id="lesson-title">Moving pieces</h3>
                     <div>
                         Pick up a piece using the left mouse button to see the piece's legal moves. Follow the instructions below to progress.
                     </div>
@@ -146,7 +254,8 @@
                         The king can move to any square directly adjacent to it. Move the king towards the bottom right corner of the board.
                     </div>
                     <div class="next-button-container">
-                        <button id="next-button" style="display: none;" type="button" class="btn btn-success next-button">Next</button>
+                        <button id="reset-button" style="display: none;" type="button" class="btn btn-secondary full-button">Reset</button>
+                        <button id="next-button" style="display: none;" type="button" class="btn btn-success full-button">Next</button>
                     </div>
                 </div>
             </div>

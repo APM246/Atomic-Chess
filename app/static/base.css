@@ -2,12 +2,19 @@ body {
     position: relative;
     min-height: 100vh;
     margin: 0;
+    padding-bottom: 70px;
 }
 
-body::after {
-   content:'';
-   display:block;
-   height: 90px; 
+body::before {
+    content: "";
+    background: url('background/chess2.jpg');
+    background-size: cover;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0px;
+    opacity: 0.1;
 }
 
 .board {
@@ -19,54 +26,80 @@ body::after {
     display: flex;
 }
 
-ul li {
-    float: left;
-    list-style-type: none;
+.container-fluid, #collapsing-navbar {
+    height: 100%;
 }
 
-.navbar-custom {
-    height: 90px;
-    border-radius: 0;
+.menu-items {
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode';
+    color: rgb(12, 199, 199);
+    font-size: 19pt;
+    height: 100%;
+    margin-right: 10px;
 }
 
-.navbar-inverse .navbar-nav>li>a {
-    color: rgb(16, 143, 216);
-    font-size: 16pt;
-    padding-top: 30px;
+.menu-items:hover {
+    /*background-color: rgba(251, 255, 0, 0.4);*/
+    color: white;  
 }
 
-.navbar-inverse .navbar-nav>li>a:hover {
-    background-color: rgba(225, 211, 14, 0.4);   
+@font-face {
+    font-family: FiraCode;
+    src: url('fonts/FiraCode-Regular.ttf')
+  }
+
+.main-text {
+    font-family: FiraCode, Georgia;
+}
+
+.main-text h1 {
+    font-size: 50pt;
+    text-align: center;
+    margin-top: 35px;
+    margin-bottom: 50px;
+}
+
+.main-text p {
+    font-size: 18pt;
+    margin-top: 20px;
+    padding: 50px;
 }
 
 #footer {
     position: absolute;
     bottom: 0px;
     width: 100%;
-    height: 90px;
-    background-color: rgba(225, 186, 14, 0.4);
-    color: black;
-    font-weight: bold;
+    height: 70px;
+    background-color: rgb(34, 34, 34); /* same as menu */
+    color: white;
     overflow: hidden;
 }
 
-.footer-content {
-    padding-top: 1em;
-    width: 100%;
+#footer-content a {
+    text-decoration: none;
+    color: white;
 }
 
-.footer-content a:hover {
+#footer-content a:hover {
     color:brown;
     text-decoration: none;
 }
 
-.glyphicon-font {
-    font-size: 4em;
-    padding-right: 1em;
-    padding-top: 1%;
-    padding-left: 1%;
+/* ICONS */
+
+.bi-list {
+    color: white;
+    font-size: 2em;
 }
 
-#links {
-    padding-bottom: 1em;
+.bi-info {
+    font-size: 40px;
+}
+
+.bi-github {
+    font-size: 1.5em;
+}
+
+.bi-list-task {
+    font-size: 1.5em;
 }

@@ -41,12 +41,12 @@ body::before {
 }
 
 @font-face {
-    font-family: Soria;
+    font-family: FiraCode;
     src: url('fonts/FiraCode-Regular.ttf')
   }
 
 .main-text {
-    font-family: Soria, Georgia;
+    font-family: FiraCode, Georgia;
 }
 
 .main-text h1 {
@@ -81,6 +81,8 @@ body::before {
     color:brown;
     text-decoration: none;
 }
+
+/* ICONS */
 
 .bi-list {
     color: white;

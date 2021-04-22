@@ -43,12 +43,14 @@
         <span class="bi bi-list"></span>
       </button>
       <div class="collapse navbar-collapse" id="collapsing-navbar">
-        <ul class="navbar-nav">
+        <ul class="navbar-nav" id="menu-items">
           <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}"> Home </a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('learn') }}"> Learn </a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('stats') }}"> Stats </a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('settings') }}"> Settings </a></li>
-          <li style="align-self: right;" class="nav-item"><a class="nav-link" href="#"> <i class="bi bi-person-circle"> </i> Sign Up</a></li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#"> <i class="bi bi-person-circle"> </i> Sign Up</a></li>
         </ul>
       </div>
     </div>

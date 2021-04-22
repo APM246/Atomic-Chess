@@ -26,7 +26,7 @@ body::before {
     display: flex;
 }
 
-.container-fluid, .navbar-nav, .navbar-nav li {
+.container-fluid, .navbar-nav {
     height: 100%;
 }
 
@@ -80,6 +80,11 @@ body::before {
 .footer-content a:hover {
     color:brown;
     text-decoration: none;
+}
+
+.bi-list {
+    color: white;
+    font-size: 2em;
 }
 
 .bi-info {

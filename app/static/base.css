@@ -72,9 +72,9 @@ body::before {
     overflow: hidden;
 }
 
-.footer-content li {
-    list-style-type: none;
-    float: left;
+.footer-content a {
+    text-decoration: none;
+    color: white;
 }
 
 .footer-content a:hover {
@@ -82,6 +82,14 @@ body::before {
     text-decoration: none;
 }
 
-#info-icon {
-    font-size: 3.5em;
+.bi-info {
+    font-size: 40px;
+}
+
+.bi-github {
+    font-size: 1.5em;
+}
+
+.bi-list-task {
+    font-size: 1.5em;
 }

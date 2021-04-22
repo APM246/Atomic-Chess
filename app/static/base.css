@@ -2,6 +2,7 @@ body {
     position: relative;
     min-height: 100vh;
     margin: 0;
+    padding-bottom: 70px;
 }
 
 body::before {
@@ -16,12 +17,6 @@ body::before {
     opacity: 0.1;
 }
 
-body::after {
-    content:'';
-    display:block;
-    height: 85px;  
-}
-
 .board {
     outline: none;
     user-select: none;
@@ -31,23 +26,17 @@ body::after {
     display: flex;
 }
 
-ul li {
-    float: left;
-    list-style-type: none;
+.container-fluid, .navbar-nav, .navbar-nav li {
+    height: 100%;
 }
 
-.navbar-custom {
-    height: 90px;
-    border-radius: 0;
-}
-
-.navbar-inverse .navbar-nav>li>a {
+.navbar-nav>li {
     color: rgb(16, 143, 216);
-    font-size: 16pt;
-    padding-top: 30px;
+    font-size: 18pt;
+    height: 100%;
 }
 
-.navbar-inverse .navbar-nav>li>a:hover {
+.navbar-nav>li:hover {
     background-color: rgba(225, 211, 14, 0.4);   
 }
 
@@ -56,36 +45,36 @@ ul li {
     src: url('fonts/FiraCode-Regular.ttf')
   }
 
-  .main-text {
+.main-text {
     font-family: Soria, Georgia;
-  }
+}
 
-  .main-text h1 {
+.main-text h1 {
     font-size: 50pt;
     text-align: center;
     margin-top: 35px;
     margin-bottom: 50px;
-  }
+}
 
-  .main-text p {
+.main-text p {
     font-size: 18pt;
     margin-top: 70px;
     margin-left: 50px;
-  }
+}
 
 #footer {
     position: absolute;
     bottom: 0px;
     width: 100%;
-    height: 85px;
+    height: 70px;
     background-color: rgb(34, 34, 34);
-    color: rgb(16, 143, 216);
+    color: white;
     overflow: hidden;
 }
 
-.footer-content {
-    padding-top: 1em;
-    width: 100%;
+.footer-content li {
+    list-style-type: none;
+    float: left;
 }
 
 .footer-content a:hover {
@@ -93,13 +82,6 @@ ul li {
     text-decoration: none;
 }
 
-.glyphicon-font {
+#info-icon {
     font-size: 3.5em;
-    padding-right: 1em;
-    padding-top: 1%;
-    padding-left: 1%;
-}
-
-#links {
-    padding-bottom: 6px;
 }

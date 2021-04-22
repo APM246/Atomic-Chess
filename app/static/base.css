@@ -61,8 +61,8 @@ body::before {
 
 .main-text p {
     font-size: 18pt;
-    margin-top: 70px;
-    margin-left: 50px;
+    margin-top: 20px;
+    padding: 50px;
 }
 
 #footer {

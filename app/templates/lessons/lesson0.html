@@ -3,8 +3,10 @@
 {% block styles %}
 <style>
     .lesson-board {
-        width: 70vh;
-        height: 70vh;
+        width: min(70vw, 70vh);
+        height: min(70vw, 70vh);
+        min-width: min(70vw, 70vh);
+        min-height: min(70vw, 70vh);
         border: 2px solid black;
         margin-left: auto;
     }
@@ -21,10 +23,13 @@
 
     .puzzle-helper {
         margin-left: 5px;
-        width: 400px;
+        width: min(40vw, 40vh);
+        height: min(70vw, 70vh);
         margin-right: auto;
         border: 2px solid black;
-        position: relative;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
     }
 
     .lesson-task {
@@ -32,15 +37,19 @@
     }
 
     .next-button-container {
-        position: absolute;
-        bottom: 0;
+        margin-top: auto;
+        align-self: flex-end;
         width: 100%;
+    }
+
+    .button-group {
+        margin-top: 10px;
     }
 
     .full-button {
         width: 100%;
         border-radius: 0;
-        height: 50px;
+        padding: 10px;
     }
 
     .previous-button {
@@ -163,7 +172,37 @@
         ];
         let index = 0;
 
-        let puzzle = new Puzzle({ ...puzzleData[0], boardOptions: { target: "#board", allowUndo: false } });
+        let puzzle = new Puzzle({
+            ...puzzleData[0],
+            boardOptions: {
+                target: "#board",
+                lightSquareColor: "{{ board_settings.light_square_color }}",
+                darkSquareColor: "{{ board_settings.dark_square_color }}",
+                lightSquareHighlightColor: "{{ board_settings.light_square_highlight_color }}",
+                darkSquareHighlightColor: "{{ board_settings.dark_square_highlight_color }}",
+                pieceImages: {
+                    basePath:    "/static/pieces/",
+                    whitePawn:   "white_pawn.png",
+                    whiteKnight: "white_knight.png",
+                    whiteBishop: "white_bishop.png",
+                    whiteRook:   "white_rook.png",
+                    whiteQueen:  "white_queen.png",
+                    whiteKing:   "white_king.png",
+                    blackPawn:   "black_pawn.png",
+                    blackKnight: "black_knight.png",
+                    blackBishop: "black_bishop.png",
+                    blackRook:   "black_rook.png",
+                    blackQueen:  "black_queen.png",
+                    blackKing:   "black_king.png",
+                },
+                interactive: true,
+                showMoveMarkers: {{ board_settings.show_move_markers }},
+                showSquareHighlights: {{ board_settings.show_square_highlights }},
+                allowUndo: false,
+                useMoveAnimations: {{ board_settings.use_move_animations }},
+                animationTime: {{ board_settings.animation_time_ms }},
+            }
+        });
         // Disable checks for whether we/they have a king
         puzzle.board.position.sandbox = true;
 
@@ -307,9 +346,11 @@
                         The king can move to any square directly adjacent to it. Move the king towards the bottom right corner of the board.
                     </div>
                     <div class="next-button-container">
-                        <button id="reset-button" style="display: none;" type="button" class="btn btn-secondary full-button">Reset</button>
-                        <button id="next-button" style="display: none;" type="button" class="btn btn-success full-button">Next</button>
-                        <button id="back-button" style="display: none;" type="button" class="btn btn-primary full-button">Back</button>
+                        <div class="button-group">
+                            <button id="reset-button" style="display: none;" type="button" class="btn btn-secondary full-button">Reset</button>
+                            <button id="next-button" style="display: none;" type="button" class="btn btn-success full-button">Next</button>
+                            <button id="back-button" style="display: none;" type="button" class="btn btn-primary full-button">Back</button>
+                        </div>
                     </div>
                 </div>
             </div>

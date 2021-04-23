@@ -42,6 +42,14 @@
         border-radius: 0;
         height: 50px;
     }
+
+    .previous-button {
+        border-radius: 50%;
+        background-color: #f1f1f1;
+        color: black;
+        width: 50px;
+        height: 50px;
+    }
 </style>
 {% endblock %}
 
@@ -87,36 +95,42 @@
                 title: "Moving Pieces",
             },
             {
+                eventColor: COLORS.WHITE,
                 fen: "8/8/6P1/8/8/3B4/8/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("d3f5")]),
                 text: "Bishops move diagonally but their movement is blocked by other pieces. Move the bishop as close as possible to the pawn.",
                 title: "Moving Pieces",
             },
             {
+                eventColor: COLORS.WHITE,
                 fen: "8/8/8/8/8/3R4/8/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("d3d8")]),
                 text: "Rooks cam move horizontally and vertically. Move the rook all the way to the top of the board.",
                 title: "Moving Pieces",
             },
             {
+                eventColor: COLORS.WHITE,
                 fen: "8/8/8/8/8/2Q5/8/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("c3h8")]),
                 text: "The queen has the movement of both a rook and a bishop. Move the queen to the very top right corner of the board.",
                 title: "Moving Pieces",
             },
             {
+                eventColor: COLORS.WHITE,
                 fen: "8/5p2/8/4N3/8/8/8/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("e5f7")]),
                 text: "If you move one of your pieces to the same square as an opposition piece, you capture it, removing it from the board. Move the knight to capture the black pawn.",
                 title: "Capturing Pieces",
             },
             {
-                fen: "8/8/8/3n4/4P3/8/8/8 w - - 0 1",
-                moveTree: createLinearMoveTree([moveFromString("e4d5")]),
+                eventColor: COLORS.WHITE,
+                fen: "8/2n5/8/8/4P3/8/8/8 b - - 0 1",
+                moveTree: createLinearMoveTree([moveFromString("c7d5"), moveFromString("e4d5")]),
                 text: "Pawns are special in that normally they can only move straight forward, however, if there is an opposition piece diagonally in front of it the pawn can capture it. Capture the black knight.",
                 title: "Capturing Pieces",
             },
             {
+                eventColor: COLORS.WHITE,
                 fen: "6k1/5p1p/6p1/8/8/4Q3/8/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("e3e8")]),
                 text: `To win a game of chess you must capture the opposition's king (or create a situation where avoiding the capture is impossible, known as checkmate). An important step in doing this is putting the king in check.
@@ -124,6 +138,7 @@
                 title: "Check",
             },
             {
+                eventColor: COLORS.WHITE,
                 fen: "8/8/8/8/8/8/8/4K2R w K - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("e1g1")]),
                 text: `There are a couple of special rules that govern how pieces can move in chess. The first of which is castling. If neither your king or rook have moved from their starting position and 
@@ -131,12 +146,14 @@
                 title: "Special Rules",
             },
             {
+                eventColor: COLORS.WHITE,
                 fen: "8/8/8/8/8/8/8/R3K3 w Q - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("e1c1")]),
                 text: `You can also castle to the other side of the board. Castle the king.`,
                 title: "Special Rules",
             },
             {
+                eventColor: COLORS.WHITE,
                 fen: "8/4p3/8/3P4/8/8/8/8 b - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("e7e5"), moveFromString("d5e6")]),
                 text: `A second special rule is En passant. If an opposition pawn moves 2 squares forward and ends up directly next to our pawn, our pawn can move diagonally forward to the square behind the opposition pawn and capture it.
@@ -154,6 +171,7 @@
         const lessonTitleDiv = document.getElementById("lesson-title");
         const nextButton = document.getElementById("next-button");
         const resetButton = document.getElementById("reset-button");
+        const backButton = document.getElementById("back-button");
         resetButton.onclick = () => {
             hideResetButton();
             hideNextButton();
@@ -163,6 +181,7 @@
         lessonTextDiv.innerText = puzzleData[0].text;
 
         function showNextButton(puzzle, passed, isLast = false) {
+            hideBackButton();
             nextButton.style.display = "block";
             nextButton.className = "btn " + (passed ? "btn-success" : "btn-danger") + " full-button";
             nextButton.innerText = passed ? (isLast ? "Complete!" : "Next") : "Retry";
@@ -173,6 +192,9 @@
                 } else {
                     puzzle.board.enableInteraction();
                     puzzle.undoLastMove();
+                    if (index > 0) {
+                        showBackButton();
+                    }
                 }
                 puzzle.board.emphasizer.resetColors();
                 puzzle.board.emphasizer.clear();
@@ -191,6 +213,14 @@
             resetButton.style.display = "none";
         }
 
+        function showBackButton() {
+            backButton.style.display = "block";
+        }
+
+        function hideBackButton() {
+            backButton.style.display = "none";
+        }
+
         puzzle.correctMovePlayed.addEventListener((move) => {
             puzzle.board.disableInteraction();
             if (puzzle.isComplete()) {
@@ -203,7 +233,7 @@
                     puzzle.board.enableInteraction();
                 })
             }
-            puzzle.board.emphasizer.setColors("#00ff0088", "#00aa0088");
+            puzzle.board.emphasizer.setColors("#00a00088", "#00700088");
         });
         puzzle.incorrectMovePlayed.addEventListener((move) => {
             puzzle.board.disableInteraction();
@@ -211,6 +241,9 @@
             puzzle.board.emphasizer.setColors("#ff000088", "#aa000088");
         });
         puzzle.puzzleReset.addEventListener(() => {
+            if (index > 0) {
+                showBackButton();
+            }
             puzzle.board.emphasizer.resetColors();
             if (!puzzle.playerToMove) {
                 showResetButton();
@@ -223,19 +256,35 @@
                 puzzle.board.enableInteraction();
             }
         })
+
+        function handleNewPuzzle(data) {
+            puzzle.setFromData(data);
+            puzzle.board.enableInteraction();
+            lessonTextDiv.innerHTML = data.text;
+            lessonTitleDiv.innerHTML = data.title;
+        }
+
         function nextPuzzle() {
             hideResetButton();
             index++;
             if (index < puzzleData.length) {
-                puzzle.setFromData(puzzleData[index]);
-                puzzle.board.enableInteraction();
-                lessonTextDiv.innerHTML = puzzleData[index].text;
-                lessonTitleDiv.innerHTML = puzzleData[index].title;
+                handleNewPuzzle(puzzleData[index]);
             } else {
                 hideResetButton();
                 // Complete
+                window.location.href = "{{ url_for('learn') }}";
             }
         }
+
+        function previousPuzzle() {
+            hideBackButton();
+            if (index > 0) {
+                index--;
+                handleNewPuzzle(puzzleData[index]);
+            }
+        }
+
+        backButton.onclick = previousPuzzle;
 
         hideNextButton();
     }
@@ -260,6 +309,7 @@
                     <div class="next-button-container">
                         <button id="reset-button" style="display: none;" type="button" class="btn btn-secondary full-button">Reset</button>
                         <button id="next-button" style="display: none;" type="button" class="btn btn-success full-button">Next</button>
+                        <button id="back-button" style="display: none;" type="button" class="btn btn-primary full-button">Back</button>
                     </div>
                 </div>
             </div>

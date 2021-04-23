@@ -1,23 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
   <title> Atomic Chess </title>
   <meta charset='utf-8'>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Latest Jquery -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-    integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-
   <!-- Latest compiled and minified CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
-    integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
+   integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
 
-  <!-- Latest compiled and minified JavaScript -->
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
-    integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
-    crossorigin="anonymous"></script>
+   <!-- Bootstrap 5.0 Icons -->
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
 
   <!-- Custom CSS-->
   <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
@@ -39,47 +33,59 @@
 </head>
 
 <body {% block body_attributes %} {% endblock %}>
-  <nav class="navbar navbar-inverse navbar-custom">
+ 
+  <nav class="navbar navbar-expand-sm bg-dark">
     <div class="container-fluid">
-      <div class="navbar-header">
-        <a class="navbar-brand" href="{{ url_for('index') }}"> <img
-            src="{{url_for('static', filename='logo/atomic_chess.png')}}" width='65' height='65'
-            alt='atomic chess logo'> </a>
+      <a class="navbar-brand" href="{{ url_for('index') }}"> 
+        <img src="{{url_for('static', filename='logo/atomic_chess.png')}}" width='65' height='65'
+            alt='atomic chess logo'> 
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsing-navbar" aria-controls="collapsing-navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="bi bi-list"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="collapsing-navbar">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link menu-items" href="{{ url_for('index') }}"> Home </a></li>
+          <li class="nav-item"><a class="nav-link menu-items" href="{{ url_for('learn') }}"> Learn </a></li>
+          <li class="nav-item"><a class="nav-link menu-items" href="{{ url_for('stats') }}"> Stats </a></li>
+          <li class="nav-item"><a class="nav-link menu-items" href="{{ url_for('settings') }}"> Settings </a></li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link menu-items" href="#"> <i class="bi bi-person-circle"> </i> Sign Up</a></li>
+        </ul>
       </div>
-      <ul class="nav navbar-nav">
-        <li><a href="{{ url_for('index') }}"> Home </a></li>
-        <li><a href="{{ url_for('learn') }}"> Learn </a></li>
-        <li><a href="{{ url_for('stats') }}"> Stats </a></li>
-        <li><a href="{{ url_for('settings') }}"> Settings </a></li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
-      </ul>
     </div>
-  </nav>
+  </nav> 
 
+  <div class="background">
   {% block content %}
   {% endblock %}
+  </div>
 
-  <footer id="footer" class="container">
-    <div class="glyphicon glyphicon-font col-3"> </div>
-    <div class="footer-content col-9">
-      <div id="links">
-        <span> <a target="_blank" href="https://github.com/APM246/Atomic-Chess"> Github <img
-              src="{{ url_for('static', filename='logo/github.png') }}" style="max-width: 30px; max-height:30px;">
-            </img> </a> </span>
-        <span style="font-size:1.5em;"> | </span>
-        <span> <a target="_blank" href="https://teaching.csse.uwa.edu.au/units/CITS3403/"> Project Specification </a>
-        </span>
+  <footer class="navbar fixed-bottom" id="footer"> <!-- COLLAPSE CLASS?-->
+    <div style="width:100%" class="d-flex align-items-center" id="footer-content">
+      <div>
+        <span class="bi-info"> </span>
       </div>
-
-      <p style="display:inline;"> Developed by Jun Lim, Arun Muthu and Jordan Morrison.
-      <address style="display:inline;"> Contact us at <a href="mailto:emailaddress@gmail.com"> emailaddress@gmail.com
-        </a> </address>
-      </p>
+      <div>
+        Developed by Jun Lim, Arun Muthu and Jordan Morrison.
+      </div>
+      <div class="ms-auto">
+        <div class="d-flex">
+          <a class="p-2" target="_blank" href="https://github.com/APM246/Atomic-Chess">  <i class="bi bi-github"> </i> 
+            Github 
+          </a>
+          <a class="p-2" target="_blank" href="https://teaching.csse.uwa.edu.au/units/CITS3403/"> <i class="bi bi-list-task"></i> 
+            Project Specification 
+          </a>
+        </div>
+      </div>
     </div>
   </footer>
 
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.min.js" 
+integrity="sha384-j0CNLUeiqtyaRmlzUHCPZ+Gy5fQu0dQ6eZ/xAww941Ai1SxSY+0EQqNXNE6DZiVc" crossorigin="anonymous"></script>
 </body>
 
 </html>

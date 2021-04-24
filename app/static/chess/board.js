@@ -41,9 +41,6 @@ const ATOMIC_EXPLOSION_VECTORS = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, 
 // Constants that represent the current state of the board
 const POSITION_STATE = Object.freeze({ VALID: 0, DRAW: 1, WHITE_WIN: 2, BLACK_WIN: 3 });
 
-// Constants for if someones king got blown up in the position
-const KING_EXPLODE = Object.freeze({ NONE: 0, WHITE: 1, BLACK: 2 });
-
 class EventEmitter {
 
     constructor() {
@@ -105,11 +102,6 @@ class Position {
 
     get enpassantSquare() {
         return this._enpassantSquare;
-    }
-
-    // Get the Forsyth–Edwards Notation (FEN) of the current position
-    get fen() {
-        return "";
     }
 
     get inCheck() {
@@ -1603,7 +1595,7 @@ class ChessBoard {
     _getImageUri(piece, color) {
         const isWhite = color === COLORS.WHITE;
         const getFullPath = (path) => {
-            return this._options.pieceImages.basePath + path
+            return this._options.pieceImages.basePath + path;
         };
         switch (piece) {
             case PIECES.PAWN:

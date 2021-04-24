@@ -17,10 +17,10 @@ def learn():
         "TODO",
         "Kings can touch each other in Atomic Chess! This lesson teaches you the consequences of this strange rule"]
 
-    # todo: Query the database for which lessons have been completed
+    # TODO: Query the database for which lessons have been completed
     completed_lessons = [True, True, False, False, True, False]
 
-    return render_template("learn.html", lessonNames=lesson_names, lessonDescriptions=lesson_descriptions, completedLessons=completed_lessons, zip=zip)
+    return render_template("learn.html", lesson_names=lesson_names, lesson_descriptions=lesson_descriptions, completed_lessons=completed_lessons, zip=zip)
 
 @app.route("/stats")
 def stats():

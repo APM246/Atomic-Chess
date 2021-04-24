@@ -211,11 +211,12 @@
         const nextButton = document.getElementById("next-button");
         const resetButton = document.getElementById("reset-button");
         const backButton = document.getElementById("back-button");
+
         resetButton.onclick = () => {
             hideResetButton();
             hideNextButton();
             puzzle.reset();
-        }
+        };
 
         lessonTextDiv.innerText = puzzleData[0].text;
 
@@ -270,15 +271,17 @@
                     puzzle.board.emphasizer.resetColors();
                     puzzle.playContinuation();
                     puzzle.board.enableInteraction();
-                })
+                });
             }
             puzzle.board.emphasizer.setColors("#00a00088", "#00700088");
         });
+
         puzzle.incorrectMovePlayed.addEventListener((move) => {
             puzzle.board.disableInteraction();
             showNextButton(puzzle, false);
             puzzle.board.emphasizer.setColors("#ff000088", "#aa000088");
         });
+
         puzzle.puzzleReset.addEventListener(() => {
             if (index > 0) {
                 showBackButton();
@@ -294,7 +297,7 @@
             } else {
                 puzzle.board.enableInteraction();
             }
-        })
+        });
 
         function handleNewPuzzle(data) {
             puzzle.setFromData(data);
@@ -326,7 +329,7 @@
         backButton.onclick = previousPuzzle;
 
         hideNextButton();
-    }
+    };
 </script>
 {% endblock %}
 

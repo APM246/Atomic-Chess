@@ -6,15 +6,21 @@ from app import app
 def index():
     return render_template("index.html")
 
-lessonNames = ["Rules", "Win Conditions", "Opening Traps", "Checks", "Piece Saftey", "Kings Touching"]
+lesson_names = ["Rules", "Win Conditions", "Opening Traps", "Checks", "Piece Saftey", "Kings Touching"]
 @app.route("/learn")
 def learn():
-    lessonDescriptions = ["Short Description of lesson here"] * len(lessonNames)
+    lesson_descriptions = [
+        "Learn the rules of Atomic Chess and how they differ from traditional chess",
+        "In Atomic Chess you can win by checkmate, but can also win by blowing up the enemy king. This lesson will teach you how this effects the game",
+        "White has many traps they can set in the opening, learn these traps to crush your oppenent!",
+        "Unlike traditional chess, if you are put in check, you dont have to move out of it if you can blow up the king. This lesson will show you some examples",
+        "TODO",
+        "Kings can touch each other in Atomic Chess! This lesson teaches you the consequences of this strange rule"]
 
     # todo: Query the database for which lessons have been completed
-    completedLessons = [True, True, False, False, True, False]
+    completed_lessons = [True, True, False, False, True, False]
 
-    return render_template("learn.html", lessonNames=lessonNames, lessonDescriptions=lessonDescriptions, completedLessons=completedLessons, zip=zip)
+    return render_template("learn.html", lessonNames=lesson_names, lessonDescriptions=lesson_descriptions, completedLessons=completed_lessons, zip=zip)
 
 @app.route("/stats")
 def stats():
@@ -27,7 +33,7 @@ def settings():
 LESSON_NAME_MAP = {
     "intro": "lessons/lesson0.html"
 }
-LESSON_NAME_MAP.update({name: "lessons/lesson{}.html".format(i) for i, name in enumerate(lessonNames, 1)})
+LESSON_NAME_MAP.update({name: "lessons/lesson{}.html".format(i) for i, name in enumerate(lesson_names, 1)})
 
 def prepare_settings(settings_json):
     # Jinja seems to just do simple text replacement (ie. Doesn't convert from python True to js true)

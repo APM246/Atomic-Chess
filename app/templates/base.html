@@ -25,6 +25,7 @@
   <script src="{{ url_for('static', filename='chess/utils.js') }}"></script>
   <script src="{{ url_for('static', filename='chess/chess.js') }}"></script>
   <script src="{{ url_for('static', filename='chess/board.js') }}"></script>
+  <script src="{{ url_for('static', filename='chess/puzzle.js') }}"></script>
 
   {% block scripts %}
   {% endblock %}
@@ -58,8 +59,10 @@
     </div>
   </nav>
 
+  <div class="background">
   {% block content %}
   {% endblock %}
+  </div>
 
   <footer class="navbar fixed-bottom" id="footer">
     <!-- COLLAPSE CLASS?-->

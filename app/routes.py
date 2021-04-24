@@ -28,8 +28,8 @@ LESSON_NAME_MAP = {
     "intro": "lessons/lesson0.html"
 }
 
-@app.route("/lesson/<string:name>")
-def lesson(name):
+@app.route("/lessons/<string:name>")
+def lessons(name):
     if name in LESSON_NAME_MAP:
         return render_template(LESSON_NAME_MAP[name])
     abort(404)

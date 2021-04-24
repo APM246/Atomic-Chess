@@ -31,6 +31,8 @@ const BISHOP_MOVE_VECTORS = [[-1, 1], [1, 1], [1, -1], [-1, -1]];
 const ROOK_MOVE_VECTORS = [[0, 1], [1, 0], [0, -1], [-1, 0]];
 const KING_MOVE_VECTORS = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
 
+const MOVE_NONE = { from: SQUARES.INVALID, to: SQUARES.INVALID, promotion: PIECES.NONE };
+
 // Utility function to create a square from a given file and rank
 function createSquare(file, rank) {
     if (file < 0 || file >= FILE_COUNT || rank < 0 || rank >= RANK_COUNT) {

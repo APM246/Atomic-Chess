@@ -37,7 +37,7 @@ body::before {
 
 .menu-items:hover {
     /*background-color: rgba(251, 255, 0, 0.4);*/
-    color: white;  
+    color: white;
 }
 
 @font-face {

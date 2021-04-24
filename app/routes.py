@@ -1,5 +1,6 @@
-from flask import render_template, abort
+from flask import render_template, abort, flash, redirect, request
 from app import app
+from app.forms import SignUpForm
 
 @app.route("/index")
 @app.route("/")
@@ -38,3 +39,10 @@ def lessons(name):
     if name in LESSON_NAME_MAP:
         return render_template(LESSON_NAME_MAP[name])
     abort(404)
+
+@app.route("/register", methods=['GET', 'POST'])
+def register():
+    form = SignUpForm(request.form)
+    if form.validate_on_submit():
+        return redirect('/login')
+    return render_template('register.html', form=form)

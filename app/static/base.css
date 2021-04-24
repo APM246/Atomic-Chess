@@ -19,7 +19,7 @@ body::before {
     z-index: -1;
 }
 
-.board {
+.ac-board {
     outline: none;
     user-select: none;
 }

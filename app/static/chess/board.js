@@ -1298,7 +1298,7 @@ class ChessBoard {
         const height = squareHeight * scale;
 
         const div = document.createElement("div");
-        div.className = "chess-marker";
+        div.className = "ac-chess-marker";
         const clientPosition = this.squareToBoardPosition(square);
         div.style.transform = `translate(${clientPosition.x}px, ${clientPosition.y}px)`;
         div.style.width = `${squareWidth}px`;
@@ -1353,12 +1353,12 @@ class ChessBoard {
         this._destroyBoard();
         if (this._parentElement) {
             const div = document.createElement("div");
-            div.className = "chess-board";
+            div.className = "ac-chess-board";
 
             const tableDiv = document.createElement("div");
-            tableDiv.className = "chess-board";
+            tableDiv.className = "ac-chess-board";
             const table = document.createElement("table");
-            table.className = "chess-board";
+            table.className = "ac-chess-board";
             for (let file = 0; file < FILE_COUNT; file++) {
                 const row = document.createElement("tr");
                 for (let rank = 0; rank < RANK_COUNT; rank++) {
@@ -1422,7 +1422,7 @@ class ChessBoard {
         const div = document.createElement("div");
         div.style.width = `${width}px`;
         div.style.height = `${height}px`;
-        div.className = "chess-piece";
+        div.className = "ac-chess-piece";
         const piecePosition = this.squareToBoardPosition(piece.currentSquare);
         div.style.transform = `translate(${piecePosition.x}px, ${piecePosition.y}px)`;
         const image = this._createPieceImage(piece, width, height);

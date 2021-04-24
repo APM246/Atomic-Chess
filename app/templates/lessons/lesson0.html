@@ -2,7 +2,7 @@
 
 {% block styles %}
 <style>
-    .lesson-board {
+    .ac-lesson-board {
         width: min(70vw, 70vh);
         height: min(70vw, 70vh);
         min-width: min(70vw, 70vh);
@@ -11,17 +11,17 @@
         margin-left: auto;
     }
 
-    .lesson-content {
+    .ac-lesson-content {
         margin-left: 10px;
         padding-bottom: 15px;
     }
 
-    .puzzle-container {
+    .ac-puzzle-container {
         display: flex;
         margin: auto;
     }
 
-    .puzzle-helper {
+    .ac-puzzle-helper {
         margin-left: 5px;
         width: min(40vw, 40vh);
         height: min(70vw, 70vh);
@@ -32,27 +32,27 @@
         flex-direction: column;
     }
 
-    .lesson-task {
+    .ac-lesson-task {
         margin-top: 50px;
     }
 
-    .next-button-container {
+    .ac-next-button-container {
         margin-top: auto;
         align-self: flex-end;
         width: 100%;
     }
 
-    .button-group {
+    .ac-button-group {
         margin-top: 10px;
     }
 
-    .full-button {
+    .ac-full-button {
         width: 100%;
         border-radius: 0;
         padding: 10px;
     }
 
-    .previous-button {
+    .ac-previous-button {
         border-radius: 50%;
         background-color: #f1f1f1;
         color: black;
@@ -222,7 +222,7 @@
         function showNextButton(puzzle, passed, isLast = false) {
             hideBackButton();
             nextButton.style.display = "block";
-            nextButton.className = "btn " + (passed ? "btn-success" : "btn-danger") + " full-button";
+            nextButton.className = "btn " + (passed ? "btn-success" : "btn-danger") + " ac-full-button";
             nextButton.innerText = passed ? (isLast ? "Complete!" : "Next") : "Retry";
             nextButton.onclick = () => {
                 hideNextButton();
@@ -332,24 +332,24 @@
 
 {% block content %}
     <div style="text-align: center;">
-        <div class="lesson-content">
+        <div class="ac-lesson-content">
             <h1>Introduction to Chess</h1>
             <p>Atomic chess is a variant of the classic game of chess. In order to begin playing atomic chess, you are first going to need to understand the basics of how chess pieces move.</p>
-            <div class="puzzle-container">
-                <div id="board" class="board lesson-board" tabindex="0"></div>
-                <div class="puzzle-helper">
+            <div class="ac-puzzle-container">
+                <div id="board" class="ac-board ac-lesson-board" tabindex="0"></div>
+                <div class="ac-puzzle-helper">
                     <h3 id="lesson-title">Moving pieces</h3>
                     <div>
                         Pick up a piece using the left mouse button to see the piece's legal moves. Follow the instructions below to progress.
                     </div>
-                    <div id="lesson-text" class="lesson-task">
+                    <div id="lesson-text" class="ac-lesson-task">
                         The king can move to any square directly adjacent to it. Move the king towards the bottom right corner of the board.
                     </div>
-                    <div class="next-button-container">
-                        <div class="button-group">
-                            <button id="reset-button" style="display: none;" type="button" class="btn btn-secondary full-button">Reset</button>
-                            <button id="next-button" style="display: none;" type="button" class="btn btn-success full-button">Next</button>
-                            <button id="back-button" style="display: none;" type="button" class="btn btn-primary full-button">Back</button>
+                    <div class="ac-next-button-container">
+                        <div class="ac-button-group">
+                            <button id="reset-button" style="display: none;" type="button" class="btn btn-secondary ac-full-button">Reset</button>
+                            <button id="next-button" style="display: none;" type="button" class="btn btn-success ac-full-button">Next</button>
+                            <button id="back-button" style="display: none;" type="button" class="btn btn-primary ac-full-button">Back</button>
                         </div>
                     </div>
                 </div>

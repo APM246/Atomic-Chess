@@ -9,20 +9,19 @@
 
 .ac-lesson-button {
     display: block;
-    color: black;
+    color: white;
     text-decoration: none;
     width: 170px;
     height: 3em;
     text-align: center;
     background-color: var(--ac-green);
-    border: 1px solid;
     border-radius: 5px;
     margin: auto auto 1em auto;
 }
 
 .ac-lesson-button:hover {
     background-color: var(--ac-deep-green);
-	color: black;
+    color: white;
 }
 
 .ac-lesson-button.ac-disable-access {

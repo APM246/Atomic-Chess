@@ -8,7 +8,13 @@ def index():
 
 @app.route("/learn")
 def learn():
-    return render_template("learn.html")
+    lessonNames = ["Rules", "Win Conditions", "Opening Traps", "Checks", "Piece Saftey", "Kings Touching"]
+    lessonDescriptions = ["Short Description of lesson here"] * len(lessonNames)
+
+    # todo: Query the database for which lessons have been completed
+    completedLessons = [True, True, False, False, True, False]
+
+    return render_template("learn.html", lessonNames=lessonNames, lessonDescriptions=lessonDescriptions, completedLessons=completedLessons, zip=zip)
 
 @app.route("/stats")
 def stats():

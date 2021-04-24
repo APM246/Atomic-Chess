@@ -1,7 +1,7 @@
 
 // Configures class attributes to make progress bar look correct
 function InitializeProgressBar() {
-	let ul = document.getElementsByClassName("my-progress-bar")[0];
+	let ul = document.getElementsByClassName("ac-progress-bar")[0];
 	let lis = ul.getElementsByTagName("li");
 
 	// Fill the progress bar until last completed lesson
@@ -17,12 +17,11 @@ function InitializeProgressBar() {
 	}
 
 	// Set active tab to earliest uncompleted lesson
-	last_li.className += " active";
+	let a = last_li.getElementsByTagName("a")[0];
+	a.className += " active";
 
 	// Focus the corresponding div
-	let a = last_li.getElementsByTagName("a")[0];
 	let id = a.href.substring(a.href.lastIndexOf("#") + 1);
-	console.log(id);
 	let div = document.getElementById(id);
-	div.className += " in active";
+	div.className += " active show";
 }

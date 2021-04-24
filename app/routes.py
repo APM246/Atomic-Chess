@@ -6,9 +6,15 @@ from app import app
 def index():
     return render_template("index.html")
 
+lessonNames = ["Rules", "Win Conditions", "Opening Traps", "Checks", "Piece Saftey", "Kings Touching"]
 @app.route("/learn")
 def learn():
-    return render_template("learn.html")
+    lessonDescriptions = ["Short Description of lesson here"] * len(lessonNames)
+
+    # todo: Query the database for which lessons have been completed
+    completedLessons = [True, True, False, False, True, False]
+
+    return render_template("learn.html", lessonNames=lessonNames, lessonDescriptions=lessonDescriptions, completedLessons=completedLessons, zip=zip)
 
 @app.route("/stats")
 def stats():
@@ -21,6 +27,7 @@ def settings():
 LESSON_NAME_MAP = {
     "intro": "lessons/lesson0.html"
 }
+LESSON_NAME_MAP.update({name: "lessons/lesson{}.html".format(i) for i, name in enumerate(lessonNames, 1)})
 
 def prepare_settings(settings_json):
     # Jinja seems to just do simple text replacement (ie. Doesn't convert from python True to js true)

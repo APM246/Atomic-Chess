@@ -3,6 +3,7 @@ body {
     min-height: 100vh;
     margin: 0;
     padding-bottom: 70px;
+    font-family: FiraCode, Georgia;
 }
 
 body::before {
@@ -23,35 +24,25 @@ body::before {
     user-select: none;
 }
 
-.container {
-    display: flex;
-}
-
 .container-fluid, #collapsing-navbar {
     height: 100%;
 }
 
 .menu-items {
-    font-family:'Trebuchet MS', 'Lucida Sans Unicode';
-    color: rgb(12, 199, 199);
+    color: white;
     font-size: 19pt;
     height: 100%;
     margin-right: 10px;
 }
 
 .menu-items:hover {
-    /*background-color: rgba(251, 255, 0, 0.4);*/
-    color: white;
+    color: var(--ac-green);
 }
 
 @font-face {
     font-family: FiraCode;
     src: url('fonts/FiraCode-Regular.ttf')
   }
-
-.main-text {
-    font-family: FiraCode, Georgia;
-}
 
 .main-text h1 {
     font-size: 50pt;
@@ -82,7 +73,7 @@ body::before {
 }
 
 #footer-content a:hover {
-    color:brown;
+    color:var(--ac-green);
     text-decoration: none;
 }
 

@@ -1,75 +1,48 @@
 {% extends "base.html" %}
 
 {% block styles %}
-<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='progress_bar/progress_bar.css') }}">
+<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/progress_bar.css') }}">
+<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/lesson_outline.css') }}">
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='progress_bar/initialize.js') }}"></script>
+<script src="{{ url_for('static', filename='learn/initialize.js') }}"></script>
 {% endblock %}
 
 {% block body_attributes %}
-onLoad="InitializeProgressBar()"
+onLoad="InitializeProgressBar()" class="d-flex flex-column" style="min-height: 100vh;"
 {% endblock %}
 
 {% block content %}
-<ul class="my-progress-bar nav nav-tabs">
-  <li class="completed">
-    <a class="node" href="{{ url_for('lessons', name='intro') }}"></a>
-    Rules
+<ul class="ac-progress-bar nav nav-tabs">
+  {% for name, comp in zip(lessonNames, completedLessons) %}
+  <li {% if comp %} class="completed" {% endif %}>
+    <a class="node" data-bs-toggle="tab" href="#lesson-{{ loop.index }}"></a>
+    {{ name }}
   </li>
-  <li class="completed">
-    <a class="node" data-bs-toggle="tab" href="#lesson-2"></a>
-    Win Conditions
-  </li>
-  <li>
-    <a class="node" data-bs-toggle="tab" href="#lesson-3"></a>
-    Opening Traps
-  </li>
-  <li>
-    <a class="node" data-bs-toggle="tab" href="#lesson-4"></a>
-    Checks
-  </li>
-  <li class="completed">
-    <a class="node" data-bs-toggle="tab" href="#lesson-5"></a>
-    Piece Safety
-  </li>
-  <li>
-    <a class="node" data-bs-toggle="tab" href="#lesson-6"></a>
-    Kings Touching
-  </li>
+  {% endfor %}
 </ul>
 
-<div class="tab-content">
-  <div class="tab-pane fade" id=lesson-1>
-    <h1>
-      Lesson 1: Rules
-    </h1>
+<div class="tab-content ac-lesson-outline flex-grow-1">
+  {% for name, desc, comp in zip(lessonNames, lessonDescriptions, completedLessons)%}
+  <div class="tab-pane fade" id=lesson-{{ loop.index }}>
+    <div class="container">
+      <div class="row align-items-start">
+        <div class="col-8">
+          <h1>
+            Lesson {{ loop.index }}: {{ name }}
+          </h1>
+          <p>
+            {{ desc }}
+          </p>
+        </div>
+        <div class="col-4">
+          <a class="ac-lesson-button" href={{ url_for('lessons', name=name)}}>Begin Lesson</a>
+          <a class="ac-lesson-button {% if not comp %} ac-disable-access {% endif %}">Begin Test</a>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="tab-pane fade" id=lesson-2>
-    <h1>
-      Lesson 2: Win Conditions
-    </h1>
-  </div>
-  <div class="tab-pane fade" id=lesson-3>
-    <h1>
-      Lesson 3: Opening Traps
-    </h1>
-  </div>
-  <div class="tab-pane fade" id=lesson-4>
-    <h1>
-      Lesson 4: Checks
-    </h1>
-  </div>
-  <div class="tab-pane fade" id=lesson-5>
-    <h1>
-      Lesson 5: Piece Safety
-    </h1>
-  </div>
-  <div class="tab-pane fade" id=lesson-6>
-    <h1>
-      Lesson 6: Kings Touching
-    </h1>
-  </div>
+  {% endfor %}
 </div>
 {% endblock %}

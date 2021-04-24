@@ -1,0 +1,30 @@
+.ac-lesson-outline {
+	display: flex;
+	align-items: center;
+}
+
+.ac-lesson-outline > div {
+	width: 100%;
+}
+
+.ac-lesson-button {
+    display: block;
+    color: white;
+    text-decoration: none;
+    width: 170px;
+    height: 3em;
+    text-align: center;
+    background-color: var(--ac-green);
+    border-radius: 5px;
+    margin: auto auto 1em auto;
+}
+
+.ac-lesson-button:hover {
+    background-color: var(--ac-deep-green);
+    color: white;
+}
+
+.ac-lesson-button.ac-disable-access {
+	background-color: var(--ac-grey);
+	cursor: not-allowed;
+}

@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 
 {% block styles %}
-<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='progress_bar/progress_bar.css') }}">
+<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/progress_bar.css') }}">
+<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/lesson_outline.css') }}">
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='progress_bar/initialize.js') }}"></script>
+<script src="{{ url_for('static', filename='learn/initialize.js') }}"></script>
 {% endblock %}
 
 {% block body_attributes %}
-onLoad="InitializeProgressBar()"
+onLoad="InitializeProgressBar()" class="d-flex flex-column" style="min-height: 100vh;"
 {% endblock %}
 
 {% block content %}
-<ul class="my-progress-bar nav nav-tabs">
+<ul class="ac-progress-bar nav nav-tabs">
   <li class="completed">
     <a class="node" data-bs-toggle="tab" href="#lesson-1"></a>
     Rules
@@ -40,36 +41,64 @@ onLoad="InitializeProgressBar()"
   </li>
 </ul>
 
-<div class="tab-content">
+<div class="tab-content ac-lesson-outline flex-grow-1">
   <div class="tab-pane fade" id=lesson-1>
-    <h1>
-      Lesson 1: Rules
-    </h1>
+    <div class="container">
+      <div class="row align-items-start">
+        <div class="col-8">
+          <h1>
+            Lesson 1: Rules
+          </h1>
+          <p>
+            Short description of the lesson
+          </p>
+        </div>
+        <div class="col-4">
+          <a class="ac-lesson-button" href="/lesson/intro">Begin Lesson</a>
+          <a class="ac-lesson-button ac-disable-access">Begin Test</a>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="tab-pane fade" id=lesson-2>
     <h1>
       Lesson 2: Win Conditions
     </h1>
+    <p>
+      Short description of the lesson
+    </p>
   </div>
   <div class="tab-pane fade" id=lesson-3>
     <h1>
       Lesson 3: Opening Traps
     </h1>
+    <p>
+      Short description of the lesson
+    </p>
   </div>
   <div class="tab-pane fade" id=lesson-4>
     <h1>
       Lesson 4: Checks
     </h1>
+    <p>
+      Short description of the lesson
+    </p>
   </div>
   <div class="tab-pane fade" id=lesson-5>
     <h1>
       Lesson 5: Piece Safety
     </h1>
+    <p>
+      Short description of the lesson
+    </p>
   </div>
   <div class="tab-pane fade" id=lesson-6>
     <h1>
       Lesson 6: Kings Touching
     </h1>
+    <p>
+      Short description of the lesson
+    </p>
   </div>
 </div>
 {% endblock %}

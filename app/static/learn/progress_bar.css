@@ -1,19 +1,19 @@
-.my-progress-bar {
+.ac-progress-bar {
 	width: 100%;
 	overflow: hidden;
 	padding: 5px 0px 0px 0px;
-	margin: 0px;
+	margin: 1em 0px 0px 0px;
 	border: 0px;
 }
 
-.my-progress-bar li {
+.ac-progress-bar li {
 	list-style-type: none;
 	width: 16.66%;
 	float: left;
 	font-size: 14px;
 	position: relative;
 	text-align: center;
-	color: #7d7d7d;
+	color: var(--ac-grey);
 }
 
 li > a.node {
@@ -23,25 +23,25 @@ li > a.node {
 	display: block;
 	margin: 0 auto 10px auto;
 	border-radius: 50%;
-	border-color: #7d7d7d;
+	border-color: var(--ac-grey);
 	background-color: white;
 }
 
 li.completed > a.node {
-	border-color: #55b776;
+	border-color: var(--ac-green);
 }
 
 /* Override Bootstrap classes */
-.nav-tabs > li.active > a.node {
+.ac-progress-bar > li.active > a.node {
 	border: 2px solid;
-	border-color: #7d7d7d;
+	border-color: var(--ac-grey);
 }
 
-.nav-tabs > li.active.completed > a.node {
-	border-color: #55b776;
+.ac-progress-bar > li.active.completed > a.node {
+	border-color: var(--ac-green);
 }
 
-.nav-tabs > li > a.node:hover, .nav-tabs > li.active > a.node {
+.ac-progress-bar > li > a.node:hover, .ac-progress-bar > li > a.active {
 	position: relative;
 	top: -5px;
 	width: 50px;
@@ -50,31 +50,31 @@ li.completed > a.node {
 	background-color: white;
 }
 
-.nav-tabs > li:not(.completed) > a.node:hover {
-	border-color: #7d7d7d;
+.ac-progress-bar > li:not(.completed) > a.node:hover {
+	border-color: var(--ac-grey);
 }
 /* End Override Bootstrap classes */
 
-.my-progress-bar li::after {
+.ac-progress-bar li::after {
 	width: 100%;
 	height: 20px;
 	content: '';
 	position: absolute;
-	background-color: #7d7d7d;
+	background-color: var(--ac-grey);
 	top: 10px;
 	left: -50%;
 	z-index: -1;
 }
 
-.my-progress-bar li:first-child::after {
+.ac-progress-bar li:first-child::after {
 	content: none;
 }
 
-.my-progress-bar li.completed {
-	color: #55b776;
+.ac-progress-bar li.completed {
+	color: var(--ac-green);
 }
 
-.my-progress-bar li.completed::before {
+.ac-progress-bar li.completed::before {
 	content: url(check.svg);
 	position: absolute;
 	top: 8px;
@@ -84,6 +84,6 @@ li.completed > a.node {
 	z-index: 10;
 }
 
-.my-progress-bar li.fill-bar + li::after {
-	background-color: #55b776;
+.ac-progress-bar li.fill-bar + li::after {
+	background-color: var(--ac-green);
 }

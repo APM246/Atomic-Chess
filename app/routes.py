@@ -1,6 +1,6 @@
-from flask import render_template, abort, flash, redirect, request
+from flask import render_template, abort, flash, redirect, request, url_for
 from app import app
-from app.forms import SignUpForm
+from app.forms import SignUpForm, LoginForm
 
 @app.route("/index")
 @app.route("/")
@@ -44,5 +44,12 @@ def lessons(name):
 def register():
     form = SignUpForm(request.form)
     if form.validate_on_submit():
-        return redirect('/login')
+        return redirect(url_for('login'))
     return render_template('register.html', form=form)
+
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    form = LoginForm(request.form)
+    if form.validate_on_submit():
+        return redirect(url_for('index'))
+    return render_template('login.html', form=form)

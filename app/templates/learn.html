@@ -37,8 +37,7 @@ onLoad="InitializeProgressBar()" class="d-flex flex-column" style="min-height: 1
           </p>
         </div>
         <div class="col-4">
-          <!-- TODO: update href in loop -->
-          <a class="ac-lesson-button" href="/lesson/intro">Begin Lesson</a>
+          <a class="ac-lesson-button" href={{ url_for('lessons', name=name)}}>Begin Lesson</a>
           <a class="ac-lesson-button {% if not comp %} ac-disable-access {% endif %}">Begin Test</a>
         </div>
       </div>

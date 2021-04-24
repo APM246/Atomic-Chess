@@ -6,9 +6,9 @@ from app import app
 def index():
     return render_template("index.html")
 
+lessonNames = ["Rules", "Win Conditions", "Opening Traps", "Checks", "Piece Saftey", "Kings Touching"]
 @app.route("/learn")
 def learn():
-    lessonNames = ["Rules", "Win Conditions", "Opening Traps", "Checks", "Piece Saftey", "Kings Touching"]
     lessonDescriptions = ["Short Description of lesson here"] * len(lessonNames)
 
     # todo: Query the database for which lessons have been completed
@@ -27,6 +27,7 @@ def settings():
 LESSON_NAME_MAP = {
     "intro": "lessons/lesson0.html"
 }
+LESSON_NAME_MAP.update({name: "lessons/lesson{}.html".format(i) for i, name in enumerate(lessonNames, 1)})
 
 @app.route("/lessons/<string:name>")
 def lessons(name):

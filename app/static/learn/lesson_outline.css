@@ -8,12 +8,13 @@
 }
 
 .ac-lesson-button {
-    display: block;
+    display: flex;
     color: white;
     text-decoration: none;
     width: 170px;
     height: 3em;
-    text-align: center;
+    align-items: center;
+    justify-content: center;
     background-color: var(--ac-green);
     border-radius: 5px;
     margin: auto auto 1em auto;

@@ -14,3 +14,11 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     remember_me = BooleanField('Remember me')
     submit = SubmitField('Sign In')
+
+class SettingsForm(FlaskForm):
+    light_square_color = StringField('Light Square Color', validators=[DataRequired()])
+    dark_square_color = StringField('Dark Square Color', validators=[DataRequired()])
+    show_move_markers = BooleanField('Show Move Markers')
+    show_square_highlights = BooleanField('Highlight Squares')
+    use_move_animations = BooleanField('Animate Moves')
+    submit = SubmitField('Save')

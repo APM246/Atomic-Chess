@@ -1,5 +1,22 @@
+import json
+
+from flask_sqlalchemy import sqlalchemy
 from app import db
 from datetime import datetime
+
+# Column type that represents a JSON object stored as TEXT in the database
+class JSONString(sqlalchemy.TypeDecorator):
+	impl = sqlalchemy.types.TEXT
+
+	def process_bind_param(self, value, dialect):
+		if value is not None:
+			value = json.dumps(value)
+		return value
+
+	def process_result_value(self, value, dialect):
+		if value is not None:
+			value = json.loads(value)
+		return value
 
 class User(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -8,7 +25,7 @@ class User(db.Model):
 	created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 	chess_beginner = db.Column(db.Boolean, nullable=False)
 	is_admin = db.Column(db.Boolean, nullable=False, default=False)
-	settings = db.Column(db.Text)
+	settings = db.Column(JSONString, nullable=False, default={})
 
 	lessons = db.relationship("Lesson", lazy=True)
 	completed_puzzles = db.relationship("PuzzleCompletion", lazy=True)

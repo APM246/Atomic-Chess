@@ -36,7 +36,7 @@ def register():
         user = User(
             username=form.username.data,
             pwd_hash=generate_password_hash(form.password.data),
-            chess_beginner=form.is_chess_beginner.data
+            chess_beginner=form.is_chess_beginner.data,
         )
         db.session.add(user)
         db.session.commit()
@@ -77,6 +77,9 @@ def login():
         if error is None:
             session.clear()
             session["current_user"] = user.id
+
+            print(user.settings)
+
             return redirect(redirect_url)
 
         flash(error)

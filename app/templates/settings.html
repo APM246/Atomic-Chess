@@ -1,4 +1,27 @@
 {% extends "base.html" %}
-  {% block content %} 
-    <p> Settings page </p>
-  {% endblock %}
+
+{% block content %} 
+  <form method="POST" action='' class="ac-forms">
+    {{ form.hidden_tag() }}
+    {{ form.light_square_color.label }}
+    {{ form.light_square_color }} <br>
+  
+    {{ form.dark_square_color.label }}
+    {{ form.dark_square_color }} <br>
+  
+    {{ form.show_move_markers.label }}
+    {{ form.show_move_markers }} <br>
+
+    {{ form.show_square_highlights.label }}
+    {{ form.show_square_highlights }} <br>
+
+    {{ form.use_move_animations.label }}
+    {{ form.use_move_animations }} <br>
+  
+    {% for message in get_flashed_messages() %}
+    <p>{{ message }}</p>
+    {% endfor %}
+  
+    {{ form.submit }}
+  </form>
+{% endblock %}

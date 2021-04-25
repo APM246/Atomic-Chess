@@ -8,7 +8,7 @@
 
 .ac-progress-bar li {
 	list-style-type: none;
-	width: 16.66%;
+	width: calc(100% / 7);
 	float: left;
 	font-size: 14px;
 	position: relative;

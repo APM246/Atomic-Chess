@@ -59,6 +59,17 @@
         width: 50px;
         height: 50px;
     }
+
+    /* Override bootstrap classes */
+    .btn-success #next-button {
+        background-color: var(--ac-green);
+        border-color: var(--ac-green);
+    }
+
+    .btn-success #next-button:hover {
+        background-color: var(--ac-deep-green);
+        border-color: var(--ac-deep-green);
+    }
 </style>
 {% endblock %}
 
@@ -224,6 +235,7 @@
             hideBackButton();
             nextButton.style.display = "block";
             nextButton.className = "btn " + (passed ? "btn-success" : "btn-danger") + " ac-full-button";
+            console.log(nextButton.className)
             nextButton.innerText = passed ? (isLast ? "Complete!" : "Next") : "Retry";
             nextButton.onclick = () => {
                 hideNextButton();
@@ -359,4 +371,5 @@
             </div>
         </div>
     </div>
+</div>
 {% endblock %}

@@ -1,5 +1,6 @@
 from flask import render_template, abort, redirect, request, url_for, g
 from app import app, db
+from app.models import User, Lesson
 from app.auth import login_required
 
 @app.route("/index")
@@ -8,10 +9,11 @@ def index():
     return render_template("index.html", user=g.user)
 
 LESSON_NAMES = ["Chess", "Atomic", "Win Conditions", "Opening Traps", "Checks", "Piece Saftey", "Kings Touching"]
+NUM_LESSONS = len(LESSON_NAMES)
 LESSON_NAME_MAP = {name: "lessons/lesson{}.html".format(i) for i, name in enumerate(LESSON_NAMES)}
 
-@login_required
 @app.route("/learn")
+@login_required
 def learn():
     lesson_descriptions = [
         "Never played chess before? This lesson will go through the basics of chess",
@@ -22,23 +24,26 @@ def learn():
         "TODO",
         "Kings can touch each other in Atomic Chess! This lesson teaches you the consequences of this strange rule"]
 
-    # todo: Query the database for which lessons have been completed
-    completed_lessons = [True, True, True, False, False, True, False]
+    # Query the database for which lessons have been completed
+    completed_lessons = [False] * NUM_LESSONS
+    for lesson in g.user.lessons:
+        if lesson.completed_test:
+            completed_lessons[lesson.lesson_id] = True
 
     return render_template("learn.html", user=g.user, lessonNames=LESSON_NAMES, lessonDescriptions=lesson_descriptions, completedLessons=completed_lessons, zip=zip)
 
-@login_required
 @app.route("/stats")
+@login_required
 def stats():
     return render_template("stats.html", user=g.user)
 
-@login_required
 @app.route("/settings")
+@login_required
 def settings():
     return render_template("settings.html", user=g.user)
 
-@login_required
 @app.route("/lessons/<string:name>")
+@login_required
 def lessons(name):
     if name in LESSON_NAME_MAP:
         return render_template(LESSON_NAME_MAP[name], user=g.user)

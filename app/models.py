@@ -20,6 +20,7 @@ class Lesson(db.Model):
 	user = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True, nullable=False)
 	lesson_id = db.Column(db.Integer, primary_key=True, nullable=False)
 	progression = db.Column(db.Integer, nullable=False)
+	completed_test = db.Column(db.Boolean, nullable=False, default=False)
 
 class Puzzle(db.Model):
 	id = db.Column(db.Integer, primary_key=True)

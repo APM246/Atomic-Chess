@@ -1,6 +1,6 @@
 from flask import render_template, abort, flash, redirect, request, url_for, session, g
 from app import app, db
-from app.models import User
+from app.models import User, Lesson
 from app.forms import SignUpForm, LoginForm
 from werkzeug.security import check_password_hash, generate_password_hash
 import functools
@@ -39,9 +39,20 @@ def register():
             pwd_hash=generate_password_hash(form.password.data),
             chess_beginner=form.is_chess_beginner.data
         )
-
         db.session.add(user)
         db.session.commit()
+
+        # Mark intro to chess lesson as complete
+        if not user.chess_beginner:
+            lesson = Lesson(
+                user=user.id,
+                lesson_id=0,
+                progression=0, # idk put anything here for now
+                completed_test=True
+            )
+            db.session.add(lesson)
+            db.session.commit()
+
 
         session.clear()
         session["current_user"] = user.id

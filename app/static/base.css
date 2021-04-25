@@ -39,6 +39,20 @@ body::before {
     color: var(--ac-green);
 }
 
+.menu-items-sm {
+    color: white;
+    font-size: 14pt;
+    height: 100%;
+    margin-right: 10px;
+    padding: 0px;
+    align-items: center;
+    text-align: center;
+}
+
+.nav-link.menu-items-sm:hover {
+    color: var(--ac-green);
+}
+
 @font-face {
     font-family: FiraCode;
     src: url('fonts/FiraCode-Regular.ttf')

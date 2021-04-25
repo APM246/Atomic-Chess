@@ -4,9 +4,9 @@ from datetime import datetime
 class User(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	username = db.Column(db.String(80), unique=True, nullable=False)
-	pwd_hash = db.Column(db.String(80), nullable=False)
+	pwd_hash = db.Column(db.Text, nullable=False) # not sure what datatype this should be
 	created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-	played_chess = db.Column(db.Boolean, nullable=False)
+	chess_beginner = db.Column(db.Boolean, nullable=False)
 	is_admin = db.Column(db.Boolean, nullable=False, default=False)
 	settings = db.Column(db.Text)
 

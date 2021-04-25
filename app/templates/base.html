@@ -52,8 +52,14 @@
           <li class="nav-item"><a class="nav-link menu-items" href="{{ url_for('settings') }}"> Settings </a></li>
         </ul>
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link menu-items" href="{{ url_for('login') }}"> <i class="bi bi-person-circle"> </i> Sign In</a>
+          {% if user %}
+          <li class="nav-item nav-link menu-items">Welcome, {{ user.username }}</li>
+          <li class="nav-item"><a class="nav-link menu-items" href="{{ url_for('logout') }}"> Logout </a></li>
+          {% else %}
+          <li class="nav-item"><a class="nav-link menu-items" href="{{ url_for('login') }}"> <i
+                class="bi bi-person-circle"> </i> Sign In</a>
           </li>
+          {% endif %}
         </ul>
       </div>
     </div>

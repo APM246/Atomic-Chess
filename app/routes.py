@@ -1,15 +1,16 @@
-from flask import render_template, abort, flash, redirect, request, url_for
-from app import app
-from app.forms import SignUpForm, LoginForm
+from flask import render_template, abort, redirect, request, url_for, g
+from app import app, db
+from app.auth import login_required
 
 @app.route("/index")
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", user=g.user)
 
 LESSON_NAMES = ["Chess", "Atomic", "Win Conditions", "Opening Traps", "Checks", "Piece Saftey", "Kings Touching"]
 LESSON_NAME_MAP = {name: "lessons/lesson{}.html".format(i) for i, name in enumerate(LESSON_NAMES)}
 
+@login_required
 @app.route("/learn")
 def learn():
     lesson_descriptions = [
@@ -24,32 +25,21 @@ def learn():
     # todo: Query the database for which lessons have been completed
     completed_lessons = [True, True, True, False, False, True, False]
 
-    return render_template("learn.html", lessonNames=LESSON_NAMES, lessonDescriptions=lesson_descriptions, completedLessons=completed_lessons, zip=zip)
+    return render_template("learn.html", user=g.user, lessonNames=LESSON_NAMES, lessonDescriptions=lesson_descriptions, completedLessons=completed_lessons, zip=zip)
 
+@login_required
 @app.route("/stats")
 def stats():
-    return render_template("stats.html")
+    return render_template("stats.html", user=g.user)
 
+@login_required
 @app.route("/settings")
 def settings():
-    return render_template("settings.html")
+    return render_template("settings.html", user=g.user)
 
+@login_required
 @app.route("/lessons/<string:name>")
 def lessons(name):
     if name in LESSON_NAME_MAP:
-        return render_template(LESSON_NAME_MAP[name])
+        return render_template(LESSON_NAME_MAP[name], user=g.user)
     abort(404)
-
-@app.route("/register", methods=['GET', 'POST'])
-def register():
-    form = SignUpForm(request.form)
-    if form.validate_on_submit():
-        return redirect(url_for('login'))
-    return render_template('register.html', form=form)
-
-@app.route("/login", methods=['GET', 'POST'])
-def login():
-    form = LoginForm(request.form)
-    if form.validate_on_submit():
-        return redirect(url_for('index'))
-    return render_template('login.html', form=form)

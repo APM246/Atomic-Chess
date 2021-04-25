@@ -2,17 +2,24 @@
 
 {% block content %}
 
-<form method="POST" action='' class='ac-forms'> 
+<form method="POST" action='' class='ac-forms'>
   {{ form.hidden_tag() }}
 
   {{ form.username.label }}
   {{ form.username }} <br>
 
-  {{ form.password.label }} 
+  {{ form.password.label }}
   {{ form.password }} <br>
 
-  {{ form.is_chess_beginner.label }} 
+  {{ form.is_chess_beginner.label }}
   {{ form.is_chess_beginner }} <br>
+
+  {{ form.remember_me.label }}
+  {{ form.remember_me }} <br>
+
+  {% for message in get_flashed_messages() %}
+  <p>{{ message }}</p>
+  {% endfor %}
 
   {{ form.submit }}
   <label> Clicking this will redirect you to the login page </label>

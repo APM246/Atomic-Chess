@@ -4,20 +4,24 @@
 
 <form method="POST" action='' class="ac-forms">
   {{ form.hidden_tag() }}
-  {{ form.username.label }} 
+  {{ form.username.label }}
   {{ form.username }} <br>
 
-  {{ form.password.label }} 
+  {{ form.password.label }}
   {{ form.password }} <br>
 
   {{ form.remember_me.label }}
-  {{ form.remember_me }} <br> 
+  {{ form.remember_me }} <br>
+
+  {% for message in get_flashed_messages() %}
+  <p>{{ message }}</p>
+  {% endfor %}
 
   {{ form.submit }}
 </form>
 
 <div id="register-redirect">
-    <p> New to our website? Click <a href="{{ url_for('register') }}">here</a> to create a new account. </p>
+  <p> New to our website? Click <a href="{{ url_for('register') }}">here</a> to create a new account. </p>
 </div>
 
 {% endblock %}

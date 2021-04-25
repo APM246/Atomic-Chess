@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, send_from_directory
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
@@ -12,10 +12,9 @@ app.config.from_mapping(
     SQLALCHEMY_DATABASE_URI="sqlite:///" + os.path.join(os.path.abspath(app.instance_path), "test.db"),
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
 )
+os.makedirs(app.instance_path, exist_ok=True)
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-os.makedirs(app.instance_path, exist_ok=True)
-
-from app import routes, models
+from app import routes, auth

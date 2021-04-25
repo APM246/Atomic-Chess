@@ -25,7 +25,7 @@ onLoad="InitializeProgressBar()" class="d-flex flex-column" style="min-height: 1
 
 <div class="tab-content ac-lesson-outline flex-grow-1">
   {% for name, desc, comp in zip(lesson_names, lesson_descriptions, completed_lessons) %}
-  <div class="tab-pane fade" id=lesson-{{ loop.index }}>
+  <div class="tab-pane fade" id="lesson-{{ loop.index }}">
     <div class="container">
       <div class="row align-items-start">
         <div class="col-8">

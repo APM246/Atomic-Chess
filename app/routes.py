@@ -30,7 +30,7 @@ def learn():
         if lesson.completed_test:
             completed_lessons[lesson.lesson_id] = True
 
-    return render_template("learn.html", user=g.user, lessonNames=LESSON_NAMES, lessonDescriptions=lesson_descriptions, completedLessons=completed_lessons, zip=zip)
+    return render_template("learn.html", user=g.user, lesson_names=LESSON_NAMES, lesson_descriptions=lesson_descriptions, completed_lessons=completed_lessons, zip=zip)
 
 @app.route("/stats")
 @login_required

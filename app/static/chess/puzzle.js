@@ -18,7 +18,7 @@ function createLinearMoveTree(moves) {
             current = current.continuation[0];
         }
     }
-    return result
+    return result;
 }
 
 class Puzzle {
@@ -122,4 +122,4 @@ class Puzzle {
         }
     }
 
-};
+}

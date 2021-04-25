@@ -21,7 +21,7 @@
 </form>
 
 <div id="register-redirect">
-  <p> New to our website? Click <a href="{{ url_for('register') }}">here</a> to create a new account. </p>
+  <p> New to our website? Click <a href="{{ url_for('register', next=next) }}">here</a> to create a new account. </p>
 </div>
 
 {% endblock %}

@@ -18,10 +18,9 @@ def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None:
-            return redirect(url_for("login"))
+            return redirect(url_for("login", next=url_for(request.endpoint, **request.view_args)))
 
         return view(**kwargs)
-    
     return wrapped_view
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -53,16 +52,19 @@ def register():
             db.session.add(lesson)
             db.session.commit()
 
-
         session.clear()
         session["current_user"] = user.id
-        return redirect(url_for('learn'))
+        redirect_url = request.args.get("next", None) or url_for("index")
+        # TODO: Validate that the redirect url is on our domain (not some other site)
+        return redirect(redirect_url)
 
     return render_template('register.html', form=form)
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     form = LoginForm(request.form)
+    redirect_url = request.args.get("next", None) or url_for("index")
+    # TODO: Validate that the redirect url is on our domain (not some other site)
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         error = None
@@ -75,11 +77,11 @@ def login():
         if error is None:
             session.clear()
             session["current_user"] = user.id
-            return redirect(url_for('learn'))
-        
+            return redirect(redirect_url)
+
         flash(error)
 
-    return render_template('login.html', form=form)
+    return render_template('login.html', form=form, next=redirect_url)
 
 @app.route('/logout')
 def logout():

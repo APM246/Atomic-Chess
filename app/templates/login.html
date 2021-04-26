@@ -2,22 +2,22 @@
 
 {% block content %}
 
-<form method="POST" action='' class="ac-forms">
-  {{ form.hidden_tag() }}
-  {{ form.username.label }} 
-  {{ form.username }} <br>
+<div class="ac-form-container">
+  <form method="POST" action='' class="ac-forms">
+    {{ form.hidden_tag() }}
+    {{ form.username.label }} 
+    {{ form.username }} <br>
 
-  {{ form.password.label }} 
-  {{ form.password }} <br>
+    {{ form.password.label }} 
+    {{ form.password }} <br>
 
-  {{ form.remember_me.label }}
-  {{ form.remember_me }} <br> 
+    {{ form.remember_me.label }}
+    {{ form.remember_me }} <br> <br> 
 
-  {{ form.submit }}
-</form>
-
-<div id="register-redirect">
+    {{ form.submit }}
+    <br>
     <p> New to our website? Click <a href="{{ url_for('register') }}">here</a> to create a new account. </p>
+  </form>
 </div>
 
 {% endblock %}

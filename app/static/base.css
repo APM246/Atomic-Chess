@@ -95,3 +95,19 @@ body::before {
 .bi-list-task {
     font-size: 1.5em;
 }
+
+.ac-form-container {
+    text-align: center;
+    background-color:rgb(25, 187, 66);
+    width: 100%;
+    color: black;
+    position: absolute;
+    top: 40%;
+    border: ridge black 5px;
+    
+}
+
+.ac-forms {
+    font-size: 16pt;
+    padding: 20px;
+}

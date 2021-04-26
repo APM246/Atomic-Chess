@@ -2,21 +2,22 @@
 
 {% block content %}
 
-<form method="POST" action='' class='ac-forms'> 
-  {{ form.hidden_tag() }}
+<div class="ac-form-container">
+  <form method="POST" action='' class='ac-forms'> 
+    {{ form.hidden_tag() }}
 
-  {{ form.username.label }}
-  {{ form.username }} <br>
+    {{ form.username.label }}
+    {{ form.username }} <br>
 
-  {{ form.password.label }} 
-  {{ form.password }} <br>
+    {{ form.password.label }} 
+    {{ form.password }} <br>
 
-  {{ form.is_chess_beginner.label }} 
-  {{ form.is_chess_beginner }} <br>
+    {{ form.is_chess_beginner.label }} 
+    {{ form.is_chess_beginner }} <br>
 
-  {{ form.submit }}
-  <label> Clicking this will redirect you to the login page </label>
-</form>
-
+    {{ form.submit }}
+    <label> Clicking this will redirect you to the login page </label>
+  </form>
+</div>
 
 {% endblock %}

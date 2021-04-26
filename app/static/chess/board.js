@@ -968,11 +968,10 @@ class ChessBoard {
                     // However there is likely another piece already on the square (the piece we captured)
                     // Therefore before we create the piece we set its square to the capture square (move.to) and after its position has been update we set its actual square to the location it is about to move to
                     // Temporarily its graphical position and logical position are out of sync
-                    if (piece.isMovingPiece) {
+                    if (piece.isMovingPiece && shouldAnimate) {
                         pieceObject.currentSquare = moveData.move.to;
                     }
                     this._createPiece(pieceObject);
-                    pieceObject.currentSquare = piece.square;
                 }
 
                 const promise = wait(this._options.animationTime);
@@ -1217,8 +1216,6 @@ class ChessBoard {
             this._historyIndex++;
             const moveInfo = this._moveHistory[this._historyIndex];
             moveInfo.undo = this.position.applyMove(moveInfo.move, this._options.useMoveAnimations);
-            this._squareEmphasizer.emphasize(moveInfo.move.from);
-            this._squareEmphasizer.emphasize(moveInfo.move.to);
         }
     }
 
@@ -1269,13 +1266,15 @@ class ChessBoard {
         const isCapture = this.position.isCapture(move);
         const color = isCapture ? MOVE_MARKER_CAPTURE_COLOR : MOVE_MARKER_DEFAULT_COLOR;
         const scale = isCapture ? MOVE_MARKER_CAPTURE_SCALE : MOVE_MARKER_DEFAULT_SCALE;
-        const div = this._createMoveMarkerDiv(move.to, color, scale);
+        const div = this._createMoveMarkerDiv(color, scale);
 
-        this._boardElement.appendChild(div);
+        let td = this._getTdFromSquare(move.to);
+        td.appendChild(div);
+
         this._moveMarkerDivs.push(div);
     }
 
-    _createMoveMarkerDiv(square, color, scale) {
+    _createMoveMarkerDiv(color, scale) {
         const squareWidth = this.squareClientWidth;
         const squareHeight = this.squareClientHeight;
         const width = squareWidth * scale;
@@ -1283,8 +1282,6 @@ class ChessBoard {
 
         const div = document.createElement("div");
         div.className = "ac-chess-marker";
-        const clientPosition = this.squareToBoardPosition(square);
-        div.style.transform = `translate(${clientPosition.x}px, ${clientPosition.y}px)`;
         div.style.width = `${squareWidth}px`;
         div.style.height = `${squareHeight}px`;
 
@@ -1561,7 +1558,6 @@ class ChessBoard {
     // Sets the piece transform for a given square
     _movePieceToSquare(square, piece, animationPromise) {
         if (piece.img) {
-            const position = this.squareToBoardPosition(square);
             if (animationPromise) {
                 this._beginMovingPiece(piece);
                 piece.img.style.transition = `${this._options.animationTime}ms`;

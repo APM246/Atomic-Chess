@@ -2,6 +2,7 @@
     width: 100%;
     height: 100%;
     border-spacing: 0;
+    user-select: none;
 }
 
 table.ac-chess-board > tr {
@@ -29,4 +30,8 @@ table.ac-chess-board > tr > td {
     position: absolute;
     z-index: 5;
     text-align: center;
+}
+
+.ac-chess-marker svg {
+    vertical-align: baseline;
 }

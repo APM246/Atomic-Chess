@@ -4,10 +4,10 @@
   <form method="POST" action='' class="ac-forms">
     {{ form.hidden_tag() }}
     {{ form.light_square_color.label }}
-    {{ form.light_square_color }} <br>
+    {{ form.light_square_color(type="color") }} <br>
   
     {{ form.dark_square_color.label }}
-    {{ form.dark_square_color }} <br>
+    {{ form.dark_square_color(type="color") }} <br>
   
     {{ form.show_move_markers.label }}
     {{ form.show_move_markers }} <br>

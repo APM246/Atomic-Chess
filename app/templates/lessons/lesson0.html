@@ -75,7 +75,7 @@
 
 {% block scripts %}
 <script>
-    window.onload = () => {
+    window.onload = async () => {
         const puzzleData = [
             {
                 eventColor: COLORS.WHITE,
@@ -183,35 +183,14 @@
         ];
         let index = 0;
 
+        const userSettings = await ajax("{{ url_for('get_settings') }}");
+        const boardOptions = userSettings ? transformSettingsResponse(userSettings.settings) : {};
+
         let puzzle = new Puzzle({
             ...puzzleData[0],
             boardOptions: {
                 target: "#board",
-                lightSquareColor: "{{ board_settings.light_square_color }}",
-                darkSquareColor: "{{ board_settings.dark_square_color }}",
-                lightSquareHighlightColor: "{{ board_settings.light_square_highlight_color }}",
-                darkSquareHighlightColor: "{{ board_settings.dark_square_highlight_color }}",
-                pieceImages: {
-                    basePath:    "/static/pieces/",
-                    whitePawn:   "white_pawn.png",
-                    whiteKnight: "white_knight.png",
-                    whiteBishop: "white_bishop.png",
-                    whiteRook:   "white_rook.png",
-                    whiteQueen:  "white_queen.png",
-                    whiteKing:   "white_king.png",
-                    blackPawn:   "black_pawn.png",
-                    blackKnight: "black_knight.png",
-                    blackBishop: "black_bishop.png",
-                    blackRook:   "black_rook.png",
-                    blackQueen:  "black_queen.png",
-                    blackKing:   "black_king.png",
-                },
-                interactive: true,
-                showMoveMarkers: {{ board_settings.show_move_markers }},
-                showSquareHighlights: {{ board_settings.show_square_highlights }},
-                allowUndo: false,
-                useMoveAnimations: {{ board_settings.use_move_animations }},
-                animationTime: {{ board_settings.animation_time_ms }},
+                ...boardOptions,
             }
         });
         // Disable checks for whether we/they have a king

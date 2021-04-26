@@ -19,3 +19,4 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 from app import routes, auth
+from app.api import routes, auth

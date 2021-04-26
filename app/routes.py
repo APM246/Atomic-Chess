@@ -14,31 +14,6 @@ LESSON_NAMES = ["Chess", "Atomic", "Win Conditions", "Opening Traps", "Checks", 
 NUM_LESSONS = len(LESSON_NAMES)
 LESSON_NAME_MAP = { name: "lessons/lesson{}.html".format(i) for i, name in enumerate(LESSON_NAMES) }
 
-DEFAULT_USER_SETTINGS = {
-    "light_square_color": "#EEEEEE",
-    "dark_square_color": "#4682B4",
-    "light_square_highlight_color": "#F6F669",
-    "dark_square_highlight_color": "#BACA2B",
-    "show_move_markers": True,
-    "show_square_highlights": True,
-    "use_move_animations": True,
-    "animation_time_ms": 300
-}
-
-def get_user_settings(user):
-    return { **DEFAULT_USER_SETTINGS, **user.settings }
-
-# Utility function that should be used when sending settings to Jinja templates
-def prepare_settings(settings_json):
-    # Jinja seems to just do simple text replacement (ie. Doesn't convert from python True to js true)
-    settings_copy = { **settings_json }
-    for key in settings_copy:
-        if settings_copy[key] == True:
-            settings_copy[key] = "true"
-        elif settings_copy[key] == False:
-            settings_copy[key] = "false"
-    return settings_copy
-
 @app.route("/learn")
 @login_required
 def learn():
@@ -64,30 +39,14 @@ def learn():
 def stats():
     return render_template("stats.html", user=g.user)
 
-@app.route("/settings", methods=['GET', 'POST'])
+@app.route("/settings")
 @login_required
 def settings():
-    settings = get_user_settings(g.user)
-    # Maybe a form is not the best way to do this...
-    # Eventually might be better to use a Settings REST API
-    form = SettingsForm(**settings)
-    if form.validate_on_submit():
-        form_settings = {
-            "light_square_color": form.light_square_color.data,
-            "dark_square_color": form.dark_square_color.data,
-            "show_move_markers": form.show_move_markers.data,
-            "show_square_highlights": form.show_square_highlights.data,
-            "use_move_animations": form.use_move_animations.data
-        }
-        # TODO: Validate data
-        g.user.settings = form_settings
-        db.session.commit()
-        return render_template("settings.html", user=g.user, form=form)
-    return render_template("settings.html", user=g.user, form=form)
+    return render_template("settings.html", user=g.user)
 
 @app.route("/lessons/<string:name>")
 @login_required
 def lessons(name):
     if name in LESSON_NAME_MAP:
-        return render_template(LESSON_NAME_MAP[name], user=g.user, board_settings=prepare_settings(get_user_settings(g.user)))
+        return render_template(LESSON_NAME_MAP[name], user=g.user)
     abort(404)

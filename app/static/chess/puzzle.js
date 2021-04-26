@@ -21,6 +21,16 @@ function createLinearMoveTree(moves) {
     return result;
 }
 
+function transformSettingsResponse(settings) {
+    return {
+        lightSquareColor: settings.light_square_color,
+        darkSquareColor: settings.dark_square_color,
+        showMoveMarkers: settings.show_move_markers,
+        showSquareHighlights: settings.show_square_highlights,
+        useMoveAnimations: settings.use_move_animations,
+    }
+}
+
 class Puzzle {
 
     constructor(options) {

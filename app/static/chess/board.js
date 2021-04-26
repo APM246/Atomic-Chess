@@ -490,7 +490,7 @@ class Position {
         }
 
         // Update promotion
-        if (promotion !== PIECES.NONE && movingPiece.piece === PIECES.PAWN) {
+        if (promotion !== PIECES.NONE && movingPiece.piece === PIECES.PAWN && (!this.isAtomic || !capturedPiece)) {
             this._squares[toSquare] = { piece: promotion, color: this.colorToMove };
             undoInfo.isPromotion = true;
             eventData.promotedPieces.push({ square: toSquare, piece: this._squares[toSquare] });
@@ -720,12 +720,12 @@ class ChessPiece {
         if (promise) {
             promise.then(() => {
                 if (this.img) {
-                    this.img.children[0].src = this.imageUri;
+                    this.img.src = this.imageUri;
                 }
             });
         } else {
             if (this.img) {
-                this.img.children[0].src = this.imageUri;
+                this.img.src = this.imageUri;
             }
         }
     }
@@ -960,6 +960,9 @@ class ChessBoard {
         this._position.moveUndone.addEventListener((moveData) => {
             if (moveData) {
                 const shouldAnimate = this._options.useMoveAnimations && moveData.animate;
+
+                const promise = wait(this._options.animationTime);
+                this._animationPromise = promise.then(() => this._animationPromise = null);
                 // Add pieces that were captured by the previous move
                 for (const piece of moveData.addedPieces) {
                     const pieceObject = new ChessPiece(piece.piece.piece, piece.piece.color, this._getImageUri(piece.piece.piece, piece.piece.color), piece.square);
@@ -971,21 +974,24 @@ class ChessBoard {
                     if (piece.isMovingPiece && shouldAnimate) {
                         pieceObject.currentSquare = moveData.move.to;
                     }
+                    // console.log(squareToString(piece.square), pieceObject.piece);
                     this._createPiece(pieceObject);
+                    pieceObject.currentSquare = piece.square;
+                    if (piece.isMovingPiece && shouldAnimate) {
+                        this._movePieceToSquare(piece.square, pieceObject, promise, moveData.move.to);
+                    }
                 }
-
-                const promise = wait(this._options.animationTime);
-                this._animationPromise = promise.then(() => this._animationPromise = null);
 
                 // Moving pieces includes all pieces that need to be moved (including primary piece)
                 // The primary piece is guaranteed to be index 0
                 for (let i = 0; i < moveData.movingPieces.length; i++) {
                     const pieceData = moveData.movingPieces[i];
                     const index = this._indexOfPieceOnSquare(pieceData.from);
-                    if (index >= 0) {
+                    if (index >= 0 && pieceData.from !== pieceData.to) {
                         // Always animate if i > 0 (rook moves from castling)
                         const animateRook = i !== 0 && this._options.useMoveAnimations;
-                        this._movePieceToSquare(pieceData.to, this._pieces[index], animateRook || shouldAnimate ? promise : null);
+                        const movingPiece = this._pieces[index];
+                        this._movePieceToSquare(pieceData.to, movingPiece, animateRook || shouldAnimate ? promise : null);
                     }
                 }
 
@@ -1216,6 +1222,9 @@ class ChessBoard {
             this._historyIndex++;
             const moveInfo = this._moveHistory[this._historyIndex];
             moveInfo.undo = this.position.applyMove(moveInfo.move, this._options.useMoveAnimations);
+            // When redoing a move, highlight the from and to squares
+            this._squareEmphasizer.onGrab(moveInfo.move.from);
+            this._squareEmphasizer.onMove(moveInfo.move.to);
         }
     }
 
@@ -1384,7 +1393,7 @@ class ChessBoard {
 
             // Add img to the table
             let td = this._getTdFromSquare(piece.currentSquare);
-            td.appendChild(img);
+            td.prepend(img);
         }
     }
 
@@ -1395,6 +1404,7 @@ class ChessBoard {
         image.style.width = `${width}px`;
         image.style.height = `${height}px`;
         image.src = piece.imageUri;
+        image.className = "ac-chess-piece";
         return image;
     }
 
@@ -1552,30 +1562,42 @@ class ChessBoard {
     _endMovingPiece(piece) {
         if (piece.img) {
             piece.img.style.zIndex = DEFAULT_PIECE_Z_INDEX_STRING;
+            piece.img.style.transform = "";
         }
     }
 
     // Sets the piece transform for a given square
-    _movePieceToSquare(square, piece, animationPromise) {
+    // fromSquareOverride is used in the case of atomic chess when there are 2 pieces created on the same square after undoing an explosion
+    _movePieceToSquare(square, piece, animationPromise, fromSquareOverride = null) {
         if (piece.img) {
             if (animationPromise) {
+                const fromSquare = fromSquareOverride ? fromSquareOverride : piece.currentSquare;
+                piece.currentSquare = square;
+
+                // Calculate the position of the target square relative to our current square
+                const targetX = (fileOfSquare(piece.currentSquare) - fileOfSquare(fromSquare)) * this.squareClientWidth;
+                const targetY = -(rankOfSquare(piece.currentSquare) - rankOfSquare(fromSquare)) * this.squareClientHeight;
+
                 this._beginMovingPiece(piece);
+
+                // Move towards the position of the new square
                 piece.img.style.transition = `${this._options.animationTime}ms`;
+                piece.img.style.transform = `translate(${targetX}px, ${targetY}px)`;
                 animationPromise.then(() => {
                     if (piece.img) {
                         piece.img.style.transition = "";
                     }
                     this._endMovingPiece(piece);
+                    // Add to new square
+                    const newTd = this._getTdFromSquare(piece.currentSquare);
+                    newTd.appendChild(piece.img);
                 });
+            } else {
+                piece.currentSquare = square;
+                const newTd = this._getTdFromSquare(piece.currentSquare);
+                newTd.appendChild(piece.img);
             }
-            let td = this._getTdFromSquare(piece.currentSquare);
-            let img = td.getElementsByTagName("img")[0];
-            img.remove();
-
-            piece.currentSquare = square;
-            this._createPiece(piece);
         }
-        piece.currentSquare = square;
     }
 
     // Get the URI for the image

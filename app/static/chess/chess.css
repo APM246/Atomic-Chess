@@ -16,6 +16,7 @@ table.ac-chess-board > tr > td {
     height: 100%;
     display: flex;
     padding: 0px;
+    position: relative;
 }
 
 .ac-chess-piece {

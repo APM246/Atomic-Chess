@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block scripts %}
+<script src="{{ url_for('static', filename='forms.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 
 <div class="ac-form-container">
@@ -24,19 +28,5 @@
     <label> Clicking this will redirect you to the login page </label>
   </form>
 </div>
-
-<script>
-  $("input").focus(function() {
-    $(this).val('');
-  });
-
-  $("input[id='username']").blur(function() {
-    $(this).val('Username');
-  });
-
-  $("input[id='password']").blur(function() {
-    $(this).val('Password');
-  });
-</script>
 
 {% endblock %}

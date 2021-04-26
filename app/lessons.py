@@ -67,12 +67,12 @@ LESSONS_BY_ID = {}
 def get_all_lessons():
     return [LESSON_INTRO, LESSON_ATOMIC, LESSON_WIN_CONDITIONS, LESSON_OPENING_TRAPS, LESSON_CHECKS, LESSON_PIECE_SAFETY, LESSON_KINGS_TOUCHING]
 
-def init():
-    for lesson in get_all_lessons():
-        LESSONS_BY_ID[lesson.id] = lesson
-
 def get_lesson_by_name(name):
     for lesson in get_all_lessons():
         if lesson.name == name:
             return lesson
     return None
+
+def init():
+    for lesson in get_all_lessons():
+        LESSONS_BY_ID[lesson.id] = lesson

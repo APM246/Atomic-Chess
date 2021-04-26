@@ -44,5 +44,5 @@ def settings():
 def lessons(name):
     lesson = get_lesson_by_name(name)
     if lesson:
-        return render_template(lesson.template, lesson_id=lesson.id)
+        return render_template(lesson.template, user=g.user, lesson_id=lesson.id)
     abort(404)

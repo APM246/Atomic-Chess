@@ -156,7 +156,26 @@ body::before {
     background-color: rgb(23, 26, 211);
 }
 
-.ac-register-rules {
-    font-size: 15pt;
+.ac-form-info {
+    font-size: 12pt;
     margin-left: 20px;
+    /*animation-name: fadeIn;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+    opacity: 0*/
+    border-left: solid black 4px;
+    display: none;
 }
+
+/* not working, trying to create 'fade into right' animation
+@keyframes fadeIn {
+    start {
+        opacity: 0;
+        transform: translateX(
+    } 
+    end {
+        
+        opacity: 100%;
+    }
+}
+*/

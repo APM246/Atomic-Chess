@@ -31,5 +31,8 @@ $(document).ready(
                 }
             }
         });
+        
+        $(".ac-form-info").fadeIn("slow");
+        console.log("hi");
     }
 );

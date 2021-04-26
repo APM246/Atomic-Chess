@@ -1,9 +1,12 @@
+import functools
+
 from flask import render_template, abort, flash, redirect, request, url_for, session, g
 from app import app, db
-from app.models import User, Lesson
+from app.models import User, LessonCompletion
 from app.forms import SignUpForm, LoginForm
+from app.lessons import LESSON_INTRO
+from app.api.lessons_api import mark_lesson_complete
 from werkzeug.security import check_password_hash, generate_password_hash
-import functools
 
 @app.before_request
 def load_logged_in_user():
@@ -41,14 +44,7 @@ def register():
 
         # Mark intro to chess lesson as complete
         if not user.chess_beginner:
-            lesson = Lesson(
-                user=user.id,
-                lesson_id=0,
-                progression=0, # idk put anything here for now
-                completed_test=True
-            )
-            db.session.add(lesson)
-            db.session.commit()
+            mark_lesson_complete(LESSON_INTRO.id, user.id)
 
         session.clear()
         session["current_user"] = user.id

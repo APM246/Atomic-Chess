@@ -27,13 +27,13 @@ class User(db.Model):
 	is_admin = db.Column(db.Boolean, nullable=False, default=False)
 	settings = db.Column(JSONString, default={})
 
-	lessons = db.relationship("Lesson", lazy=True)
+	lessons = db.relationship("LessonCompletion", lazy=True)
 	completed_puzzles = db.relationship("PuzzleCompletion", lazy=True)
 
 	def __repr__(self):
 		return '<User %r>' % self.username
 
-class Lesson(db.Model):
+class LessonCompletion(db.Model):
 	user = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True, nullable=False)
 	lesson_id = db.Column(db.Integer, primary_key=True, nullable=False)
 	progression = db.Column(db.Integer, nullable=False)

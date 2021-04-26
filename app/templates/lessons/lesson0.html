@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "lessons/lesson_base.html" %}
 
 {% block styles %}
 <style>
@@ -74,9 +74,17 @@
 {% endblock %}
 
 {% block scripts %}
+{{ super() }}
 <script>
     window.onload = async () => {
         const puzzleData = [
+            {
+                eventColor: COLORS.WHITE,
+                fen: "8/8/8/8/8/8/8/8 w - - 0 1",
+                moveTree: [],
+                text: "",
+                title: "Loading...",
+            },
             {
                 eventColor: COLORS.WHITE,
                 fen: "8/8/8/8/4K3/8/8/8 w - - 0 1",
@@ -214,7 +222,6 @@
             hideBackButton();
             nextButton.style.display = "block";
             nextButton.className = "btn " + (passed ? "btn-success" : "btn-danger") + " ac-full-button";
-            console.log(nextButton.className)
             nextButton.innerText = passed ? (isLast ? "Complete!" : "Next") : "Retry";
             nextButton.onclick = () => {
                 hideNextButton();
@@ -223,7 +230,7 @@
                 } else {
                     puzzle.board.enableInteraction();
                     puzzle.undoLastMove();
-                    if (index > 0) {
+                    if (index > 1) {
                         showBackButton();
                     }
                 }
@@ -274,7 +281,7 @@
         });
 
         puzzle.puzzleReset.addEventListener(() => {
-            if (index > 0) {
+            if (index > 1) {
                 showBackButton();
             }
             puzzle.board.emphasizer.resetColors();
@@ -290,28 +297,37 @@
             }
         });
 
-        function handleNewPuzzle(data) {
+        function handleNewPuzzle(data, update = true) {
             puzzle.setFromData(data);
             puzzle.board.enableInteraction();
             lessonTextDiv.innerHTML = data.text;
             lessonTitleDiv.innerHTML = data.title;
+
+            if (update) {
+                // Update the progression
+                setLessonProgression({{ lesson_id }}, index - 1);
+            }
         }
 
-        function nextPuzzle() {
+        function nextPuzzle(update = true) {
             hideResetButton();
             index++;
             if (index < puzzleData.length) {
-                handleNewPuzzle(puzzleData[index]);
+                handleNewPuzzle(puzzleData[index], update);
             } else {
                 hideResetButton();
-                // Complete
-                window.location.href = "{{ url_for('learn') }}";
+                if (update) {
+                    markLessonAsComplete({{ lesson_id }}).then(() => {
+                        // Complete
+                        window.location.href = "{{ url_for('learn') }}";
+                    });
+                }
             }
         }
 
         function previousPuzzle() {
             hideBackButton();
-            if (index > 0) {
+            if (index > 1) {
                 index--;
                 handleNewPuzzle(puzzleData[index]);
             }
@@ -320,6 +336,11 @@
         backButton.onclick = previousPuzzle;
 
         hideNextButton();
+
+        const progression = await getCurrentLessonStage({{ lesson_id }});
+        while (index - 1 !== progression) {
+            nextPuzzle(false);
+        }
     };
 </script>
 {% endblock %}
@@ -332,13 +353,11 @@
             <div class="ac-puzzle-container">
                 <div id="board" class="ac-board ac-lesson-board" tabindex="0"></div>
                 <div class="ac-puzzle-helper">
-                    <h3 id="lesson-title">Moving pieces</h3>
+                    <h3 id="lesson-title">Loading...</h3>
                     <div>
                         Pick up a piece using the left mouse button to see the piece's legal moves. Follow the instructions below to progress.
                     </div>
-                    <div id="lesson-text" class="ac-lesson-task">
-                        The king can move to any square directly adjacent to it. Move the king towards the bottom right corner of the board.
-                    </div>
+                    <div id="lesson-text" class="ac-lesson-task"></div>
                     <div class="ac-next-button-container">
                         <div class="ac-button-group">
                             <button id="reset-button" style="display: none;" type="button" class="btn btn-secondary ac-full-button">Reset</button>

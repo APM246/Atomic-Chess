@@ -10,10 +10,10 @@ async function ajax(endpoint, method = "GET", body = null) {
             console.error(err);
         }
         return null;
-    } else if (method === "POST") {
+    } else if (method === "POST" || method === "PUT") {
         try {
             const response = await fetch(endpoint, {
-                method: "POST",
+                method,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
             })

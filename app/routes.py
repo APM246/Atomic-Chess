@@ -3,8 +3,6 @@ from app import app, db
 from app.models import User, Lesson
 from app.auth import login_required
 
-from app.forms import SettingsForm
-
 @app.route("/index")
 @app.route("/")
 def index():

@@ -283,5 +283,25 @@ mocha.describe("Chess Position", function() {
                 expect(perft(position, 5)).to.equal(619830);
             });
         });
+
+        mocha.describe("rnb1kbnr/2P5/8/8/8/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1", function() {
+            this.timeout(120000);
+            const position = new Position();
+            position.isAtomic = true;
+            position.setFromFen("rnb1kbnr/2P5/8/8/8/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1");
+
+            it("Depth 1", function() {
+                expect(perft(position, 1)).to.equal(25);
+            });
+            it("Depth 2", function() {
+                expect(perft(position, 2)).to.equal(775);
+            });
+            it("Depth 3", function() {
+                expect(perft(position, 3)).to.equal(21393);
+            });
+            it("Depth 4", function() {
+                expect(perft(position, 4)).to.equal(654985);
+            });
+        })
     });
 });

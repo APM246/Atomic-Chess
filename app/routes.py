@@ -46,3 +46,8 @@ def lessons(name):
     if lesson:
         return render_template(lesson.template, user=g.user, lesson_id=lesson.id)
     abort(404)
+
+# todo: unroute this in production 
+@app.route("/test")
+def test():
+    return render_template("test_board.html")

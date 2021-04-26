@@ -5,9 +5,9 @@ function InitializeProgressBar() {
 	let lis = ul.getElementsByTagName("li");
 
 	// Fill the progress bar until last completed lesson
-	let last_li;
+	let lastLi = null;
 	for (const li of lis) {
-		last_li = li;
+		lastLi = li;
 		if (li.className.includes("completed")) {
 			li.className += " fill-bar";
 		}
@@ -16,12 +16,14 @@ function InitializeProgressBar() {
 		}
 	}
 
-	// Set active tab to earliest uncompleted lesson
-	let a = last_li.getElementsByTagName("a")[0];
-	a.className += " active";
+	if (lastLi) {
+		// Set active tab to earliest uncompleted lesson
+		let a = lastLi.getElementsByTagName("a")[0];
+		a.className += " active";
 
-	// Focus the corresponding div
-	let id = a.href.substring(a.href.lastIndexOf("#") + 1);
-	let div = document.getElementById(id);
-	div.className += " active show";
+		// Focus the corresponding div
+		let id = a.href.substring(a.href.lastIndexOf("#") + 1);
+		let div = document.getElementById(id);
+		div.className += " active show";
+	}
 }

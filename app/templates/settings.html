@@ -1,4 +1,105 @@
 {% extends "base.html" %}
-  {% block content %} 
-    <p> Settings page </p>
-  {% endblock %}
+
+{% block scripts %}
+<script>
+
+  window.onload = async () => {
+    function cacheSettings(settings) {
+      localStorage.setItem("user_settings", JSON.stringify(settings));
+    }
+
+    function assignFromJson(settings) {
+      // Save to local storage cache
+      cacheSettings(settings);
+      for (const key of Object.keys(settings)) {
+        const element = document.getElementById(key);
+        if (element) {
+          const value = settings[key];
+          if (typeof value === "string") {
+            element.value = value;
+          } else {
+            element.checked = value;
+          }
+        }
+      }
+    }
+
+    function getJson() {
+      const data = {}
+      const rootElement = document.getElementById("root");
+      const inputs = rootElement.getElementsByTagName("input");
+      for (const input of inputs) {
+        if (input.type === "color") {
+          data[input.id] = input.value;
+        } else if (input.type === "checkbox") {
+          data[input.id] = input.checked;
+        }
+      }
+      return data
+    }
+
+    async function updateSettings(data) {
+      const success = await ajax("{{ url_for('get_settings') }}", "POST", data);
+      console.log(success);
+    }
+
+    // Display cached version in local storage
+    if (localStorage.getItem("user_settings")) {
+      assignFromJson(JSON.parse(localStorage.getItem("user_settings")));
+    }
+
+    const userSettings = await ajax("{{ url_for('get_settings') }}");
+    if (userSettings) {
+      assignFromJson(userSettings.settings);
+    }
+
+    const submitButton = document.getElementById("submit");
+    submitButton.onclick = () => {
+      const settings = getJson();
+      cacheSettings(settings);
+      updateSettings(settings);
+    };
+
+    const resetButton = document.getElementById("reset-default");
+    resetButton.onclick = async () => {
+      // Empty settings (reset to defaults)
+      await updateSettings({});
+      // Once that completes, update the settings
+      const data = await ajax("{{ url_for('get_settings') }}");
+      if (data) {
+        assignFromJson(data.settings);
+      }
+    }
+  };
+
+</script>
+{% endblock %}
+
+{% block content %}
+<div id="root">
+  <div>
+    <span>Light Square Colour:</span>
+    <input id="light_square_color" type="color"></input>
+  </div>
+  <div>
+    <span>Dark Square Colour:</span>
+    <input id="dark_square_color" type="color"></input>
+  </div>
+  <div>
+    <span>Show Move Markers:</span>
+    <input id="show_move_markers" type="checkbox"></input>
+  </div>
+  <div>
+    <span>Show Highlights:</span>
+    <input id="show_square_highlights" type="checkbox"></input>
+  </div>
+  <div>
+    <span>Animate Moves:</span>
+    <input id="use_move_animations" type="checkbox"></input>
+  </div>
+  <div>
+    <input id="submit" type="button" value="Save"></input>
+    <input id="reset-default" type="button" value="Restore Defaults"></input>
+  </div>
+</div>
+{% endblock %}

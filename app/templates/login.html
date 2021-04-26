@@ -14,10 +14,15 @@
     {{ form.remember_me.label }}
     {{ form.remember_me }} <br> <br> 
 
+    {% for message in get_flashed_messages() %}
+    <p>{{ message }}</p>
+    {% endfor %}
+
     {{ form.submit }}
     <br>
-    <p> New to our website? Click <a href="{{ url_for('register') }}">here</a> to create a new account. </p>
+    <p> New to our website? Click <a href="{{ url_for('register', next=next) }}">here</a> to create a new account. </p>
   </form>
 </div>
+
 
 {% endblock %}

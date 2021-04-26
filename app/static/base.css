@@ -19,7 +19,7 @@ body::before {
     z-index: -1;
 }
 
-.board {
+.ac-board {
     outline: none;
     user-select: none;
 }
@@ -36,6 +36,20 @@ body::before {
 }
 
 .menu-items:hover {
+    color: var(--ac-green);
+}
+
+.menu-items-sm {
+    color: white;
+    font-size: 14pt;
+    height: 100%;
+    margin-right: 10px;
+    padding: 0px;
+    align-items: center;
+    text-align: center;
+}
+
+.nav-link.menu-items-sm:hover {
     color: var(--ac-green);
 }
 

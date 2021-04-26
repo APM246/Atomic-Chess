@@ -9,11 +9,14 @@ Website designed to teach people how to play the chess variant [Atomic](https://
 `python -m virtualenv venv`
 `venv\Scripts\activate`
 `pip install -r requirements.txt`
-3. Run the webserver.
+3. Configure environment
 `SET FLASK_APP=app`
 `SET FLASK_ENV=development`
+4. Initialize database
+`flask db upgrade`
+5. Run server
 `flask run`
-4. Navigate to [localhost:5000](http://localhost:5000)
+6. Navigate to [localhost:5000](http://localhost:5000)
 
 ## Running tests:
 1. Install NodeJS and npm

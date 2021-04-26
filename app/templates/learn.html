@@ -15,30 +15,31 @@ onLoad="InitializeProgressBar()" class="d-flex flex-column" style="min-height: 1
 
 {% block content %}
 <ul class="ac-progress-bar nav nav-tabs">
-  {% for name, comp in zip(lessonNames, completedLessons) %}
-  <li {% if comp %} class="completed" {% endif %}>
+  {% for lesson in lessons %}
+  <li {% if lesson.id in completed_lesson_ids %} class="completed" {% endif %}>
     <a class="node" data-bs-toggle="tab" href="#lesson-{{ loop.index }}"></a>
-    {{ name }}
+    {{ lesson.name }}
   </li>
   {% endfor %}
 </ul>
 
 <div class="tab-content ac-lesson-outline flex-grow-1">
-  {% for name, desc, comp in zip(lessonNames, lessonDescriptions, completedLessons)%}
-  <div class="tab-pane fade" id=lesson-{{ loop.index }}>
+  {% for lesson in lessons %}
+  <div class="tab-pane fade" id="lesson-{{ loop.index }}">
     <div class="container">
       <div class="row align-items-start">
         <div class="col-8">
           <h1>
-            Lesson {{ loop.index }}: {{ name }}
+            Lesson {{ loop.index }}: {{ lesson.name }}
           </h1>
+          <span style="font-weight: bold;">{{ lesson_progressions[lesson.id] or 0 }}% complete</span>
           <p>
-            {{ desc }}
+            {{ lesson.description }}
           </p>
         </div>
         <div class="col-4">
-          <a class="ac-lesson-button" href={{ url_for('lessons', name=name)}}>Begin Lesson</a>
-          <a class="ac-lesson-button {% if not comp %} ac-disable-access {% endif %}">Begin Test</a>
+          <a class="ac-lesson-button" href="{{ url_for('lessons', name=lesson.name) }}">{{ "Begin" if ((lesson_progressions[lesson.id] or 0) in [0, 100]) else "Resume" }} Lesson</a>
+          <a class="ac-lesson-button {% if lesson.id not in completed_lesson_ids %} ac-disable-access {% endif %}">Begin Test</a>
         </div>
       </div>
     </div>

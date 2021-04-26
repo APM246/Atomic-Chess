@@ -359,7 +359,7 @@ function perft(position, depth, log = false, comparisonData = null) {
     if (comparisonData) {
         const lines = comparisonData.split("\n");
         for (const line of lines) {
-            const parts = line.split(":")
+            const parts = line.split(":");
             comparison[parts[0]] = Number(parts.slice(1));
         }
     }

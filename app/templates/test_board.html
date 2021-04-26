@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block scripts %}
+<script>
+	window.onload = () => {
+		let board = new ChessBoard(assignDefaults({target: "#board"}, DEFAULT_CHESS_BOARD_OPTIONS));
+			board.setFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+			board.setAtomic(true);
+	}
+</script>
+{% endblock %}
+
+{% block content %}
+<div id="board" style="width: 70vh; height: 70vh">
+</div>
+{% endblock %}

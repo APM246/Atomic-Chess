@@ -71,3 +71,8 @@ def lessons(name):
     if name in LESSON_NAME_MAP:
         return render_template(LESSON_NAME_MAP[name], user=g.user, board_settings=get_board_settings(g.user))
     abort(404)
+
+# todo: unroute this in production 
+@app.route("/test")
+def test():
+    return render_template("test_board.html")

@@ -711,7 +711,7 @@ class ChessPiece {
         this.color = color;
         this.imageUri = imageUri;
         this.currentSquare = square;
-        this.div = null;
+        this.img = null;
     }
 
     // Used when a piece is promoted - updates <img> src
@@ -719,13 +719,13 @@ class ChessPiece {
         this.imageUri = uri;
         if (promise) {
             promise.then(() => {
-                if (this.div) {
-                    this.div.children[0].src = this.imageUri;
+                if (this.img) {
+                    this.img.children[0].src = this.imageUri;
                 }
             });
         } else {
-            if (this.div) {
-                this.div.children[0].src = this.imageUri;
+            if (this.img) {
+                this.img.children[0].src = this.imageUri;
             }
         }
     }
@@ -832,15 +832,7 @@ class SquareEmphasizer {
     }
 
     _updateSquareColor(square, color) {
-        let row = RANK_COUNT - rankOfSquare(square) - 1;
-        let col = fileOfSquare(square);
-        if (this._chessBoard.isFlipped) {
-            row = RANK_COUNT - row - 1;
-            col = FILE_COUNT - col - 1;
-        }
-        const table = this._chessBoard._parentElement.getElementsByTagName("table")[0];
-        const tr = table.getElementsByTagName("tr")[row];
-        const td = tr.getElementsByTagName("td")[col];
+        let td = this._chessBoard._getTdFromSquare(square);
         td.style.backgroundColor = color;
     }
 
@@ -1326,8 +1318,8 @@ class ChessBoard {
     }
 
     _destroyPiece(piece) {
-        if (piece.div) {
-            piece.div.remove();
+        if (piece.img) {
+            piece.img.remove();
         }
     }
 
@@ -1344,13 +1336,12 @@ class ChessBoard {
         this._destroyPieces();
         this._destroyBoard();
         if (this._parentElement) {
-            const div = document.createElement("div");
-            div.className = "ac-chess-board";
 
-            const tableDiv = document.createElement("div");
-            tableDiv.className = "ac-chess-board";
+            const boardDiv = document.createElement("div");
+            boardDiv.className = "ac-chess-board";
             const table = document.createElement("table");
             table.className = "ac-chess-board";
+
             for (let file = 0; file < FILE_COUNT; file++) {
                 const row = document.createElement("tr");
                 for (let rank = 0; rank < RANK_COUNT; rank++) {
@@ -1360,11 +1351,10 @@ class ChessBoard {
                 }
                 table.appendChild(row);
             }
-            tableDiv.appendChild(table);
-            div.appendChild(tableDiv);
-            this._parentElement.appendChild(div);
+            boardDiv.appendChild(table);
+            this._parentElement.appendChild(boardDiv);
 
-            this._boardElement = tableDiv;
+            this._boardElement = boardDiv;
         }
     }
 
@@ -1385,9 +1375,9 @@ class ChessBoard {
     // Constructs the HTML elements for rendering a single piece
     _createPiece(piece) {
         if (this._boardElement) {
-            const div = this._createPieceDiv(piece);
-            // Piece now tracks its div
-            piece.div = div;
+            const img = this._createPieceImage(piece);
+            // Piece now tracks its img
+            piece.img = img;
             if (this._options.interactive) {
                 this._makeInteractive(piece);
             } else {
@@ -1395,40 +1385,42 @@ class ChessBoard {
             }
             this._pieces.push(piece);
 
-            // Add div to the board
-            this._boardElement.appendChild(div);
+            // Add img to the table
+            let td = this._getTdFromSquare(piece.currentSquare);
+            td.appendChild(img);
         }
     }
 
-    _createPieceImage(piece, width, height) {
+    _createPieceImage(piece) {
         const image = document.createElement("img");
+        const width = this.squareClientWidth;
+        const height = this.squareClientHeight;
         image.style.width = `${width}px`;
         image.style.height = `${height}px`;
         image.src = piece.imageUri;
         return image;
     }
 
-    _createPieceDiv(piece) {
-        const width = this.squareClientWidth;
-        const height = this.squareClientHeight;
-        const div = document.createElement("div");
-        div.style.width = `${width}px`;
-        div.style.height = `${height}px`;
-        div.className = "ac-chess-piece";
-        const piecePosition = this.squareToBoardPosition(piece.currentSquare);
-        div.style.transform = `translate(${piecePosition.x}px, ${piecePosition.y}px)`;
-        const image = this._createPieceImage(piece, width, height);
-        div.appendChild(image);
-        return div;
+    _getTdFromSquare(square) {
+        let row = RANK_COUNT - rankOfSquare(square) - 1;
+        let col = fileOfSquare(square);
+        if (this.isFlipped) {
+            row = RANK_COUNT - row - 1;
+            col = FILE_COUNT - col - 1;
+        }
+        const table = this._parentElement.getElementsByTagName("table")[0];
+        const tr = table.getElementsByTagName("tr")[row];
+        const td = tr.getElementsByTagName("td")[col];
+        return td;
     }
 
     // Sets up mouse (and touch) event listeners so that a piece can be dragged/dropped
-    // Requires piece to have a valid div
+    // Requires piece to have a valid img
     _makeInteractive(piece) {
-        assert(Boolean(piece.div), "Invalid piece");
+        assert(Boolean(piece.img), "Invalid piece");
         let currentPosition = this.squareToBoardPosition(piece.currentSquare);
 
-        piece.div.style.pointerEvents = "auto";
+        piece.img.style.pointerEvents = "auto";
 
         const removeEventListeners = () => {
             document.onmouseup = null;
@@ -1441,15 +1433,15 @@ class ChessBoard {
         const resetTransform = () => {
             this.hideMoveMarkers();
             this._endMovingPiece(piece);
-            piece.div.style.transform = `translate(${currentPosition.x}px, ${currentPosition.y}px)`;
+            piece.img.style.transform = `translate(0px, 0px)`;
         };
 
         // Set the piece position based on an absolute mouse position (from mousemove event)
         // Used to make the piece follow the cursor
         const setTransform = (clientX, clientY) => {
-            const x = clientX - this.boardClientX - this.squareClientWidth / 2;
-            const y = clientY - this.boardClientY - this.boardClientHeight - this.squareClientHeight / 2;
-            piece.div.style.transform = `translate(${x}px, ${y}px)`;
+            const x = clientX - this.boardClientX - currentPosition.x - this.squareClientWidth / 2;
+            const y = clientY - this.boardClientY - currentPosition.y - this.boardClientHeight - this.squareClientHeight / 2;
+            piece.img.style.transform = `translate(${x}px, ${y}px)`;
         };
 
         // Snap the piece to the closest square to its current absolute position
@@ -1463,12 +1455,6 @@ class ChessBoard {
                 const promotion = piece.piece === PIECES.PAWN && rankOfSquare(square) === promotionRank ? PIECES.QUEEN : PIECES.NONE;
                 const move = createMove(originalSquare, square, promotion);
                 success = Boolean(this.applyMove(move));
-                if (success) {
-                    // Set piece position to the square's position
-                    currentPosition = this.squareToBoardPosition(square);
-                    // Highlight the move
-                    // this._squareEmphasizer.onMove(square);
-                }
             }
             // Update piece transform
             this.hideMoveMarkers();
@@ -1478,7 +1464,7 @@ class ChessBoard {
             return success;
         };
 
-        piece.div.onmousedown = (e) => {
+        piece.img.onmousedown = (e) => {
             // If we are dragging another piece ignore this drag
             if (document.onmouseup) {
                 return;
@@ -1514,7 +1500,7 @@ class ChessBoard {
         };
 
         // Support mobile inputs
-        piece.div.ontouchstart = (e) => {
+        piece.img.ontouchstart = (e) => {
             if (e.touches.length === 1) {
                 // If we are dragging another piece ignore this drag
                 if (document.ontouchend) {
@@ -1553,40 +1539,45 @@ class ChessBoard {
     }
 
     // Prevent a piece from being dragged/dropped
-    // Requires piece to have a valid div
+    // Requires piece to have a valid img
     _disableInteraction(piece) {
-        assert(Boolean(piece.div), "Invalid piece");
-        piece.div.style.pointerEvents = "none";
+        assert(Boolean(piece.img), "Invalid piece");
+        piece.img.style.pointerEvents = "none";
     }
 
     _beginMovingPiece(piece) {
-        if (piece.div) {
+        if (piece.img) {
             // Draw the piece we are holding in front of the other pieces
-            piece.div.style.zIndex = MOVING_PIECE_Z_INDEX_STRING;
+            piece.img.style.zIndex = MOVING_PIECE_Z_INDEX_STRING;
         }
     }
 
     _endMovingPiece(piece) {
-        if (piece.div) {
-            piece.div.style.zIndex = DEFAULT_PIECE_Z_INDEX_STRING;
+        if (piece.img) {
+            piece.img.style.zIndex = DEFAULT_PIECE_Z_INDEX_STRING;
         }
     }
 
     // Sets the piece transform for a given square
     _movePieceToSquare(square, piece, animationPromise) {
-        if (piece.div) {
+        if (piece.img) {
             const position = this.squareToBoardPosition(square);
             if (animationPromise) {
                 this._beginMovingPiece(piece);
-                piece.div.style.transition = `${this._options.animationTime}ms`;
+                piece.img.style.transition = `${this._options.animationTime}ms`;
                 animationPromise.then(() => {
-                    if (piece.div) {
-                        piece.div.style.transition = "";
+                    if (piece.img) {
+                        piece.img.style.transition = "";
                     }
                     this._endMovingPiece(piece);
                 });
             }
-            piece.div.style.transform = `translate(${position.x}px, ${position.y}px)`;
+            let td = this._getTdFromSquare(piece.currentSquare);
+            let img = td.getElementsByTagName("img")[0];
+            img.remove();
+
+            piece.currentSquare = square;
+            this._createPiece(piece);
         }
         piece.currentSquare = square;
     }

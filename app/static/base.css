@@ -110,14 +110,15 @@ body::before {
     font-size: 1.5em;
 }
 
-.ac-form-container {
-    background-color:rgba(25, 187, 66, 0.65);
-    width: 40%;
-    height: 40%;
-    color: black;
+.ac-form-section {
     position: absolute;
     top: 35%;
-    left: 20%;
+    left: 20%; 
+}
+
+.ac-form-container {
+    background-color:rgba(25, 187, 66, 0.65);
+    color: black;
     border: ridge black 5px;
 }
 
@@ -133,10 +134,12 @@ body::before {
 
 .ac-forms > input[type="text"] {
     transform: scale(0.9);
+    padding-left: 0px;
 }
 
 .ac-forms > input[type="password"] {
     transform: scale(0.9);
+    padding-left: 0px;
 }
 
 .ac-forms > input[type="checkbox"] {
@@ -151,4 +154,9 @@ body::before {
 
 .ac-forms > input[type="submit"]:hover {
     background-color: rgb(23, 26, 211);
+}
+
+.ac-register-rules {
+    font-size: 15pt;
+    margin-left: 20px;
 }

@@ -6,27 +6,40 @@
 
 {% block content %}
 
-<div class="ac-form-container">
-  <form method="POST" action='' class='ac-forms'> 
-    {{ form.hidden_tag() }}
+<div class="container ac-form-section">
+  <div class="row">
+    <div class="col-5 ac-form-container">
+      <form method="POST" action='' class='ac-forms'> 
+        {{ form.hidden_tag() }}
 
-    {{ form.username }} <br>
+        {{ form.username }} <br>
 
-    {{ form.password }} <br>
+        {{ form.password }} <br>
 
-    {{ form.is_chess_beginner.label }}
-    {{ form.is_chess_beginner }} <br>
+        {{ form.is_chess_beginner.label }}
+        {{ form.is_chess_beginner }} <br>
 
-    {{ form.remember_me.label }}
-    {{ form.remember_me }} <br> <br>
+        {{ form.remember_me.label }}
+        {{ form.remember_me }} <br> <br>
 
-    {% for message in get_flashed_messages() %}
-    <p>{{ message }}</p>
-    {% endfor %}
+        {% for message in get_flashed_messages() %}
+        <p>{{ message }}</p>
+        {% endfor %}
 
-    {{ form.submit }}
-    <label> Clicking this will redirect you to the login page </label>
-  </form>
+        {{ form.submit }}
+        <label> Clicking this will redirect you to the login page </label>
+      </form>
+    </div>
+
+    <div class="col-4 ac-register-rules"> 
+      <h3>Rules</h3>
+      <p> 
+        The password must be at least 6 characters long with at least 1 number and 1 special character. 
+        <br> <br> 
+        If 'Chess Beginner' is ticked, you will do an introductory lesson on the basics of Chess.
+      </p>
+    </div>
+  </div>
 </div>
 
 {% endblock %}

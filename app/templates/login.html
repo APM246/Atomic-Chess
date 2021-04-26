@@ -6,24 +6,36 @@
 
 {% block content %}
 
-<div class="ac-form-container">
-  <form method="POST" action='' class="ac-forms">
-    {{ form.hidden_tag() }}
+<div class="container ac-form-section">
+  <div class=row>
+    <div class="col-5 ac-form-container">
+      <form method="POST" action='' class="ac-forms">
+        {{ form.hidden_tag() }}
 
-    {{ form.username }} <br>
+        {{ form.username }} <br>
 
-    {{ form.password }} <br>
+        {{ form.password }} <br>
 
-    {{ form.remember_me.label }}
-    {{ form.remember_me }} <br> <br> 
+        {{ form.remember_me.label }}
+        {{ form.remember_me }} <br> <br> 
 
-    {% for message in get_flashed_messages() %}
-    <p>{{ message }}</p>
-    {% endfor %}
+        {% for message in get_flashed_messages() %}
+        <p>{{ message }}</p>
+        {% endfor %}
 
-    {{ form.submit }} <br><br>
-    <p> New to our website? Click <a href="{{ url_for('register', next=next) }}">here</a> to create a new account. </p>
-  </form>
+        {{ form.submit }} <br><br>
+      </form>
+    </div>
+
+    <div class="col-4 ac-register-rules">
+      <h3> Info </h3>
+      <p>
+        Some info will go here, at least the Register page does have some info in this div 
+        <br> <br>
+        New to our website? Click <a href="{{ url_for('register', next=next) }}">here</a> to create a new account.
+      </p>
+    </div>
+  </div>
 </div>
 
 {% endblock %}

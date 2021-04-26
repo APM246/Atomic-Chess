@@ -8,7 +8,6 @@ import functools
 @app.before_request
 def load_logged_in_user():
     user_id = session.get("current_user")
-
     if user_id is None:
         g.user = None
     else:
@@ -19,7 +18,6 @@ def login_required(view):
     def wrapped_view(**kwargs):
         if g.user is None:
             return redirect(url_for("login", next=url_for(request.endpoint, **request.view_args)))
-
         return view(**kwargs)
     return wrapped_view
 

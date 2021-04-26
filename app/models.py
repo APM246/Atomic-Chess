@@ -25,7 +25,7 @@ class User(db.Model):
 	created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 	chess_beginner = db.Column(db.Boolean, nullable=False)
 	is_admin = db.Column(db.Boolean, nullable=False, default=False)
-	settings = db.Column(JSONString, nullable=False, default={})
+	settings = db.Column(JSONString, default={})
 
 	lessons = db.relationship("Lesson", lazy=True)
 	completed_puzzles = db.relationship("PuzzleCompletion", lazy=True)

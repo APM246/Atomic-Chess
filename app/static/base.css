@@ -3,7 +3,7 @@ body {
     min-height: 100vh;
     margin: 0;
     padding-bottom: 70px;
-    font-family: FiraCode, Georgia;
+    font-family: FiraCode, Georgia /* fallback font*/;
 }
 
 body::before {
@@ -111,17 +111,44 @@ body::before {
 }
 
 .ac-form-container {
-    text-align: center;
-    background-color:rgb(25, 187, 66);
-    width: 100%;
+    background-color:rgba(25, 187, 66, 0.65);
+    width: 40%;
+    height: 40%;
     color: black;
     position: absolute;
-    top: 40%;
+    top: 35%;
+    left: 20%;
     border: ridge black 5px;
-    
 }
 
 .ac-forms {
+    font-family: Corbel, FiraCode;
     font-size: 16pt;
     padding: 20px;
+}
+
+.ac-forms > input {
+    margin-bottom: 10px;
+}
+
+.ac-forms > input[type="text"] {
+    transform: scale(0.9);
+}
+
+.ac-forms > input[type="password"] {
+    transform: scale(0.9);
+}
+
+.ac-forms > input[type="checkbox"] {
+    transform: scale(1.4);
+    margin-left: 5px;
+}
+
+.ac-forms > input[type="submit"] {
+    background-color: black;
+    color: white;
+}
+
+.ac-forms > input[type="submit"]:hover {
+    background-color: rgb(23, 26, 211);
 }

@@ -6,17 +6,15 @@
   <form method="POST" action='' class='ac-forms'> 
     {{ form.hidden_tag() }}
 
-    {{ form.username.label }}
     {{ form.username }} <br>
 
-    {{ form.password.label }}
     {{ form.password }} <br>
 
     {{ form.is_chess_beginner.label }}
     {{ form.is_chess_beginner }} <br>
 
     {{ form.remember_me.label }}
-    {{ form.remember_me }} <br>
+    {{ form.remember_me }} <br> <br>
 
     {% for message in get_flashed_messages() %}
     <p>{{ message }}</p>
@@ -26,5 +24,19 @@
     <label> Clicking this will redirect you to the login page </label>
   </form>
 </div>
+
+<script>
+  $("input").focus(function() {
+    $(this).val('');
+  });
+
+  $("input[id='username']").blur(function() {
+    $(this).val('Username');
+  });
+
+  $("input[id='password']").blur(function() {
+    $(this).val('Password');
+  });
+</script>
 
 {% endblock %}

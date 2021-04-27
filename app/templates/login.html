@@ -20,7 +20,7 @@
         {{ form.remember_me }} <br> <br> 
 
         {% for message in get_flashed_messages() %}
-        <p>{{ message }}</p>
+        <p class="ac-errors">{{ message }}</p>
         {% endfor %}
 
         {{ form.submit }} <br><br>
@@ -30,7 +30,9 @@
     <div class="col-4 ac-form-info">
       <h3> Info </h3>
       <p>
-        Some info will go here, at least the Register page does have some info in this div 
+        {% if next != url_for('index') %}
+        Please sign in to continue 
+        {% endif %}
         <br> <br>
         New to our website? Click <a href="{{ url_for('register', next=next) }}">here</a> to create a new account.
       </p>

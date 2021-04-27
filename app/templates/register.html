@@ -23,11 +23,10 @@
         {{ form.remember_me }} <br> <br>
 
         {% for message in get_flashed_messages() %}
-        <p>{{ message }}</p>
+        <p class="ac-errors">{{ message }}</p>
         {% endfor %}
 
         {{ form.submit }}
-        <label> Clicking this will redirect you to the learn page </label>
       </form>
     </div>
 

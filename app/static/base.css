@@ -155,6 +155,7 @@ body::before {
     background-color: black;
     color: white;
     margin-left: 10px;
+    border-radius: 7px;
 }
 
 .ac-forms > input[type="submit"]:hover {
@@ -165,7 +166,7 @@ body::before {
     padding-left: 10px;
 }
 
-.ac-forms > p {
+.ac-errors {
     padding-left: 10px;
     color: red;
 }

@@ -2,6 +2,65 @@ const vm = require("vm");
 const fs = require("fs");
 const mocha = require("mocha");
 const expect = require("chai").expect;
+const https = require("https");
+
+function validateCSS(source) {
+    let promiseResolve = null;
+    const options = {
+        host: "validator.w3.org",
+        path: "/nu/",
+        method: "POST",
+        headers: {
+            "Content-Type": "text/css",
+            "User-Agent": "Mozilla/5.0",
+        }
+    };
+
+    const request = https.request(options, (response) => {
+        let data = "";
+        response.on("data", (chunk) => {
+            data += chunk;
+        });
+        response.on("end", () => {
+            const errors = data.indexOf("There were errors") >= 0;
+            promiseResolve(!errors);
+        });
+    });
+    request.write(source);
+    request.end();
+    const promise = new Promise((resolve, reject) => {
+        promiseResolve = resolve;
+    })
+    return promise;
+}
+
+mocha.describe("CSS Validation", function() {
+    it("base.css", async function() {
+        const source = fs.readFileSync("../app/static/base.css");
+        const result = await validateCSS(source);
+        expect(result).to.equal(true);
+    });
+    it("globals.css", async function() {
+        const source = fs.readFileSync("../app/static/globals.css");
+        const result = await validateCSS(source);
+        expect(result).to.equal(true);
+    });
+    it("learn/lesson_outline.css", async function() {
+        const source = fs.readFileSync("../app/static/learn/lesson_outline.css");
+        const result = await validateCSS(source);
+        expect(result).to.equal(true);
+    });
+    it("learn/progress_bar.css", async function() {
+        const source = fs.readFileSync("../app/static/learn/progress_bar.css");
+        const result = await validateCSS(source);
+        expect(result).to.equal(true);
+    });
+    it("chess/chess.css", async function() {
+        const source = fs.readFileSync("../app/static/chess/chess.css");
+        const result = await validateCSS(source);
+        expect(result).to.equal(true);
+    });
+});
 
 function importScript(filename) {
     const data = fs.readFileSync(filename);

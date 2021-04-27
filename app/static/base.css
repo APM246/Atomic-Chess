@@ -56,7 +56,7 @@ body::before {
 @font-face {
     font-family: FiraCode;
     src: url('fonts/FiraCode-Regular.ttf')
-  }
+}
 
 .main-text h1 {
     font-size: 50pt;

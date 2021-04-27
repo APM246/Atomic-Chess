@@ -12,7 +12,7 @@ module.exports = {
   },
   rules: {
     "max-classes-per-file": ["error", 10],
-    "linebreak-style": ["error", "windows"],
+    "linebreak-style": "off",
     "indent": ["error", 4],
     "max-len": ["warn", 180],
     "quotes": ["error", "double"],

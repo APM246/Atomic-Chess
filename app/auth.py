@@ -1,4 +1,5 @@
 import functools
+import re
 
 from flask import render_template, abort, flash, redirect, request, url_for, session, g
 from app import app, db
@@ -33,10 +34,15 @@ def register():
         if user is not None:
             flash("Username already taken")
             return render_template('register.html', form=form)
+        
+        password = form.password.data
+        if len(password) < 6 or re.search('\w*\d\w*', password) == None:
+            flash('Password does not meet rules')
+            return render_template('register.html', form=form)
 
         user = User(
             username=form.username.data,
-            pwd_hash=generate_password_hash(form.password.data),
+            pwd_hash=generate_password_hash(password),
             chess_beginner=form.is_chess_beginner.data,
         )
         db.session.add(user)

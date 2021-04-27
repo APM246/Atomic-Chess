@@ -6,17 +6,18 @@ async function ajax(endpoint, method = "GET", body = null) {
             if (response.status === 200) {
                 return await response.json();
             }
-        } catch(err) {
+        } catch (err) {
             console.error(err);
         }
         return null;
-    } else if (method === "POST" || method === "PUT") {
+    }
+    if (method === "POST" || method === "PUT") {
         try {
             const response = await fetch(endpoint, {
                 method,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
-            })
+            });
             return response.status === 200;
         } catch (err) {
             console.error(err);

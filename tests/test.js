@@ -3,6 +3,7 @@ const fs = require("fs");
 const mocha = require("mocha");
 const expect = require("chai").expect;
 const https = require("https");
+const lint = require("mocha-eslint");
 
 function validateCSS(source) {
     let promiseResolve = null;
@@ -33,6 +34,46 @@ function validateCSS(source) {
     })
     return promise;
 }
+
+function validateJS(contextName, sources, tempFilename, tempFiles) {
+    let source = "";
+    for (const src of sources) {
+        source += src;
+    }
+    fs.writeFileSync(tempFilename, source);
+    const options = {
+        contextName,
+        alwaysWarn: false,
+    };
+    lint([tempFilename], options);
+    tempFiles.push(tempFilename);
+}
+
+function validateJSFiles(contextName, filenames, tempFilename, tempFiles) {
+    const sources = filenames.map(filename => fs.readFileSync(filename));
+    validateJS(contextName, sources, tempFilename, tempFiles);
+}
+
+mocha.describe("JS Validation", function() {
+    const tempFiles = [];
+    validateJSFiles("Chess Library", [
+        "../app/static/chess/utils.js",
+        "../app/static/chess/chess.js",
+        "../app/static/chess/board.js",
+        "../app/static/chess/puzzle.js",
+    ], "ChessUtils.js", tempFiles);
+    validateJSFiles("Ajax", ["../app/static/ajax.js"], "ajax.js", tempFiles);
+    validateJSFiles("Forms", ["../app/static/forms.js"], "forms.js", tempFiles);
+    validateJSFiles("Learn Utils", ["../app/static/ajax.js", "../app/static/learn/utils.js"], "learnutils.js", tempFiles);
+    validateJSFiles("Learn Init", ["../app/static/learn/initialize.js"], "initialize.js", tempFiles);
+
+    // Cleanup temporary files
+    after(() => {
+        for (const file of tempFiles) {
+            fs.unlinkSync(file);
+        }
+    })
+});
 
 mocha.describe("CSS Validation", function() {
     it("base.css", async function() {

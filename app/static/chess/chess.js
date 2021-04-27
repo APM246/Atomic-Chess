@@ -1,13 +1,13 @@
 // Defines constants that represent the 64 squares of the chess board
 const SQUARES = Object.freeze({
-    A1:  0, B1:  1, C1:  2, D1:  3, E1:  4, F1:  5, G1:  6, H1:  7,
-    A2:  8, B2:  9, C2: 10, D2: 11, E2: 12, F2: 13, G2: 14, H2: 15,
-    A3: 16, B3: 17, C3: 18, D3: 19, E3: 20, F3: 21, G3: 22, H3: 23,
-    A4: 24, B4: 25, C4: 26, D4: 27, E4: 28, F4: 29, G4: 30, H4: 31,
-    A5: 32, B5: 33, C5: 34, D5: 35, E5: 36, F5: 37, G5: 38, H5: 39,
-    A6: 40, B6: 41, C6: 42, D6: 43, E6: 44, F6: 45, G6: 46, H6: 47,
-    A7: 48, B7: 49, C7: 50, D7: 51, E7: 52, F7: 53, G7: 54, H7: 55,
-    A8: 56, B8: 57, C8: 58, D8: 59, E8: 60, F8: 61, G8: 62, H8: 63,
+    A1:  0, B1:  1, C1:  2, D1:  3, E1:  4, F1:  5, G1:  6, H1:  7, /* eslint-disable-line key-spacing, object-property-newline */
+    A2:  8, B2:  9, C2: 10, D2: 11, E2: 12, F2: 13, G2: 14, H2: 15, /* eslint-disable-line key-spacing, object-property-newline */
+    A3: 16, B3: 17, C3: 18, D3: 19, E3: 20, F3: 21, G3: 22, H3: 23, /* eslint-disable-line key-spacing, object-property-newline */
+    A4: 24, B4: 25, C4: 26, D4: 27, E4: 28, F4: 29, G4: 30, H4: 31, /* eslint-disable-line key-spacing, object-property-newline */
+    A5: 32, B5: 33, C5: 34, D5: 35, E5: 36, F5: 37, G5: 38, H5: 39, /* eslint-disable-line key-spacing, object-property-newline */
+    A6: 40, B6: 41, C6: 42, D6: 43, E6: 44, F6: 45, G6: 46, H6: 47, /* eslint-disable-line key-spacing, object-property-newline */
+    A7: 48, B7: 49, C7: 50, D7: 51, E7: 52, F7: 53, G7: 54, H7: 55, /* eslint-disable-line key-spacing, object-property-newline */
+    A8: 56, B8: 57, C8: 58, D8: 59, E8: 60, F8: 61, G8: 62, H8: 63, /* eslint-disable-line key-spacing, object-property-newline */
     INVALID: -1,
 });
 
@@ -16,10 +16,14 @@ const RANK_COUNT = 8;
 const SQUARE_COUNT = FILE_COUNT * RANK_COUNT;
 
 // Helpful enums for chess board constants
+/* eslint-disable-next-line object-curly-newline */
 const FILES = Object.freeze({ FILE_A: 0, FILE_B: 1, FILE_C: 2, FILE_D: 3, FILE_E: 4, FILE_F: 5, FILE_G: 6, FILE_H: 7 });
+/* eslint-disable-next-line object-curly-newline */
 const RANKS = Object.freeze({ RANK_1: 0, RANK_2: 1, RANK_3: 2, RANK_4: 3, RANK_5: 4, RANK_6: 5, RANK_7: 6, RANK_8: 7 });
+/* eslint-disable-next-line object-curly-newline */
 const COLORS = Object.freeze({ WHITE: 0, BLACK: 1 });
 const COLOR_COUNT = 2;
+/* eslint-disable-next-line object-curly-newline */
 const PIECES = Object.freeze({ NONE: -1, PAWN: 0, KNIGHT: 1, BISHOP: 2, ROOK: 3, QUEEN: 4, KING: 5 });
 const PIECE_COUNT = 6;
 const PROMOTION_PIECE_TYPES = [PIECES.QUEEN, PIECES.ROOK, PIECES.BISHOP, PIECES.KNIGHT];
@@ -31,7 +35,11 @@ const BISHOP_MOVE_VECTORS = [[-1, 1], [1, 1], [1, -1], [-1, -1]];
 const ROOK_MOVE_VECTORS = [[0, 1], [1, 0], [0, -1], [-1, 0]];
 const KING_MOVE_VECTORS = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
 
-const MOVE_NONE = { from: SQUARES.INVALID, to: SQUARES.INVALID, promotion: PIECES.NONE };
+const MOVE_NONE = {
+    from: SQUARES.INVALID,
+    to: SQUARES.INVALID,
+    promotion: PIECES.NONE,
+};
 
 // Utility function to create a square from a given file and rank
 function createSquare(file, rank) {
@@ -43,21 +51,24 @@ function createSquare(file, rank) {
 
 function fileOfSquare(square) {
     assert(square !== SQUARES.INVALID, "Invalid square");
-    return square & 0x7;
+    return square % 8;
 }
 
 function rankOfSquare(square) {
     assert(square !== SQUARES.INVALID, "Invalid square");
-    return square >> 3;
+    return Math.floor(square / 8);
 }
 
 function validFileAndRank(file, rank) {
     return file >= 0 && file < FILE_COUNT && rank >= 0 && rank < RANK_COUNT;
 }
 
-function squareColor(square)
-{
+function squareColor(square) {
     return (fileOfSquare(square) + rankOfSquare(square)) % 2 === 0 ? COLORS.BLACK : COLORS.WHITE;
+}
+
+function otherColor(color) {
+    return color === COLORS.BLACK ? COLORS.WHITE : COLORS.BLACK;
 }
 
 // Returns the square directly in front of the given square with respect to the color
@@ -96,10 +107,6 @@ function isNextToSquare(square0, square1) {
     const df = fileOfSquare(square0) - fileOfSquare(square1);
     const dr = rankOfSquare(square0) - rankOfSquare(square1);
     return Math.abs(df) <= 1 && Math.abs(dr) <= 1;
-}
-
-function otherColor(color) {
-    return color === COLORS.BLACK ? COLORS.WHITE : COLORS.BLACK;
 }
 
 // Utility function to create a move from 2 squares
@@ -203,7 +210,7 @@ function generateMovesFromSlidingVectors(square, color, position, vectors) {
             if (!pieceOnSquare || pieceOnSquare.color !== color) {
                 moves.push(createMove(square, createSquare(currentFile, currentRank)));
                 // Stop expanding along this vector (we can't x-ray through pieces)
-                if (Boolean(pieceOnSquare)) {
+                if (pieceOnSquare) {
                     break;
                 }
             } else {
@@ -243,13 +250,13 @@ function generateKingMoves(square, color, position) {
 
     const rank = rankOfSquare(square);
     if (position.canCastleKingside(color)) {
-        const isEmptyPath = [createSquare(FILES.FILE_F, rank), createSquare(FILES.FILE_G, rank)].every(square => !position.isSquareOccupied(square));
+        const isEmptyPath = [createSquare(FILES.FILE_F, rank), createSquare(FILES.FILE_G, rank)].every(sq => !position.isSquareOccupied(sq));
         if (isEmptyPath) {
             moves.push(createMove(square, createSquare(FILES.FILE_G, rank)));
         }
     }
     if (position.canCastleQueenside(color)) {
-        const isEmptyPath = [createSquare(FILES.FILE_B, rank), createSquare(FILES.FILE_C, rank), createSquare(FILES.FILE_D, rank)].every(square => !position.isSquareOccupied(square));
+        const isEmptyPath = [createSquare(FILES.FILE_B, rank), createSquare(FILES.FILE_C, rank), createSquare(FILES.FILE_D, rank)].every(sq => !position.isSquareOccupied(sq));
         if (isEmptyPath) {
             moves.push(createMove(square, createSquare(FILES.FILE_C, rank)));
         }
@@ -260,18 +267,18 @@ function generateKingMoves(square, color, position) {
 // Generates all pseudo-legal moves of a given piece on a given square
 function generateMoves(piece, square, color, position) {
     switch (piece) {
-        case PIECES.PAWN:
-            return generatePawnMoves(square, color, position);
-        case PIECES.KNIGHT:
-            return generateKnightMoves(square, color, position);
-        case PIECES.BISHOP:
-            return generateBishopMoves(square, color, position);
-        case PIECES.ROOK:
-            return generateRookMoves(square, color, position);
-        case PIECES.QUEEN:
-            return generateQueenMoves(square, color, position);
-        case PIECES.KING:
-            return generateKingMoves(square, color, position);
+    case PIECES.PAWN:
+        return generatePawnMoves(square, color, position);
+    case PIECES.KNIGHT:
+        return generateKnightMoves(square, color, position);
+    case PIECES.BISHOP:
+        return generateBishopMoves(square, color, position);
+    case PIECES.ROOK:
+        return generateRookMoves(square, color, position);
+    case PIECES.QUEEN:
+        return generateQueenMoves(square, color, position);
+    case PIECES.KING:
+        return generateKingMoves(square, color, position);
     }
     throw new Error("Invalid piece type");
 }
@@ -279,7 +286,7 @@ function generateMoves(piece, square, color, position) {
 // Generates all pseudo-legal moves for the given position
 function generatePseudoLegalMoves(position) {
     const moves = [];
-    for (let i = 0; i < SQUARE_COUNT; i++) {
+    for (let i = 0; i < SQUARE_COUNT; ++i) {
         const piece = position.getPieceOnSquare(i);
         if (piece && piece.color === position.colorToMove) {
             moves.push(...generateMoves(piece.piece, i, piece.color, position));
@@ -305,28 +312,28 @@ function squareFromString(str) {
 // Converts piece type to the UCI promotion character
 function pieceToString(piece) {
     switch (piece) {
-        case PIECES.KNIGHT:
-            return "n";
-        case PIECES.BISHOP:
-            return "b";
-        case PIECES.ROOK:
-            return "r";
-        case PIECES.QUEEN:
-            return "q";
+    case PIECES.KNIGHT:
+        return "n";
+    case PIECES.BISHOP:
+        return "b";
+    case PIECES.ROOK:
+        return "r";
+    case PIECES.QUEEN:
+        return "q";
     }
     return "";
 }
 
 function pieceFromString(str) {
     switch (str) {
-        case "n":
-            return PIECES.KNIGHT;
-        case "b":
-            return PIECES.BISHOP;
-        case "r":
-            return PIECES.ROOK;
-        case "q":
-            return PIECES.QUEEN;
+    case "n":
+        return PIECES.KNIGHT;
+    case "b":
+        return PIECES.BISHOP;
+    case "r":
+        return PIECES.ROOK;
+    case "q":
+        return PIECES.QUEEN;
     }
     return PIECES.NONE;
 }

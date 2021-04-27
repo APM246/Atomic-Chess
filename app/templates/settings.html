@@ -39,8 +39,7 @@
     }
 
     async function updateSettings(data) {
-      const success = await ajax("{{ url_for('get_settings') }}", "POST", data);
-      console.log(success);
+      await ajax("{{ url_for('get_settings') }}", "POST", data);
     }
 
     // Display cached version in local storage

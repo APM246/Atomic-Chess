@@ -28,11 +28,10 @@ function transformSettingsResponse(settings) {
         showMoveMarkers: settings.show_move_markers,
         showSquareHighlights: settings.show_square_highlights,
         useMoveAnimations: settings.use_move_animations,
-    }
+    };
 }
 
 class Puzzle {
-
     constructor(options) {
         this.correctMovePlayed = new EventEmitter();
         this.incorrectMovePlayed = new EventEmitter();
@@ -131,5 +130,4 @@ class Puzzle {
             }
         }
     }
-
 }

@@ -5,19 +5,19 @@ const DEFAULT_CHESS_BOARD_OPTIONS = {
     lightSquareHighlightColor: "#F6F669",
     darkSquareHighlightColor: "#BACA2B",
     pieceImages: {
-        basePath:    "/static/pieces/",
-        whitePawn:   "white_pawn.png",
+        basePath: "/static/pieces/",
+        whitePawn: "white_pawn.png",
         whiteKnight: "white_knight.png",
         whiteBishop: "white_bishop.png",
-        whiteRook:   "white_rook.png",
-        whiteQueen:  "white_queen.png",
-        whiteKing:   "white_king.png",
-        blackPawn:   "black_pawn.png",
+        whiteRook: "white_rook.png",
+        whiteQueen: "white_queen.png",
+        whiteKing: "white_king.png",
+        blackPawn: "black_pawn.png",
         blackKnight: "black_knight.png",
         blackBishop: "black_bishop.png",
-        blackRook:   "black_rook.png",
-        blackQueen:  "black_queen.png",
-        blackKing:   "black_king.png",
+        blackRook: "black_rook.png",
+        blackQueen: "black_queen.png",
+        blackKing: "black_king.png",
     },
     interactive: true,
     showMoveMarkers: true,
@@ -39,10 +39,10 @@ const DEFAULT_PIECE_Z_INDEX_STRING = "";
 const ATOMIC_EXPLOSION_VECTORS = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]];
 
 // Constants that represent the current state of the board
+/* eslint-disable-next-line object-curly-newline */
 const POSITION_STATE = Object.freeze({ VALID: 0, DRAW: 1, WHITE_WIN: 2, BLACK_WIN: 3 });
 
 class EventEmitter {
-
     constructor() {
         this._listeners = [];
     }
@@ -62,13 +62,11 @@ class EventEmitter {
             listener(...args);
         }
     }
-
 }
 
 // Class that represents the state of the chess game (piece positions, castling rights, etc.)
 // Does not handle any graphics/user interaction
 class Position {
-
     constructor() {
         this.ready = new EventEmitter();
         this.cleared = new EventEmitter();
@@ -259,54 +257,54 @@ class Position {
         let index = 0;
         for (const c of fen) {
             index++;
-            if (c === ' ') {
+            if (c === " ") {
                 break;
             }
             const count = Number(c);
-            if (!isNaN(count)) {
+            if (!Number.isNaN(count)) {
                 currentFile += count;
             }
-            if (c === '/') {
+            if (c === "/") {
                 currentRank--;
                 currentFile = FILES.FILE_A;
             }
             switch (c) {
-                case "P":
-                    this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.PAWN, color: COLORS.WHITE };
-                    break;
-                case "N":
-                    this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.KNIGHT, color: COLORS.WHITE };
-                    break;
-                case "B":
-                    this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.BISHOP, color: COLORS.WHITE };
-                    break;
-                case "R":
-                    this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.ROOK, color: COLORS.WHITE };
-                    break;
-                case "Q":
-                    this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.QUEEN, color: COLORS.WHITE };
-                    break;
-                case "K":
-                    this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.KING, color: COLORS.WHITE };
-                    break;
-                case "p":
-                    this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.PAWN, color: COLORS.BLACK };
-                    break;
-                case "n":
-                    this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.KNIGHT, color: COLORS.BLACK };
-                    break;
-                case "b":
-                    this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.BISHOP, color: COLORS.BLACK };
-                    break;
-                case "r":
-                    this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.ROOK, color: COLORS.BLACK };
-                    break;
-                case "q":
-                    this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.QUEEN, color: COLORS.BLACK };
-                    break;
-                case "k":
-                    this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.KING, color: COLORS.BLACK };
-                    break;
+            case "P":
+                this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.PAWN, color: COLORS.WHITE };
+                break;
+            case "N":
+                this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.KNIGHT, color: COLORS.WHITE };
+                break;
+            case "B":
+                this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.BISHOP, color: COLORS.WHITE };
+                break;
+            case "R":
+                this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.ROOK, color: COLORS.WHITE };
+                break;
+            case "Q":
+                this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.QUEEN, color: COLORS.WHITE };
+                break;
+            case "K":
+                this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.KING, color: COLORS.WHITE };
+                break;
+            case "p":
+                this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.PAWN, color: COLORS.BLACK };
+                break;
+            case "n":
+                this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.KNIGHT, color: COLORS.BLACK };
+                break;
+            case "b":
+                this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.BISHOP, color: COLORS.BLACK };
+                break;
+            case "r":
+                this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.ROOK, color: COLORS.BLACK };
+                break;
+            case "q":
+                this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.QUEEN, color: COLORS.BLACK };
+                break;
+            case "k":
+                this._squares[createSquare(currentFile++, currentRank)] = { piece: PIECES.KING, color: COLORS.BLACK };
+                break;
             }
         }
 
@@ -318,26 +316,26 @@ class Position {
         this._castlingRights.blackKingside = false;
         this._castlingRights.blackQueenside = false;
 
-        while (index < fen.length && fen[index] !== ' ') {
+        while (index < fen.length && fen[index] !== " ") {
             switch (fen[index]) {
-                case "K":
-                    this._castlingRights.whiteKingside = true;
-                    break;
-                case "Q":
-                    this._castlingRights.whiteQueenside = true;
-                    break;
-                case "k":
-                    this._castlingRights.blackKingside = true;
-                    break;
-                case "q":
-                    this._castlingRights.blackQueenside = true;
-                    break;
+            case "K":
+                this._castlingRights.whiteKingside = true;
+                break;
+            case "Q":
+                this._castlingRights.whiteQueenside = true;
+                break;
+            case "k":
+                this._castlingRights.blackKingside = true;
+                break;
+            case "q":
+                this._castlingRights.blackQueenside = true;
+                break;
             }
             index++;
         }
         index++;
 
-        if (fen[index] !== '-') {
+        if (fen[index] !== "-") {
             this._enpassantSquare = squareFromString(fen.substr(index, 2));
             index += 3;
         } else {
@@ -409,7 +407,7 @@ class Position {
         undoInfo.movingPiece = movingPiece;
         assert(Boolean(movingPiece) && movingPiece.piece !== PIECES.NONE && movingPiece.color === this.colorToMove, "Invalid move");
         const capturedPiece = this.getPieceOnSquare(toSquare);
-        assert(!Boolean(capturedPiece) || capturedPiece.color !== this.colorToMove, "Invalid capture");
+        assert(!capturedPiece || capturedPiece.color !== this.colorToMove, "Invalid capture");
 
         // If we have captured someone's rook and it was on its original square - prevent castling
         const updateCastlingFromCapturedPiece = (capPiece, square) => {
@@ -640,7 +638,7 @@ class Position {
 
     // Determine whether the position is a draw or checkmate or still valid
     // This function is quite as expensive, as it calls isLegal() multiple times
-    // performance is fine though 
+    // performance is fine though
     getResult() {
         // Check if someones king got blown up
         if (this._kingSquares[COLORS.WHITE] === SQUARES.INVALID || this._kingSquares[COLORS.BLACK] === SQUARES.INVALID) {
@@ -700,12 +698,10 @@ class Position {
         }
         this._colorToMove = otherColor(this.colorToMove);
     }
-
 }
 
 // Utility class for storing necessary information to manage the graphics/user interaction of a chess piece
 class ChessPiece {
-
     constructor(pieceType, color, imageUri, square) {
         this.piece = pieceType;
         this.color = color;
@@ -723,18 +719,14 @@ class ChessPiece {
                     this.img.src = this.imageUri;
                 }
             });
-        } else {
-            if (this.img) {
-                this.img.src = this.imageUri;
-            }
+        } else if (this.img) {
+            this.img.src = this.imageUri;
         }
     }
-
 }
 
 // Helper class for highlighting squares on the chess board
 class SquareEmphasizer {
-
     constructor(chessBoard, enabled) {
         this._chessBoard = chessBoard;
         this._enabled = enabled;
@@ -832,7 +824,7 @@ class SquareEmphasizer {
     }
 
     _updateSquareColor(square, color) {
-        let td = this._chessBoard._getTdFromSquare(square);
+        const td = this._chessBoard._getTdFromSquare(square);
         td.style.backgroundColor = color;
     }
 
@@ -848,7 +840,6 @@ class SquareEmphasizer {
 // Abstraction layer around the Position object which manages how the game is displayed to the user
 // Also handles the interaction (being able to drag/drop pieces)
 class ChessBoard {
-
     constructor(options) {
         this.movePlayed = new EventEmitter();
 
@@ -890,7 +881,9 @@ class ChessBoard {
                 }
 
                 const promise = wait(this._options.animationTime);
-                this._animationPromise = promise.then(() => this._animationPromise = null);
+                this._animationPromise = promise.then(() => {
+                    this._animationPromise = null;
+                });
 
                 // For every other moving piece (rooks during castling) - not the primary moving piece
                 // always animate to the new square
@@ -944,15 +937,15 @@ class ChessBoard {
                 // Debug getResult
                 const state = this.position.getResult();
                 switch (state) {
-                    case POSITION_STATE.BLACK_WIN:
-                        console.log("Black Won");
-                        break;
-                    case POSITION_STATE.WHITE_WIN:
-                        console.log("White Won");
-                        break;
-                    case POSITION_STATE.DRAW:
-                        console.log("Draw");
-                        break;
+                case POSITION_STATE.BLACK_WIN:
+                    console.log("Black Won");
+                    break;
+                case POSITION_STATE.WHITE_WIN:
+                    console.log("White Won");
+                    break;
+                case POSITION_STATE.DRAW:
+                    console.log("Draw");
+                    break;
                 }
             }
         });
@@ -962,14 +955,18 @@ class ChessBoard {
                 const shouldAnimate = this._options.useMoveAnimations && moveData.animate;
 
                 const promise = wait(this._options.animationTime);
-                this._animationPromise = promise.then(() => this._animationPromise = null);
+                this._animationPromise = promise.then(() => {
+                    this._animationPromise = null;
+                });
                 // Add pieces that were captured by the previous move
                 for (const piece of moveData.addedPieces) {
-                    const pieceObject = new ChessPiece(piece.piece.piece, piece.piece.color, this._getImageUri(piece.piece.piece, piece.piece.color), piece.square);
+                    const imageUri = this._getImageUri(piece.piece.piece, piece.piece.color);
+                    const pieceObject = new ChessPiece(piece.piece.piece, piece.piece.color, imageUri, piece.square);
                     // In the case of atomic chess the moving piece may need to be added back (exploded when it captured another piece)
                     // In that case we still want to animate the piece moving from the capture square back to its old square
                     // However there is likely another piece already on the square (the piece we captured)
-                    // Therefore before we create the piece we set its square to the capture square (move.to) and after its position has been update we set its actual square to the location it is about to move to
+                    // Therefore before we create the piece we set its square to the capture square (move.to)
+                    // and after its position has been update we set its actual square to the location it is about to move to
                     // Temporarily its graphical position and logical position are out of sync
                     if (piece.isMovingPiece && shouldAnimate) {
                         pieceObject.currentSquare = moveData.move.to;
@@ -1277,7 +1274,7 @@ class ChessBoard {
         const scale = isCapture ? MOVE_MARKER_CAPTURE_SCALE : MOVE_MARKER_DEFAULT_SCALE;
         const div = this._createMoveMarkerDiv(color, scale);
 
-        let td = this._getTdFromSquare(move.to);
+        const td = this._getTdFromSquare(move.to);
         td.appendChild(div);
 
         this._moveMarkerDivs.push(div);
@@ -1297,12 +1294,12 @@ class ChessBoard {
         const ns = "http://www.w3.org/2000/svg";
 
         const svg = document.createElementNS(ns, "svg");
-        svg.setAttributeNS(null, 'viewBox', `0 0 ${squareWidth} ${squareHeight}`);
+        svg.setAttributeNS(null, "viewBox", `0 0 ${squareWidth} ${squareHeight}`);
         const circle = document.createElementNS(ns, "circle");
-        circle.setAttributeNS(null, 'cx', `${squareWidth / 2}`);
-        circle.setAttributeNS(null, 'cy', `${squareHeight / 2}`);
-        circle.setAttributeNS(null, 'r', `${Math.min(width / 2, height / 2)}`);
-        circle.setAttributeNS(null, 'fill', color);
+        circle.setAttributeNS(null, "cx", `${squareWidth / 2}`);
+        circle.setAttributeNS(null, "cy", `${squareHeight / 2}`);
+        circle.setAttributeNS(null, "r", `${Math.min(width / 2, height / 2)}`);
+        circle.setAttributeNS(null, "fill", color);
         svg.appendChild(circle);
         div.appendChild(svg);
 
@@ -1342,7 +1339,6 @@ class ChessBoard {
         this._destroyPieces();
         this._destroyBoard();
         if (this._parentElement) {
-
             const boardDiv = document.createElement("div");
             boardDiv.className = "ac-chess-board";
             const table = document.createElement("table");
@@ -1392,7 +1388,7 @@ class ChessBoard {
             this._pieces.push(piece);
 
             // Add img to the table
-            let td = this._getTdFromSquare(piece.currentSquare);
+            const td = this._getTdFromSquare(piece.currentSquare);
             td.prepend(img);
         }
     }
@@ -1440,7 +1436,7 @@ class ChessBoard {
         const resetTransform = () => {
             this.hideMoveMarkers();
             this._endMovingPiece(piece);
-            piece.img.style.transform = `translate(0px, 0px)`;
+            piece.img.style.transform = "translate(0px, 0px)";
         };
 
         // Set the piece position based on an absolute mouse position (from mousemove event)
@@ -1471,12 +1467,12 @@ class ChessBoard {
             return success;
         };
 
-        piece.img.onmousedown = (e) => {
+        piece.img.onmousedown = (evt) => {
             // If we are dragging another piece ignore this drag
             if (document.onmouseup) {
                 return;
             }
-            e.preventDefault();
+            evt.preventDefault();
             // Focus the board element
             this.focus();
             // Highlight the square the grabbed piece is on
@@ -1488,7 +1484,7 @@ class ChessBoard {
             // Store current position
             currentPosition = this.squareToBoardPosition(piece.currentSquare);
             // Move the piece to the mouse location
-            setTransform(e.clientX, e.clientY);
+            setTransform(evt.clientX, evt.clientY);
 
             // Setup event listeners
             document.onmouseup = (e) => {
@@ -1507,13 +1503,13 @@ class ChessBoard {
         };
 
         // Support mobile inputs
-        piece.img.ontouchstart = (e) => {
-            if (e.touches.length === 1) {
+        piece.img.ontouchstart = (evt) => {
+            if (evt.touches.length === 1) {
                 // If we are dragging another piece ignore this drag
                 if (document.ontouchend) {
                     return;
                 }
-                e.preventDefault();
+                evt.preventDefault();
                 // Focus board element
                 this.focus();
                 // Highlight the square the grabbed piece is on
@@ -1524,7 +1520,7 @@ class ChessBoard {
                 // Store current position
                 currentPosition = this.squareToBoardPosition(piece.currentSquare);
                 // Move the piece to the mouse location
-                setTransform(e.touches[0].clientX, e.touches[0].clientY);
+                setTransform(evt.touches[0].clientX, evt.touches[0].clientY);
 
                 document.ontouchend = (e) => {
                     if (e.changedTouches.length === 1) {
@@ -1571,7 +1567,7 @@ class ChessBoard {
     _movePieceToSquare(square, piece, animationPromise, fromSquareOverride = null) {
         if (piece.img) {
             if (animationPromise) {
-                const fromSquare = fromSquareOverride ? fromSquareOverride : piece.currentSquare;
+                const fromSquare = fromSquareOverride || piece.currentSquare;
                 piece.currentSquare = square;
 
                 // Calculate the position of the target square relative to our current square
@@ -1603,24 +1599,21 @@ class ChessBoard {
     // Get the URI for the image
     _getImageUri(piece, color) {
         const isWhite = color === COLORS.WHITE;
-        const getFullPath = (path) => {
-            return this._options.pieceImages.basePath + path;
-        };
+        const getFullPath = (path) => this._options.pieceImages.basePath + path;
         switch (piece) {
-            case PIECES.PAWN:
-                return getFullPath(isWhite ? this._options.pieceImages.whitePawn : this._options.pieceImages.blackPawn);
-            case PIECES.KNIGHT:
-                return getFullPath(isWhite ? this._options.pieceImages.whiteKnight : this._options.pieceImages.blackKnight);
-            case PIECES.BISHOP:
-                return getFullPath(isWhite ? this._options.pieceImages.whiteBishop : this._options.pieceImages.blackBishop);
-            case PIECES.ROOK:
-                return getFullPath(isWhite ? this._options.pieceImages.whiteRook : this._options.pieceImages.blackRook);
-            case PIECES.QUEEN:
-                return getFullPath(isWhite ? this._options.pieceImages.whiteQueen : this._options.pieceImages.blackQueen);
-            case PIECES.KING:
-                return getFullPath(isWhite ? this._options.pieceImages.whiteKing : this._options.pieceImages.blackKing);
+        case PIECES.PAWN:
+            return getFullPath(isWhite ? this._options.pieceImages.whitePawn : this._options.pieceImages.blackPawn);
+        case PIECES.KNIGHT:
+            return getFullPath(isWhite ? this._options.pieceImages.whiteKnight : this._options.pieceImages.blackKnight);
+        case PIECES.BISHOP:
+            return getFullPath(isWhite ? this._options.pieceImages.whiteBishop : this._options.pieceImages.blackBishop);
+        case PIECES.ROOK:
+            return getFullPath(isWhite ? this._options.pieceImages.whiteRook : this._options.pieceImages.blackRook);
+        case PIECES.QUEEN:
+            return getFullPath(isWhite ? this._options.pieceImages.whiteQueen : this._options.pieceImages.blackQueen);
+        case PIECES.KING:
+            return getFullPath(isWhite ? this._options.pieceImages.whiteKing : this._options.pieceImages.blackKing);
         }
         return "";
     }
-
 }

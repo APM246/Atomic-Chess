@@ -78,8 +78,6 @@ def login():
             session.clear()
             session["current_user"] = user.id
 
-            print(user.settings)
-
             return redirect(redirect_url)
 
         flash(error)

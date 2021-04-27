@@ -117,15 +117,19 @@ body::before {
 }
 
 .ac-form-container {
-    background-color:rgba(25, 187, 66, 0.65);
-    color: black;
+    background-color: rgba(34, 34, 34, 0.3);
     border: ridge black 5px;
+    border-radius: 20px;
+    color: black;
+    padding-left: 0px;
 }
 
 .ac-forms {
     font-family: Corbel, FiraCode;
     font-size: 16pt;
-    padding: 20px;
+    padding-left: 5px;
+    padding-top: 10px;
+    
 }
 
 .ac-forms > input {
@@ -150,10 +154,20 @@ body::before {
 .ac-forms > input[type="submit"] {
     background-color: black;
     color: white;
+    margin-left: 10px;
 }
 
 .ac-forms > input[type="submit"]:hover {
-    background-color: rgb(23, 26, 211);
+    background-color: var(--ac-green);
+}
+
+.ac-forms > label {
+    padding-left: 10px;
+}
+
+.ac-forms > p {
+    padding-left: 10px;
+    color: red;
 }
 
 .ac-form-info {

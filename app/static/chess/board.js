@@ -98,6 +98,10 @@ class Position {
         return this._colorToMove;
     }
 
+    set colorToMove(color) {
+        this._colorToMove = color;
+    }
+
     get enpassantSquare() {
         return this._enpassantSquare;
     }
@@ -210,6 +214,10 @@ class Position {
             // King can never capture anything
             if (movingPiece && movingPiece.piece === PIECES.KING && isCapture) {
                 return false;
+            }
+            // In sandbox mode, there may not be kings at all
+            if (ourKingSquare === SQUARES.INVALID || otherKingSquare === SQUARES.INVALID) {
+                return this.sandbox;
             }
             // Cannot capture anything next to our own king
             if (isCapture && isNextToSquare(move.to, ourKingSquare)) {
@@ -1061,6 +1069,57 @@ class ChessBoard {
         return this._flipped;
     }
 
+    // Uses the pieces from our piece array not the underlying position
+    get fen() {
+        let result = "";
+        for (let rank = RANK_COUNT - 1; rank >= 0; rank--) {
+            let emptyCount = 0;
+            for (let file = 0; file < FILE_COUNT; file++) {
+                const square = createSquare(file, rank);
+                const index = this._indexOfPieceOnSquare(square);
+                if (index >= 0) {
+                    if (emptyCount > 0) {
+                        result += `${emptyCount}`;
+                    }
+                    emptyCount = 0;
+                    const piece = this._pieces[index];
+                    result += pieceToString(piece.piece, piece.color);
+                } else {
+                    emptyCount++;
+                }
+            }
+            if (emptyCount > 0) {
+                result += `${emptyCount}`;
+            }
+            if (rank !== 0) {
+                result += "/";
+            }
+        }
+        result += ` ${this.position.colorToMove === COLORS.WHITE ? "w" : "b"} `;
+        let hasCastlingRights = false;
+        if (this.position.canCastleKingside(COLORS.WHITE)) {
+            result += "K";
+            hasCastlingRights = true;
+        }
+        if (this.position.canCastleQueenside(COLORS.WHITE)) {
+            result += "Q";
+            hasCastlingRights = true;
+        }
+        if (this.position.canCastleKingside(COLORS.BLACK)) {
+            result += "k";
+            hasCastlingRights = true;
+        }
+        if (this.position.canCastleQueenside(COLORS.BLACK)) {
+            result += "q";
+            hasCastlingRights = true;
+        }
+        if (!hasCastlingRights) {
+            result += "-";
+        }
+        result += ` ${this.position.enpassantSquare === SQUARES.INVALID ? "-" : squareToString(this.position.enpassantSquare)}`;
+        return result;
+    }
+
     async waitForAnimation() {
         if (this._animationPromise) {
             await this._animationPromise;
@@ -1115,15 +1174,65 @@ class ChessBoard {
         this._options.showMoveMarkers = false;
     }
 
+    setInteractive(interactive) {
+        this._options.interactive = interactive;
+        if (interactive) {
+            for (const piece of this._pieces) {
+                this._makeInteractive(piece);
+            }
+        } else {
+            for (const piece of this._pieces) {
+                this._disableInteraction(piece);
+            }
+        }
+    }
+
     // Redraws the board - may be required if the containing div is resized
     redraw() {
         this._create();
         this._createPieces();
     }
 
+    hasPieceOnSquare(square) {
+        return this._indexOfPieceOnSquare(square) >= 0;
+    }
+
     // Set current board state from a Forsyth–Edwards Notation (FEN) string
     setFromFen(fen) {
         this.position.setFromFen(fen);
+    }
+
+    addPiece(pieceType, color, square, interactive = false) {
+        this.removePiece(square);
+        const pieceObject = new ChessPiece(pieceType, color, this._getImageUri(pieceType, color), square);
+        this._createPiece(pieceObject, interactive);
+    }
+
+    removePiece(square) {
+        const index = this._indexOfPieceOnSquare(square);
+        if (index >= 0) {
+            const piece = this._pieces[index];
+            this._destroyPiece(piece);
+            this._pieces.splice(index, 1);
+        }
+    }
+
+    updatePositionFromPieces(options) {
+        const opts = assignDefaults(options, {
+            colorToMove: COLORS.WHITE,
+            whiteKingside: true,
+            whiteQueenside: true,
+            blackKingside: true,
+            blackQueenside: true,
+            enpassantSquare: SQUARES.INVALID,
+        });
+        this.position._colorToMove = opts.colorToMove;
+        this.position._castlingRights.whiteKingside = opts.whiteKingside;
+        this.position._castlingRights.whiteQueenside = opts.whiteQueenside;
+        this.position._castlingRights.blackKingside = opts.blackKingside;
+        this.position._castlingRights.blackQueenside = opts.blackQueenside;
+        this.position._enpassantSquare = opts.enpassantSquare;
+        this.position.setFromFen(this.fen);
     }
 
     // Cleanup and remove graphics from webpage
@@ -1375,12 +1484,12 @@ class ChessBoard {
     }
 
     // Constructs the HTML elements for rendering a single piece
-    _createPiece(piece) {
+    _createPiece(piece, interactive = true) {
         if (this._boardElement) {
             const img = this._createPieceImage(piece);
             // Piece now tracks its img
             piece.img = img;
-            if (this._options.interactive) {
+            if (this._options.interactive && interactive) {
                 this._makeInteractive(piece);
             } else {
                 this._disableInteraction(piece);

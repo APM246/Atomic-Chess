@@ -310,16 +310,20 @@ function squareFromString(str) {
 }
 
 // Converts piece type to the UCI promotion character
-function pieceToString(piece) {
+function pieceToString(piece, color) {
     switch (piece) {
+    case PIECES.PAWN:
+        return color === COLORS.WHITE ? "P" : "p";
     case PIECES.KNIGHT:
-        return "n";
+        return color === COLORS.WHITE ? "N" : "n";
     case PIECES.BISHOP:
-        return "b";
+        return color === COLORS.WHITE ? "B" : "b";
     case PIECES.ROOK:
-        return "r";
+        return color === COLORS.WHITE ? "R" : "r";
     case PIECES.QUEEN:
-        return "q";
+        return color === COLORS.WHITE ? "Q" : "q";
+    case PIECES.KING:
+        return color === COLORS.WHITE ? "K" : "k";
     }
     return "";
 }
@@ -340,7 +344,7 @@ function pieceFromString(str) {
 
 // Converts a move into a UCI string
 function moveToString(move) {
-    return squareToString(move.from) + squareToString(move.to) + (move.promotion !== PIECES.NONE ? pieceToString(move.promotion) : "");
+    return squareToString(move.from) + squareToString(move.to) + (move.promotion !== PIECES.NONE ? pieceToString(move.promotion, COLORS.BLACK) : "");
 }
 
 // Converts a UCI string into a move (eg. e2e4, c2c1q)

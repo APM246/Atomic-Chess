@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    .ac-puzzle-creator-board {
+        width: min(70vw, 70vh);
+        height: min(70vw, 70vh);
+        min-width: min(70vw, 70vh);
+        min-height: min(70vw, 70vh);
+        border: 2px solid black;
+        margin-left: auto;
+    }
+
+    .ac-puzzle-creator-content {
+        margin-top: 3%;
+    }
+
+    .ac-puzzle-creator-container {
+        display: flex;
+        margin: auto;
+    }
+
+    .ac-puzzle-creator-controls {
+        margin-left: 5px;
+        margin-right: auto;
+        width: 450px;
+        height: min(70vw, 70vh);
+        border: 2px solid black;
+        overflow-x: hidden;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ac-piece-table {
+        width: 100%;
+        height: 100%;
+    }
+
+    .ac-piece-container {
+        width: 50%;
+        height: 16.6667%;
+        position: relative;
+    }
+
+    .ac-puzzle-creator-full-button {
+        width: 100%;
+        border-radius: 0;
+        padding: 10px;
+    }
+
+    .ac-piece-row {
+        display: flex;
+        width: 100%;
+    }
+
+    .ac-piece-image {
+        width: 100px;
+        height: 100px;
+    }
+
+    .ac-selected {
+        border: 5px solid red;
+        border-radius: 50%;
+    }
+
+    .ac-puzzle-info {
+        margin-top: 15px;
+    }
+
+    .ac-submit-puzzle {
+        align-self: flex-end;
+        margin-top: auto;
+        width: 100%;
+    }
+
+    .ac-lesson-option {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.onload = () => {
+        let initialFen = "8/8/8/8/8/8/8/8 w - -";
+        let colorToMove = COLORS.WHITE;
+        let whiteKingside = false;
+        let whiteQueenside = false;
+        let blackKingside = false;
+        let blackQueenside = false;
+
+        let editingBoard = false;
+        let editingMoves = false;
+        let pieceType = PIECES.PAWN;
+        let pieceColor = COLORS.WHITE;
+        let playerColor = COLORS.WHITE;
+        let moves = [];
+        let lessonId = 0;
+
+        function getImageUri(pieceType, color) {
+            const pieceImages = DEFAULT_CHESS_BOARD_OPTIONS.pieceImages;
+            switch (pieceType) {
+            case PIECES.PAWN:
+                return pieceImages.basePath + (color === COLORS.WHITE ? pieceImages.whitePawn : pieceImages.blackPawn);
+            case PIECES.KNIGHT:
+                return pieceImages.basePath + (color === COLORS.WHITE ? pieceImages.whiteKnight : pieceImages.blackKnight);
+            case PIECES.BISHOP:
+                return pieceImages.basePath + (color === COLORS.WHITE ? pieceImages.whiteBishop : pieceImages.blackBishop);
+            case PIECES.ROOK:
+                return pieceImages.basePath + (color === COLORS.WHITE ? pieceImages.whiteRook : pieceImages.blackRook);
+            case PIECES.QUEEN:
+                return pieceImages.basePath + (color === COLORS.WHITE ? pieceImages.whiteQueen : pieceImages.blackQueen);
+            case PIECES.KING:
+                return pieceImages.basePath + (color === COLORS.WHITE ? pieceImages.whiteKing : pieceImages.blackKing);
+            }
+            return "";
+        }
+
+        function setPieceColor(color) {
+            pieceColor = color;
+            document.getElementById("piece-image-pawn").src = getImageUri(PIECES.PAWN, color);
+            document.getElementById("piece-image-knight").src = getImageUri(PIECES.KNIGHT, color);
+            document.getElementById("piece-image-bishop").src = getImageUri(PIECES.BISHOP, color);
+            document.getElementById("piece-image-rook").src = getImageUri(PIECES.ROOK, color);
+            document.getElementById("piece-image-queen").src = getImageUri(PIECES.QUEEN, color);
+            document.getElementById("piece-image-king").src = getImageUri(PIECES.KING, color);
+        }
+
+        function clearSelected() {
+            document.getElementById("piece-image-pawn").className = "ac-piece-image";
+            document.getElementById("piece-image-knight").className = "ac-piece-image";
+            document.getElementById("piece-image-bishop").className = "ac-piece-image";
+            document.getElementById("piece-image-rook").className = "ac-piece-image";
+            document.getElementById("piece-image-queen").className = "ac-piece-image";
+            document.getElementById("piece-image-king").className = "ac-piece-image";
+        }
+
+        function getClickFunction(element, piece) {
+            return () => {
+                clearSelected();
+                element.className = "ac-piece-image ac-selected";
+                pieceType = piece;
+            }
+        }
+
+        function setInitialFen(fen) {
+            initialFen = fen;
+            document.getElementById("fen-display").innerText = initialFen;
+        }
+
+        function updateMoveDisplay() {
+            let htmlString = "";
+            for (const move of moves) {
+                htmlString += `${moveToString(move)}<br/>`;
+            }
+            document.getElementById("move-display").innerHTML = htmlString;
+        }
+
+        function onBoardEdited() {
+            moves = [];
+            updateMoveDisplay();
+        }
+
+        const pieceImageElements = [
+            document.getElementById("piece-image-pawn"),
+            document.getElementById("piece-image-knight"),
+            document.getElementById("piece-image-bishop"),
+            document.getElementById("piece-image-rook"),
+            document.getElementById("piece-image-queen"),
+            document.getElementById("piece-image-king"),
+        ];
+        for (let i = 0; i < pieceImageElements.length; i++) {
+            pieceImageElements[i].onclick = getClickFunction(pieceImageElements[i], i);
+        }
+
+        getClickFunction(document.getElementById("piece-image-pawn"), PIECES.PAWN)();
+
+        const board = new ChessBoard({
+            target: "#board",
+            interactive: false,
+        });
+        board.position.sandbox = true;
+        board.position.isAtomic = true;
+
+        board.movePlayed.addEventListener((move) => {
+            if (editingMoves) {
+                moves.push(move);
+                updateMoveDisplay();
+            }
+        });
+
+        document.getElementById("board").onclick = (evt) => {
+            if (editingBoard) {
+                const x = evt.clientX - board.boardClientX;
+                const y = evt.clientY - board.boardClientY;
+                const square = board.boardPositionToSquare(x, y);
+                if (square !== SQUARES.INVALID) {
+                    if (board.hasPieceOnSquare(square)) {
+                        board.removePiece(square);
+                    } else {
+                        board.addPiece(pieceType, pieceColor, square);
+                    }
+                    onBoardEdited();
+                }
+            }
+        };
+        document.getElementById("clear-button").onclick = () => {
+            board.clear();
+            setInitialFen(board.fen);
+        };
+        const doneButton = document.getElementById("done-button");
+        const editMovesButton = document.getElementById("edit-moves-button");
+        const submitButton = document.getElementById("submit-button");
+        doneButton.onclick = () => {
+            if (editingBoard) {
+                doneButton.innerText = "Edit Board";
+                document.getElementById("edit-board-div").style.display = "none";
+                editMovesButton.style.display = "block";
+                submitButton.style.display = "block";
+                document.getElementById("puzzle-info-div").style.display = "block";
+                board.updatePositionFromPieces({
+                    colorToMove,
+                    whiteKingside,
+                    whiteQueenside,
+                    blackKingside,
+                    blackQueenside,
+                });
+                setInitialFen(board.fen);
+            } else {
+                doneButton.innerText = "Done Editing";
+                document.getElementById("edit-board-div").style.display = "block";
+                editMovesButton.style.display = "none";
+                submitButton.style.display = "none";
+                document.getElementById("puzzle-info-div").style.display = "none";
+                board.setFromFen(initialFen);
+            }
+            editingBoard = !editingBoard;
+        };
+
+        editMovesButton.onclick = () => {
+            board.setFromFen(initialFen);
+            if (editingMoves) {
+                editMovesButton.innerText = "Edit Moves";
+                document.getElementById("edit-moves-div").style.display = "none";
+                doneButton.style.display = "block";
+                submitButton.style.display = "block";
+                board.setInteractive(false);
+            } else {
+                editMovesButton.innerText = "Done Editing";
+                document.getElementById("edit-moves-div").style.display = "block";
+                doneButton.style.display = "none";
+                submitButton.style.display = "none";
+                board.setInteractive(true);
+                for (const move of moves) {
+                    board.applyMove(move);
+                }
+            }
+            editingMoves = !editingMoves;
+        };
+
+        document.getElementById("undo-move-button").onclick = () => {
+            if (moves.length > 0) {
+                board.undoLastMove();
+                moves.pop();
+                updateMoveDisplay();
+            }
+        };
+
+        document.getElementById("clear-moves-button").onclick = () => {
+            board.setFromFen(initialFen);
+            moves = [];
+            updateMoveDisplay();
+        };
+
+        document.getElementById("white-button").onclick = () => {
+            setPieceColor(COLORS.WHITE);
+        };
+        document.getElementById("black-button").onclick = () => {
+            setPieceColor(COLORS.BLACK);
+        };
+        document.getElementById("white-ctm-button").onclick = () => {
+            colorToMove = COLORS.WHITE;
+            onBoardEdited();
+        };
+        document.getElementById("black-ctm-button").onclick = () => {
+            colorToMove = COLORS.BLACK;
+            onBoardEdited();
+        };
+        document.getElementById("atomic-button").onclick = () => {
+            board.position.isAtomic = true;
+            document.getElementById("mode-display").innerText = "Atomic";
+            onBoardEdited();
+        };
+        document.getElementById("classic-button").onclick = () => {
+            board.position.isAtomic = false;
+            document.getElementById("mode-display").innerText = "Classic";
+            onBoardEdited();
+        };
+
+        {% for lesson in lessons %}
+        document.getElementById("lesson-selector-{{ lesson.id }}").onclick = () => {
+            document.getElementById("lesson-selector").innerText = "{{ lesson.name }}";
+            lessonId = {{ lesson.id }};
+        };
+        {% endfor %}
+
+        function getPuzzleData() {
+            return {
+                fen: initialFen,
+                moveTree: createLinearMoveTree(moves),
+                is_atomic: board.position.isAtomic,
+                lesson_id: lessonId,
+            };
+        }
+
+        submitButton.onclick = () => {
+            // TODO: post to server
+            console.log(getPuzzleData());
+        };
+
+        setPieceColor(COLORS.WHITE);
+        setInitialFen("8/8/8/8/8/8/8/8 w - -");
+        updateMoveDisplay();
+    };
+</script>
+{% endblock %}
+
+{% block content %}
+<div style="text-align: center;">
+    <div class="ac-puzzle-creator-content">
+        <div class="ac-puzzle-creator-container">
+            <div id="board" class="ac-board ac-puzzle-creator-board" tabindex="0"></div>
+            <div class="ac-puzzle-creator-controls">
+                <button id="done-button" type="button" class="btn btn-success ac-puzzle-creator-full-button">Edit Board</button>
+                <button id="edit-moves-button" type="button" class="btn btn-primary ac-puzzle-creator-full-button">Edit Moves</button>
+                <div id="edit-board-div" style="display: none;">
+                    <button id="clear-button" type="button" class="btn btn-danger ac-puzzle-creator-full-button">Clear</button>
+                    <div style="font-weight: bold;">Add Pieces</div>
+                    <div class="btn-group ac-puzzle-creator-full-button" role="group">
+                        <button id="white-button" type="button" class="btn btn-light">White</button>
+                        <button id="black-button" type="button" class="btn btn-dark">Black</button>
+                    </div>
+                    <div>
+                        <div class="ac-piece-row">
+                            <div class="ac-piece-image" style="margin-left: auto"><img class="ac-piece-image" id="piece-image-pawn"/></div>
+                            <div class="ac-piece-image"><img class="ac-piece-image" id="piece-image-knight"/></div>
+                            <div class="ac-piece-image" style="margin-right: auto"><img class="ac-piece-image" id="piece-image-bishop"/></div>
+                        </div>
+                        <div class="ac-piece-row">
+                            <div class="ac-piece-image" style="margin-left: auto"><img class="ac-piece-image" id="piece-image-rook"/></div>
+                            <div class="ac-piece-image"><img class="ac-piece-image" id="piece-image-queen"/></div>
+                            <div class="ac-piece-image" style="margin-right: auto"><img class="ac-piece-image" id="piece-image-king"/></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-weight: bolder;">Set Colour to Move</div>
+                        <div class="btn-group ac-puzzle-creator-full-button" role="group">
+                            <button id="white-ctm-button" type="button" class="btn btn-light">White</button>
+                            <button id="black-ctm-button" type="button" class="btn btn-dark">Black</button>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-weight: bolder;">Set Mode</div>
+                        <div class="btn-group ac-puzzle-creator-full-button" role="group">
+                            <button id="atomic-button" type="button" class="btn btn-secondary">Atomic</button>
+                            <button id="classic-button" type="button" class="btn btn-dark">Classic</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="edit-moves-div" style="display: none;">
+                    <button id="undo-move-button" type="button" class="btn btn-secondary ac-puzzle-creator-full-button">Undo</button>
+                    <button id="clear-moves-button" type="button" class="btn btn-danger ac-puzzle-creator-full-button">Clear Moves</button>
+                </div>
+                <div id="puzzle-info-div" class="ac-puzzle-info">
+                    <h4 style="font-weight: bold;">Puzzle Data</h4>
+                    <div id="fen-display"></div>
+                    <div id="mode-display">Atomic</div>
+                    <div>
+                        <span>Lesson: </span>
+                        <span class="dropdown">
+                            <button id="lesson-selector" type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">Chess</button>
+                            <ul class="dropdown-menu">
+                                {% for lesson in lessons %}
+                                <li><a class="dropdown-item ac-lesson-option" id="lesson-selector-{{ lesson.id }}">{{ lesson.name }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </span>
+                    </div>
+                    <div>
+                        <div>Moves:</div>
+                        <div id="move-display"></div>
+                    </div>
+                </div>
+                <div class="ac-submit-puzzle">
+                    <button id="submit-button" type="button" class="btn btn-primary ac-puzzle-creator-full-button">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

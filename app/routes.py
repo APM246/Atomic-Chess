@@ -51,3 +51,8 @@ def lessons(name):
 @app.route("/test")
 def test():
     return render_template("test_board.html")
+
+@app.route("/create_puzzle")
+@login_required
+def create_puzzle():
+    return render_template("create_puzzle.html", user=g.user, lessons=get_all_lessons())

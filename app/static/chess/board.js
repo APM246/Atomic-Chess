@@ -1204,6 +1204,13 @@ class ChessBoard {
 
     addPiece(pieceType, color, square, interactive = false) {
         this.removePiece(square);
+        if (pieceType === PIECES.PAWN) {
+            const rank = rankOfSquare(square);
+            // Cannot place pawns on first or last rank
+            if (rank === RANKS.RANK_1 || rank === RANKS.RANK_8) {
+                return;
+            }
+        }
         const pieceObject = new ChessPiece(pieceType, color, this._getImageUri(pieceType, color), square);
         this._createPiece(pieceObject, interactive);
     }

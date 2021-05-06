@@ -12,9 +12,9 @@
       <form method="POST" action='' class="ac-forms">
         {{ form.hidden_tag() }}
 
-        {{ form.username }} <br>
+        {{ form.username(placeholder="Username", autocomplete="username") }} <br>
 
-        {{ form.password }} <br>
+        {{ form.password(placeholder="Password", autocomplete="current-password") }} <br>
 
         {{ form.remember_me.label }}
         {{ form.remember_me }} <br> <br> 

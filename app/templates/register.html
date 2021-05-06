@@ -12,12 +12,12 @@
       <form method="POST" action='' class='ac-forms'> 
         {{ form.hidden_tag() }}
 
-        {{ form.username }} <br>
+        {{ form.username(placeholder="Username", autocomplete="username") }} <br>
 
-        {{ form.password }} <br>
+        {{ form.password(placeholder="Password", autocomplete="new-password") }} <br>
 
-        {{ form.is_chess_beginner.label }}
-        {{ form.is_chess_beginner }} <br>
+        {{ form.played_chess_before.label }}
+        {{ form.played_chess_before }} <br>
 
         {{ form.remember_me.label }}
         {{ form.remember_me }} <br> <br>

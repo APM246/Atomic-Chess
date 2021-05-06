@@ -168,7 +168,7 @@ body::before {
 
 .ac-errors {
     padding-left: 10px;
-    color: red;
+    color: #aa0000;
 }
 
 .ac-form-info {

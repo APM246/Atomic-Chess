@@ -43,7 +43,7 @@ def register():
         user = User(
             username=form.username.data,
             pwd_hash=generate_password_hash(password),
-            chess_beginner=form.is_chess_beginner.data,
+            chess_beginner=(not form.played_chess_before.data),
         )
         db.session.add(user)
         db.session.commit()

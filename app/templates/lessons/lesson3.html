@@ -1,0 +1,160 @@
+{% extends "lessons/lesson_base.html" %}
+
+{% block styles %}
+<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/lesson.css') }}">
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+
+<script>
+	window.onload = async () => {
+		const stages = [
+			{
+				puzzleData: {
+					fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+					moveTree: createLinearMoveTree([moveFromString("g1f3"), moveFromString("e7e6"), moveFromString("f3e5"), moveFromString("f7f6"), moveFromString("e5d7")]),
+					eventColor: COLORS.WHITE
+				},
+				text: [
+					`Begin by playing Nf3`,
+					`Although pawn to e6 might look like a logical move, this is already a terrible blunder for black! In fact white can win in 2 moves. Can u find the winning strategy for white?`,
+					`Yes Ne5 is the correct move! Black cannot stop white from taking either the pawn on d6 or f7 and blowing up the king`
+				]
+			},
+			{
+				puzzleData: {
+					fen: "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1",
+					moveTree: createLinearMoveTree([moveFromString("b8c6"), moveFromString("f3g5"), moveFromString("f7f6"), 
+					moveFromString("g5f7"), moveFromString("f6f5"), moveFromString("f7d8")]),
+					eventColor: COLORS.WHITE
+				},
+				text: [
+					`By moving knight to c6, black is now defending e5 square. However this is still lost for black. Using a similar idea from the first example can you find the winning strategy for white?`,
+					`Thats Right! By moving Ng5, white is threatening to captue on f7 and blow up the king. Therefore black is forced to play pawn f6 or f7`,
+					`The queen is now trapped and will be captured on the next move, thereby blowing up the king`,
+				]
+			},
+			{
+				puzzleData: {
+					fen: "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1",
+					moveTree: createLinearMoveTree([moveFromString("f7f6")]),
+					eventColor: COLORS.WHITE
+				},
+				text: [
+					`It turns out, blacks best response to Nf3 is f6. This defends both the e5 and g5 squares`,
+				]
+			}
+		];
+
+		const continueButton = document.getElementById("continue-button");
+
+		let stage = await getCurrentLessonStage({{ lesson_id }});
+		let subStage = 0;
+		
+		const userSettings = await ajax("{{ url_for('get_settings') }}");
+		const boardOptions = userSettings ? transformSettingsResponse(userSettings.settings) : {};
+		
+		const puzzle = new Puzzle({
+			boardOptions: {
+				target: "#board",
+				allowUndo: false,
+				...boardOptions,
+			},
+			...stages[stage].puzzleData
+		});
+		puzzle.board.position.isAtomic = true;
+
+		// Play blacks move, except on the first puzzle, since white is opening on the puzzle
+		if (stage !== 0) {
+			puzzle.board.disableInteraction();
+
+			wait(1000).then(() => {
+				puzzle.playContinuation();
+				if (stage !== 2) { // dont bother re-enabling interaction on the last puzzle, its just one move
+					puzzle.board.enableInteraction();
+				}
+			});
+		}
+		
+		document.getElementById("puzzle-text").innerText = stages[stage].text[subStage++];
+
+		puzzle.correctMovePlayed.addEventListener((move) => {
+			//console.log("correct move");
+			
+			puzzle.board.emphasizer.setColors("#00a00088", "#00700088");
+			
+			if (!puzzle.isComplete()) {
+				puzzle.board.disableInteraction();
+				wait(1000).then(()=>{
+					const p = document.getElementById("puzzle-text");
+					p.innerText = stages[stage].text[subStage++];
+					puzzle.board.emphasizer.resetColors();
+					puzzle.board.enableInteraction();
+					puzzle.playContinuation();
+				});
+			}
+		});
+
+		puzzle.incorrectMovePlayed.addEventListener((move) => {
+			//console.log("wrong move");
+
+			puzzle.board.disableInteraction();
+			puzzle.board.emphasizer.setColors("#ff000088", "#aa000088");
+			wait(500).then(()=>{
+				puzzle.board.emphasizer.resetColors();
+				puzzle.board.enableInteraction();				
+				puzzle.board.undoLastMove(true);
+			});
+		});
+
+		puzzle.puzzleComplete.addEventListener(() => {
+			//console.log("puzzle complete");
+			
+			continueButton.style.display = "inline-block";
+			puzzle.board.disableInteraction();
+			if (stage == 2)  { // Last puzzle completed
+				continueButton.innerText = "Complete";
+				continueButton.onclick = () => {
+					markLessonAsComplete({{ lesson_id }}).then(() => {
+						// Complete
+						window.location.href = "{{ url_for('learn') }}";
+					});
+				};
+			}
+		})
+
+		document.getElementById("continue-button").onclick = () => {
+			puzzle.board.emphasizer.resetColors();
+			puzzle.board.enableInteraction();
+			stage++;
+			subStage = 0;
+			setLessonProgression({{ lesson_id }}, stage);
+			puzzle.setFromData(stages[stage].puzzleData);
+			document.getElementById("puzzle-text").innerText = stages[stage].text[subStage++];
+
+			continueButton.style.display = "none";
+			wait(1000).then(() => {
+				puzzle.playContinuation();
+			});
+		};
+	}
+</script>
+{% endblock %}
+
+{% block content %}
+	<div class="ac-lesson-content">
+		<h2 class="ac-section">Opening Traps</h2>
+		<p>In this lesson you will be playing as white as we guide you along the best moves. If black is not careful you can win very quickly!</p>
+
+		<div class="ac-puzzle-container">
+			<div id="board" class="ac-board ac-lesson-board" tabindex="0"></div>
+			<div class="ac-puzzle-helper">
+				<p id="puzzle-text">
+					
+				</p>
+				<button id="continue-button" type="button" class="btn btn-secondary ac-full-button" style="display: none;">Continue</button>
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -11,7 +11,7 @@ LESSON_INTRO = Lesson(
     name="Chess",
     description="Never played chess before? This lesson will go through the basics of chess",
     template="lessons/lesson0.html",
-    max_progression=12,
+    max_progression=13,
 )
 
 LESSON_ATOMIC = Lesson(
@@ -34,8 +34,8 @@ LESSON_OPENING_TRAPS = Lesson(
     lesson_id=3,
     name="Opening Traps",
     description="White has many traps they can set in the opening, learn these traps to crush your oppenent!",
-    template="lessons/lesson1.html",
-    max_progression=1,
+    template="lessons/lesson3.html",
+    max_progression=3,
 )
 
 LESSON_CHECKS = Lesson(

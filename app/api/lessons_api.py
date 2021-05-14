@@ -35,7 +35,7 @@ def mark_lesson_complete(lesson_id, user_id, progression=0):
     update_lesson_completion(lesson_id, user_id, progression=progression, is_complete=True)
 
 def is_valid_progression(progression, max_progression):
-    return progression >= 0 and progression <= max_progression
+    return progression >= 0 and progression < max_progression
 
 def is_valid_complete(is_complete):
     return is_complete is True or is_complete is False

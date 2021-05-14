@@ -1,76 +1,7 @@
 {% extends "lessons/lesson_base.html" %}
 
 {% block styles %}
-<style>
-    .ac-lesson-board {
-        width: min(70vw, 70vh);
-        height: min(70vw, 70vh);
-        min-width: min(70vw, 70vh);
-        min-height: min(70vw, 70vh);
-        border: 2px solid black;
-        margin-left: auto;
-    }
-
-    .ac-lesson-content {
-        margin-left: 10px;
-        padding-bottom: 15px;
-    }
-
-    .ac-puzzle-container {
-        display: flex;
-        margin: auto;
-    }
-
-    .ac-puzzle-helper {
-        margin-left: 5px;
-        width: min(40vw, 40vh);
-        height: min(70vw, 70vh);
-        margin-right: auto;
-        border: 2px solid black;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .ac-lesson-task {
-        margin-top: 50px;
-    }
-
-    .ac-next-button-container {
-        margin-top: auto;
-        align-self: flex-end;
-        width: 100%;
-    }
-
-    .ac-button-group {
-        margin-top: 10px;
-    }
-
-    .ac-full-button {
-        width: 100%;
-        border-radius: 0;
-        padding: 10px;
-    }
-
-    .ac-previous-button {
-        border-radius: 50%;
-        background-color: #f1f1f1;
-        color: black;
-        width: 50px;
-        height: 50px;
-    }
-
-    /* Override bootstrap classes */
-    .btn-success #next-button {
-        background-color: var(--ac-green);
-        border-color: var(--ac-green);
-    }
-
-    .btn-success #next-button:hover {
-        background-color: var(--ac-deep-green);
-        border-color: var(--ac-deep-green);
-    }
-</style>
+<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/lesson.css') }}">
 {% endblock %}
 
 {% block scripts %}
@@ -338,7 +269,7 @@
             hideBackButton();
             if (index > 1) {
                 index--;
-                handleNewPuzzle(puzzleData[index]);
+                handleNewPuzzle(puzzleData[index], false);
             }
         }
 

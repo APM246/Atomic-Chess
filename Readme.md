@@ -19,7 +19,11 @@ Website designed to teach people how to play the chess variant [Atomic](https://
 `flask run`
 6. Navigate to [localhost:5000](http://localhost:5000)
 
-## Running tests:
+## Running backend tests:
+1. Activate virtualenv as above
+2. `python -m tests.unittest`
+
+## Running frontend tests:
 1. Install NodeJS and npm
 2. `cd tests`
 3. `npm install`

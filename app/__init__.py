@@ -22,7 +22,7 @@ from app import routes, auth
 from app.api import settings_api, lessons_api, puzzles_api, auth
 from app.lessons import init
 
-from app.db import init_db
+from app.cli import init_db
 app.cli.add_command(init_db)
 
 init()

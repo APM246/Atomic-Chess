@@ -16,7 +16,7 @@ def error_response(error_code, message=None):
 def api_login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if g.user is None:
+        if "user" in g and g.user is None:
             return error_response(401)
         return view(**kwargs)
     return wrapped_view

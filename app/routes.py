@@ -47,7 +47,19 @@ def lessons(name):
         return render_template(lesson.template, user=g.user, lesson_id=lesson.id)
     abort(404)
 
+@app.route("/puzzle")
+@login_required
+def puzzle():
+    lesson = LESSONS_BY_ID.get(int(request.args.get("lesson", -1)))
+    title = lesson.name if lesson is not None else "Puzzles"
+    return render_template("puzzle.html", user=g.user, puzzle_uri=url_for("random_puzzle_api", **request.args), title=title)
+
 # todo: unroute this in production 
 @app.route("/test")
 def test():
     return render_template("test_board.html")
+
+@app.route("/create_puzzle")
+@login_required
+def create_puzzle():
+    return render_template("create_puzzle.html", user=g.user, lessons=get_all_lessons())

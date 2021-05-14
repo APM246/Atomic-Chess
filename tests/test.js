@@ -44,6 +44,7 @@ function validateJS(contextName, sources, tempFilename, tempFiles) {
     const options = {
         contextName,
         alwaysWarn: false,
+        timeout: 10000,
     };
     lint([tempFilename], options);
     tempFiles.push(tempFilename);
@@ -76,6 +77,7 @@ mocha.describe("JS Validation", function() {
 });
 
 mocha.describe("CSS Validation", function() {
+    this.timeout(120000);
     it("base.css", async function() {
         const source = fs.readFileSync("../app/static/base.css");
         const result = await validateCSS(source);

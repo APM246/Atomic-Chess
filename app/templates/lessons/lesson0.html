@@ -257,10 +257,12 @@
             } else {
                 hideResetButton();
                 if (update) {
+                    markTestAsComplete({{ lesson_id }}) // No test for lesson 0, but we mark its "test" as complete anyways so the progress bar fills up
                     markLessonAsComplete({{ lesson_id }}).then(() => {
                         // Complete
                         window.location.href = "{{ url_for('learn') }}";
                     });
+
                 }
             }
         }

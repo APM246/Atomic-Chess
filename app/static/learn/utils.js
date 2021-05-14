@@ -4,7 +4,15 @@
 async function isLessonComplete(lessonId, apiBase = "/api") {
     const lessonData = await ajax(`${apiBase}/lessons/${lessonId}`);
     if (lessonData) {
-        return lessonData.lesson.completed;
+        return lessonData.lesson.completed_lesson;
+    }
+    return false;
+}
+
+async function isTestComplete(lessonId, apiBase = "/api") {
+    const lessonData = await ajax(`${apiBase}/lessons/${lessonId}`);
+    if (lessonData) {
+        return lessonData.lesson.completed_test;
     }
     return false;
 }
@@ -27,8 +35,15 @@ async function setLessonProgression(lessonId, progression, apiBase = "/api") {
 async function markLessonAsComplete(lessonId, apiBase = "/api") {
     // Also reset progression
     const response = await ajax(`${apiBase}/lessons/${lessonId}`, "PUT", {
-        completed: true,
+        completed_lesson: true,
         progression: 0,
+    });
+    return response;
+}
+
+async function markTestAsComplete(lessonId, apiBase = "/api") {
+    const response = await ajax(`${apiBase}/lessons/${lessonId}`, "PUT", {
+        completed_test: true,
     });
     return response;
 }

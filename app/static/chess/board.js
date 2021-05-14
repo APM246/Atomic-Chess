@@ -1388,10 +1388,11 @@ class ChessBoard {
 
             this._boardElement = boardDiv;
 
-            // We need to set the font size of the coordinates after the board has been created so we
+            // We need to set the reactive style of the coordinates after the board has been created so we
             // know how big the board is
             for (const coord of coordinates) {
                 coord.style.fontSize = `${this.squareClientWidth / 7}px`;
+                coord.style.margin = `${this.squareClientWidth / 40}px`
             }
         }
     }

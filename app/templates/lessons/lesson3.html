@@ -1,75 +1,7 @@
 {% extends "lessons/lesson_base.html" %}
 
 {% block styles %}
-<style>
-.ac-lesson-content {
-	margin-left: 10px;
-	padding-bottom: 15px;
-}
-
-.ac-puzzle-container {
-	display: flex;
-	margin: auto;
-}
-
-.ac-lesson-board {
-	width: min(70vw, 70vh);
-	height: min(70vw, 70vh);
-	min-width: min(70vw, 70vh);
-	min-height: min(70vw, 70vh);
-	margin-left: auto;
-}
-
-.ac-puzzle-helper {
-	margin-left: 5px;
-	width: min(40vw, 40vh);
-	height: min(70vw, 70vh);
-	margin-right: auto;
-	background-color: rgb(238, 238, 238);
-	border: 1px solid rgb(216, 216, 216);
-	border-radius: 5px;
-	overflow-y: auto;
-	display: flex;
-	flex-direction: column;
-}
-
-.ac-lesson-content {
-	text-align: center;
-	margin-left: auto;
-	margin-right: auto;
-	width: 70vw;
-}
-
-.ac-section {
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-#puzzle-text {
-	margin-top: 10px;
-}
-
-#continue-button {
-	margin-top: auto;
-	align-self: flex-end;
-	width: 100%;
-	background-color: var(--ac-green);
-	border-color: var(--ac-green);
-}
-
-#continue-button:hover {
-	background-color: var(--ac-deep-green);
-	border-color: var(--ac-deep-green);
-}
-
-.ac-full-button {
-	width: 100%;
-	border-radius: 0;
-	padding: 10px;
-}
-
-</style>
-
+<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/lesson.css') }}">
 {% endblock %}
 
 {% block scripts %}

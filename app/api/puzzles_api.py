@@ -5,7 +5,7 @@ import datetime
 from app.lessons import LESSONS_BY_ID
 from flask import jsonify, g, request
 from app import app, db
-from app.api.auth import api_login_required, error_response
+from app.api.auth import api_admin_login_required, api_login_required, error_response
 from app.models import LessonCompletion, Puzzle, PuzzleCompletion
 
 def validate_puzzle_data(puzzle):
@@ -67,6 +67,7 @@ def puzzles_api():
     return jsonify({ "puzzles": list(map(lambda puzzle: puzzle.to_json(), puzzles)) })
 
 @app.route("/api/puzzles", methods=["POST"])
+@api_admin_login_required
 @api_login_required
 def puzzles_post_api():
     data = request.get_json()

@@ -104,10 +104,19 @@ def create_linear_move_tree(moves):
 
 def create_atomic_puzzles():
     db.session.add(Puzzle(
-        fen="6k1/5ppp/8/8/8/5Q2/5PPP/6K1 b - -",
+        fen="rnb1kbnr/pppppppp/2q5/8/4P3/8/PPPP1PPP/RNBQKBNR b - -",
         move_tree=create_linear_move_tree([
-            create_move_from_string("g7g6"),
-            create_move_from_string("f3f7"),
+            create_move_from_string("d7d5"),
+            create_move_from_string("e4d5"),
+        ]),
+        is_atomic=True,
+        lesson_id=LESSON_ATOMIC.id,
+    ))
+    db.session.add(Puzzle(
+        fen="1kr2bnr/ppp1pppp/3q4/5N2/4P3/3P4/PPP2PPP/RNBQKB1R b - -",
+        move_tree=create_linear_move_tree([
+            create_move_from_string("d6g6"),
+            create_move_from_string("f5g7"),
         ]),
         is_atomic=True,
         lesson_id=LESSON_ATOMIC.id,

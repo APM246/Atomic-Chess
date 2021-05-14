@@ -22,25 +22,23 @@
 			},
 			{
 				puzzleData: {
-					fen: "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1",
-					moveTree: createLinearMoveTree([moveFromString("b8c6"), moveFromString("f3g5"), moveFromString("f7f6"), 
-					moveFromString("g5f7"), moveFromString("f6f5"), moveFromString("f7d8")]),
+					fen: "rnbqkbnr/pppp11pp/8/4p3/3PP3/1Q6/PPP2PPP/RNB1KBNR b - -",
+					moveTree: createLinearMoveTree([moveFromString("d7d6"), moveFromString("b3f7")]),
 					eventColor: COLORS.WHITE
 				},
 				text: [
-					`By moving knight to c6, black is now defending e5 square. However this is still lost for black. Using a similar idea from the first example can you find the winning strategy for white?`,
-					`Thats Right! By moving Ng5, white is threatening to captue on f7 and blow up the king. Therefore black is forced to play pawn f6`,
-					`The queen is now trapped and will be captured on the next move thereby blowing up the king`,
+					`Another way to win is move the queen to a square directly adjacent to the opposition king. Move the queen next to the enemy king.`,
+					`Checkmate! Notice that the queen cannot be captured or the black king will explode.`,
 				]
 			},
 			{
 				puzzleData: {
-					fen: "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1",
-					moveTree: createLinearMoveTree([moveFromString("f7f6")]),
-					eventColor: COLORS.WHITE
+					fen: "rnbqkbnr/pppp1ppp/8/4p3/8/5P2/PPPPP1PP/RNBQKBNR w - -",
+					moveTree: createLinearMoveTree([moveFromString("g2g4"), moveFromString("d8h4")]),
+					eventColor: COLORS.BLACK
 				},
 				text: [
-					`It turns out, the best move for black is pawn f6. This defends both the e5 and g5 squares`,
+					`Classical checkmate also works, checkmate your opponent.`,
 				]
 			}
 		];
@@ -62,6 +60,9 @@
 			...stages[stage].puzzleData
 		});
 		puzzle.board.position.isAtomic = true;
+		if (puzzle.board.position.colorToMove === COLORS.WHITE) {
+			puzzle.board.flip();
+		}
 
 		// Play blacks move, except on the first puzzle, since white is opening on the puzzle
 		puzzle.board.disableInteraction();
@@ -85,6 +86,9 @@
 					puzzle.board.enableInteraction();
 					puzzle.playContinuation();
 				});
+			} else if (stages[stage].text[subStage]) {
+				const p = document.getElementById("puzzle-text");
+				p.innerText = stages[stage].text[subStage];
 			}
 		});
 
@@ -111,7 +115,7 @@
 					});
 				};
 			}
-		})
+		});
 
 		document.getElementById("continue-button").onclick = () => {
 			puzzle.board.emphasizer.resetColors();
@@ -121,6 +125,10 @@
 			setLessonProgression({{ lesson_id }}, stage);
 			puzzle.setFromData(stages[stage].puzzleData);
 			document.getElementById("puzzle-text").innerText = stages[stage].text[subStage++];
+
+			if (puzzle.board.position.colorToMove === COLORS.WHITE) {
+				puzzle.board.flip();
+			}
 
 			continueButton.style.display = "none";
 			wait(1000).then(() => {

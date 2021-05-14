@@ -211,6 +211,10 @@ class Position {
             if (movingPiece && movingPiece.piece === PIECES.KING && isCapture) {
                 return false;
             }
+            // In sandbox mode, there may not be kings at all
+            if (ourKingSquare === SQUARES.INVALID || otherKingSquare === SQUARES.INVALID) {
+                return this.sandbox;
+            }
             // Cannot capture anything next to our own king
             if (isCapture && isNextToSquare(move.to, ourKingSquare)) {
                 return false;

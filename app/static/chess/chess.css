@@ -5,6 +5,22 @@
     user-select: none;
 }
 
+.ac-coordinate {
+    font-family: 'Noto Sans', Sans-Serif;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.ac-rank-coordinate {
+    position: absolute;
+    bottom: 0px;
+}
+
+.ac-file-coordinate {
+    position: absolute;
+    right: 0;
+}
+
 table.ac-chess-board > tr {
     height: calc(100% / 8);
     width: 100%;

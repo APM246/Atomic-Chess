@@ -1460,11 +1460,41 @@ class ChessBoard {
             const table = document.createElement("table");
             table.className = "ac-chess-board";
 
-            for (let file = 0; file < FILE_COUNT; file++) {
+            let coordinates = [];
+
+            const createCoordinate = (rank, file, onBottom) => {
+                const letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
+
+                const p = document.createElement("p");
+                p.className = "ac-coordinate";
+                p.className += onBottom ? " ac-rank-coordinate " : " ac-file-coordinate";
+                const color = (file + rank) % 2 === 0 ? this._options.darkSquareColor : this._options.lightSquareColor;
+                p.style.color = color;
+                if (this.isFlipped) {
+                    p.innerHTML = onBottom ? letters[8 - file - 1] : rank + 1
+                }
+                else {
+                    p.innerHTML = onBottom ? letters[file] : RANK_COUNT - rank;
+                }
+
+                coordinates.push(p);
+                return p;
+            };
+
+            for (let rank = 0; rank < RANK_COUNT; rank++) {
                 const row = document.createElement("tr");
-                for (let rank = 0; rank < RANK_COUNT; rank++) {
+                for (let file = 0; file < FILE_COUNT; file++) {
                     const cell = document.createElement("td");
                     cell.style.backgroundColor = (file + rank) % 2 === 0 ? this._options.lightSquareColor : this._options.darkSquareColor;
+                    if (rank === RANK_COUNT - 1) {
+                        const coord = createCoordinate(rank, file, true);
+                        cell.appendChild(coord);
+                    }
+
+                    if (file === FILE_COUNT - 1) {
+                        const coord = createCoordinate(rank, file, false);
+                        cell.appendChild(coord);
+                    }
                     row.appendChild(cell);
                 }
                 table.appendChild(row);
@@ -1473,6 +1503,13 @@ class ChessBoard {
             this._parentElement.appendChild(boardDiv);
 
             this._boardElement = boardDiv;
+
+            // We need to set the reactive style of the coordinates after the board has been created so we
+            // know how big the board is
+            for (const coord of coordinates) {
+                coord.style.fontSize = `${this.squareClientWidth / 7}px`;
+                coord.style.margin = `${this.squareClientWidth / 40}px`
+            }
         }
     }
 

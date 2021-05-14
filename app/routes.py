@@ -50,7 +50,9 @@ def lessons(name):
 @app.route("/puzzle")
 @login_required
 def puzzle():
-    return render_template("puzzle.html", user=g.user, puzzle_uri=url_for("random_puzzle_api", **request.args))
+    lesson = LESSONS_BY_ID.get(int(request.args.get("lesson", -1)))
+    title = lesson.name if lesson is not None else "Puzzles"
+    return render_template("puzzle.html", user=g.user, puzzle_uri=url_for("random_puzzle_api", **request.args), title=title)
 
 # todo: unroute this in production 
 @app.route("/test")

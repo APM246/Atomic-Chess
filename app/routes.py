@@ -25,7 +25,7 @@ def learn():
             lesson_progressions[lesson.lesson_id] = 100
         else:
             lesson_object = LESSONS_BY_ID[lesson.lesson_id]
-            lesson_progressions[lesson.lesson_id] = math.ceil(lesson.progression * 100 / (lesson_object.max_progression + 1))
+            lesson_progressions[lesson.lesson_id] = math.ceil(lesson.progression * 100 / lesson_object.max_progression)
 
     return render_template("learn.html", user=g.user, lessons=get_all_lessons(), completed_lesson_ids=completed_lessons, lesson_progressions=lesson_progressions)
 

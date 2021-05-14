@@ -34,7 +34,7 @@ LESSON_OPENING_TRAPS = Lesson(
     lesson_id=3,
     name="Opening Traps",
     description="White has many traps they can set in the opening, learn these traps to crush your oppenent!",
-    template="lessons/lesson1.html",
+    template="lessons/lesson3.html",
     max_progression=1,
 )
 

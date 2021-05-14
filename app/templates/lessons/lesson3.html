@@ -49,7 +49,7 @@
 
 		const continueButton = document.getElementById("continue-button");
 
-		let stage = 1;
+		let stage = await getCurrentLessonStage({{ lesson_id }});
 		let subStage = 0;
 		
 		const userSettings = await ajax("{{ url_for('get_settings') }}");
@@ -64,12 +64,21 @@
 			...stages[stage].puzzleData
 		});
 		puzzle.board.position.isAtomic = true;
-		puzzle.playContinuation(); // todo remove this after testing
+
+		// Play blacks move, except on the first puzzle, since white is opening on the puzzle
+		if (stage !== 0) {
+			puzzle.board.disableInteraction();
+
+			wait(1000).then(() => {
+				puzzle.playContinuation();
+				puzzle.board.enableInteraction();
+			});
+		}
 		
 		document.getElementById("puzzle-text").innerText = stages[stage].text[subStage++];
 
 		puzzle.correctMovePlayed.addEventListener((move) => {
-			console.log("correct move");
+			//console.log("correct move");
 			
 			puzzle.board.emphasizer.setColors("#00a00088", "#00700088");
 			
@@ -86,6 +95,8 @@
 		});
 
 		puzzle.incorrectMovePlayed.addEventListener((move) => {
+			//console.log("wrong move");
+
 			puzzle.board.disableInteraction();
 			puzzle.board.emphasizer.setColors("#ff000088", "#aa000088");
 			wait(500).then(()=>{
@@ -115,6 +126,7 @@
 			puzzle.board.enableInteraction();
 			stage++;
 			subStage = 0;
+			setLessonProgression({{ lesson_id }}, stage);
 			puzzle.setFromData(stages[stage].puzzleData);
 			document.getElementById("puzzle-text").innerText = stages[stage].text[subStage++];
 

@@ -40,11 +40,12 @@ class Puzzle {
 
         this._options = assignDefaults(options, DEFAULT_PUZZLE_OPTIONS);
         this._board = new ChessBoard(this._options.boardOptions);
+        this._eventColor = this._options.eventColor || null;
 
         this.board.movePlayed.addEventListener((move) => {
             if (this.isCorrect(move)) {
                 this._advanceMoveTree(move);
-                if (this._options.eventColor === null || this.board.position.colorToMove === otherColor(this._options.eventColor)) {
+                if (!this.playerToMove) {
                     this.correctMovePlayed.trigger(move);
                 }
             } else {
@@ -60,13 +61,18 @@ class Puzzle {
     }
 
     get playerToMove() {
-        return this._options.eventColor === null || this.board.position.colorToMove === this._options.eventColor;
+        return this._eventColor === null || this.board.position.colorToMove === this._eventColor;
     }
 
     setFromData(data) {
         this._options.fen = data.fen;
         this._options.moveTree = data.moveTree;
+        this._options.eventColor = data.eventColor;
+        this._eventColor = this._options.eventColor;
         this.reset();
+        if (this._eventColor === null || this._eventColor === undefined) {
+            this._eventColor = otherColor(this.board.position.colorToMove);
+        }
     }
 
     reset(sendEvent = true) {

@@ -308,15 +308,14 @@
         function getPuzzleData() {
             return {
                 fen: initialFen,
-                moveTree: createLinearMoveTree(moves),
+                move_tree: createLinearMoveTree(moves),
                 is_atomic: board.position.isAtomic,
                 lesson_id: lessonId,
             };
         }
 
         submitButton.onclick = () => {
-            // TODO: post to server
-            console.log(getPuzzleData());
+            ajax("/api/puzzles", "POST", getPuzzleData());
         };
 
         setPieceColor(COLORS.WHITE);

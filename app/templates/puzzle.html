@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    .ac-lesson-board {
+        width: min(70vw, 70vh);
+        height: min(70vw, 70vh);
+        min-width: min(70vw, 70vh);
+        min-height: min(70vw, 70vh);
+        border: 2px solid black;
+        margin-left: auto;
+    }
+
+    .ac-puzzle-content {
+        margin-top: 20px;
+        margin-left: 10px;
+        padding-bottom: 15px;
+    }
+
+    .ac-puzzle-container {
+        display: flex;
+        margin: auto;
+    }
+
+    .ac-puzzle-helper {
+        margin-left: 5px;
+        width: min(40vw, 40vh);
+        height: min(70vw, 70vh);
+        margin-right: auto;
+        border: 2px solid black;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ac-lesson-task {
+        margin-top: 50px;
+    }
+
+    .ac-next-button-container {
+        margin-top: auto;
+        align-self: flex-end;
+        width: 100%;
+    }
+
+    .ac-button-group {
+        margin-top: 10px;
+    }
+
+    .ac-full-button {
+        width: 100%;
+        border-radius: 0;
+        padding: 10px;
+    }
+
+    .ac-previous-button {
+        border-radius: 50%;
+        background-color: #f1f1f1;
+        color: black;
+        width: 50px;
+        height: 50px;
+    }
+
+    /* Override bootstrap classes */
+    .btn-success #next-button {
+        background-color: var(--ac-green);
+        border-color: var(--ac-green);
+    }
+
+    .btn-success #next-button:hover {
+        background-color: var(--ac-deep-green);
+        border-color: var(--ac-deep-green);
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    window.onload = async () => {
+        const userSettings = await ajax("{{ url_for('get_settings') }}");
+        const boardOptions = userSettings ? transformSettingsResponse(userSettings.settings) : {};
+
+        let puzzle = new Puzzle({
+            boardOptions: {
+                target: "#board",
+                ...boardOptions,
+                allowUndo: false,
+            }
+        });
+
+        const lessonTextDiv = document.getElementById("lesson-text");
+        const puzzleTitleDiv = document.getElementById("puzzle-title");
+        const puzzleTimerDiv = document.getElementById("timer");
+        const nextButton = document.getElementById("next-button");
+
+        let startTime = null;
+        let endTime = null;
+
+        function updateTimer() {
+            if (startTime) {
+                const currentTime = endTime ? endTime : Date.now();
+                const delta = currentTime - startTime;
+                const minutes = Math.floor(delta / 60000);
+                const seconds = Math.floor(delta / 1000) % 60;
+                puzzleTimerDiv.innerText = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+            } else {
+                puzzleTimerDiv.innerText = "";
+            }
+        }
+
+        setInterval(updateTimer, 500);
+
+        async function nextPuzzle() {
+            const puzzleData = await ajax("{{ puzzle_uri }}");
+            if (puzzleData.puzzle) {
+                puzzle.board.position.isAtomic = puzzleData.puzzle.is_atomic;
+                puzzle.setFromData({
+                    fen: puzzleData.puzzle.fen,
+                    moveTree: puzzleData.puzzle.move_tree,
+                });
+                if (puzzle.board.isFlipped !== (puzzle.board.position.colorToMove === COLORS.WHITE)) {
+                    puzzle.board.flip();
+                }
+                puzzle.board.disableInteraction();
+                startTime = Date.now();
+                endTime = null;
+                updateTimer();
+            }
+        }
+
+        function showNextButton(puzzle, passed) {
+            nextButton.style.display = "block";
+            nextButton.className = "btn " + (passed ? "btn-success" : "btn-danger") + " ac-full-button";
+            nextButton.innerText = passed ? "Next" : "Retry";
+            nextButton.onclick = () => {
+                hideNextButton();
+                if (passed) {
+                    nextPuzzle();
+                } else {
+                    puzzle.board.enableInteraction();
+                    puzzle.undoLastMove();
+                }
+                puzzle.board.emphasizer.resetColors();
+                puzzle.board.emphasizer.clear();
+            };
+        }
+
+        function hideNextButton() {
+            nextButton.style.display = "none";
+        }
+
+        puzzle.correctMovePlayed.addEventListener((move) => {
+            puzzle.board.disableInteraction();
+            if (puzzle.isComplete()) {
+                endTime = Date.now();
+                showNextButton(puzzle, true);
+            } else {
+                wait(300).then(() => {
+                    puzzle.board.emphasizer.resetColors();
+                    puzzle.playContinuation();
+                    puzzle.board.enableInteraction();
+                });
+            }
+            puzzle.board.emphasizer.setColors("#00a00088", "#00700088");
+        });
+
+        puzzle.incorrectMovePlayed.addEventListener((move) => {
+            puzzle.board.disableInteraction();
+            showNextButton(puzzle, false);
+            puzzle.board.emphasizer.setColors("#ff000088", "#aa000088");
+        });
+
+        puzzle.puzzleReset.addEventListener(() => {
+            puzzle.board.emphasizer.resetColors();
+            if (!puzzle.playerToMove) {
+                wait(500).then(() => {
+                    if (!puzzle.playerToMove) {
+                        puzzle.playContinuation();
+                        puzzle.board.enableInteraction();
+                    }
+                });
+            } else {
+                puzzle.board.enableInteraction();
+            }
+        });
+
+        hideNextButton();
+        nextPuzzle();
+    };
+</script>
+{% endblock %}
+
+{% block content %}
+    <div style="text-align: center;">
+        <div class="ac-puzzle-content">
+            <div class="ac-puzzle-container">
+                <div id="board" class="ac-board ac-lesson-board" tabindex="0"></div>
+                <div class="ac-puzzle-helper">
+                    <h3 id="puzzle-title">Loading...</h3>
+                    <div id="timer"></div>
+                    <div id="lesson-text" class="ac-lesson-task"></div>
+                    <div class="ac-next-button-container">
+                        <div class="ac-button-group">
+                            <button id="next-button" style="display: none;" type="button" class="btn btn-success ac-full-button">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

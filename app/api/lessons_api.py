@@ -70,6 +70,4 @@ def lesson_api(lesson_id):
             lesson_data["completed"] = lesson.completed_test
             lesson_data["progression"] = lesson.progression
             break
-    return {
-        "lesson": lesson_data
-    }
+    return jsonify({ "lesson": lesson_data })

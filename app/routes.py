@@ -47,6 +47,11 @@ def lessons(name):
         return render_template(lesson.template, user=g.user, lesson_id=lesson.id)
     abort(404)
 
+@app.route("/puzzle")
+@login_required
+def puzzle():
+    return render_template("puzzle.html", user=g.user, puzzle_uri=url_for("random_puzzle_api", **request.args))
+
 # todo: unroute this in production 
 @app.route("/test")
 def test():

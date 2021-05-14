@@ -42,8 +42,18 @@ class LessonCompletion(db.Model):
 class Puzzle(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	fen = db.Column(db.Text, nullable=False)
-	move_tree = db.Column(db.Text, nullable=False)
+	move_tree = db.Column(JSONString, nullable=False)
+	is_atomic = db.Column(db.Boolean, nullable=False)
 	lesson_id = db.Column(db.Integer, nullable=False)
+
+	def to_json(self):
+		return {
+			"id": self.id,
+			"fen": self.fen,
+			"move_tree": self.move_tree,
+			"is_atomic": self.is_atomic,
+			"lesson_id": self.lesson_id,
+		}
 
 class PuzzleCompletion(db.Model):
 	user = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True, nullable=False)
@@ -52,4 +62,4 @@ class PuzzleCompletion(db.Model):
 	start_time = db.Column(db.DateTime, nullable=False)
 	end_time = db.Column(db.DateTime, nullable=False)
 
-	puzzle = db.relationship("Puzzle", lazy=True, uselist=False)
+	puzzle = db.relationship("Puzzle", lazy=True, uselist=False, backref="completions")

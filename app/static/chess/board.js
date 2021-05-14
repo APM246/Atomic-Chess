@@ -1687,8 +1687,8 @@ class ChessBoard {
                 piece.currentSquare = square;
 
                 // Calculate the position of the target square relative to our current square
-                const targetX = (fileOfSquare(piece.currentSquare) - fileOfSquare(fromSquare)) * this.squareClientWidth;
-                const targetY = -(rankOfSquare(piece.currentSquare) - rankOfSquare(fromSquare)) * this.squareClientHeight;
+                const targetX = (fileOfSquare(piece.currentSquare) - fileOfSquare(fromSquare)) * this.squareClientWidth * (this.isFlipped ? -1 : 1);
+                const targetY = -(rankOfSquare(piece.currentSquare) - rankOfSquare(fromSquare)) * this.squareClientHeight * (this.isFlipped ? -1 : 1);
 
                 this._beginMovingPiece(piece);
 

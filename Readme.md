@@ -14,6 +14,7 @@ Website designed to teach people how to play the chess variant [Atomic](https://
 `SET FLASK_ENV=development`
 4. Initialize database
 `flask db upgrade`
+`flask init-db`
 5. Run server
 `flask run`
 6. Navigate to [localhost:5000](http://localhost:5000)

@@ -89,7 +89,16 @@
                 eventColor: COLORS.WHITE,
                 fen: "8/8/8/8/4K3/8/8/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("e4f3")]),
-                text: "The king can move to any square directly adjacent to it. Move the king towards the bottom right corner of the board.",
+                text: `
+                    <div>
+                        <b>Board coordinates</b> are used to describe each square of the chess board. You can refer to the letters and numbers along the edge of the board,
+                        for example, the bottom left square is <b>a1</b> and the top right square is <b>h8</b>.
+                    </div>
+                    <br/>
+                    <div>
+                        The king can move to any square directly adjacent to it. Move the king towards the bottom right of the board, from <b>e4</b> to <b>f3</b>.
+                    </div>
+                `,
                 title: "Moving Pieces",
             },
             {
@@ -349,7 +358,9 @@
     <div style="text-align: center;">
         <div class="ac-lesson-content">
             <h1>Introduction to Chess</h1>
-            <p>Atomic chess is a variant of the classic game of chess. In order to begin playing atomic chess, you are first going to need to understand the basics of how chess pieces move.</p>
+            <p>
+                Atomic chess is a variant of the classic game of chess. In order to begin playing atomic chess, you are first going to need to understand the basics of how chess pieces move.
+            </p>
             <div class="ac-puzzle-container">
                 <div id="board" class="ac-board ac-lesson-board" tabindex="0"></div>
                 <div class="ac-puzzle-helper">

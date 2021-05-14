@@ -31,8 +31,8 @@
 				},
 				text: [
 					`By moving knight to c6, black is now defending e5 square. However this is still lost for black. Using a similar idea from the first example can you find the winning strategy for white?`,
-					`Thats Right! By moving Ng5, white is threatening to captue on f7 and blow up the king. Therefore black is forced to play pawn f6`,
-					`The queen is now trapped and will be captured on the next move thereby blowing up the king`,
+					`Thats Right! By moving Ng5, white is threatening to captue on f7 and blow up the king. Therefore black is forced to play pawn f6 or f7`,
+					`The queen is now trapped and will be captured on the next move, thereby blowing up the king`,
 				]
 			},
 			{
@@ -42,7 +42,7 @@
 					eventColor: COLORS.WHITE
 				},
 				text: [
-					`It turns out, the best move for black is pawn f6. This defends both the e5 and g5 squares`,
+					`It turns out, blacks best response to Nf3 is f6. This defends both the e5 and g5 squares`,
 				]
 			}
 		];
@@ -71,7 +71,9 @@
 
 			wait(1000).then(() => {
 				puzzle.playContinuation();
-				puzzle.board.enableInteraction();
+				if (stage !== 2) { // dont bother re-enabling interaction on the last puzzle, its just one move
+					puzzle.board.enableInteraction();
+				}
 			});
 		}
 		
@@ -107,7 +109,8 @@
 		});
 
 		puzzle.puzzleComplete.addEventListener(() => {
-			console.log("puzzle complete");
+			//console.log("puzzle complete");
+			
 			continueButton.style.display = "inline-block";
 			puzzle.board.disableInteraction();
 			if (stage == 2)  { // Last puzzle completed

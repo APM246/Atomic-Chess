@@ -18,17 +18,21 @@ def index():
 @login_required
 def learn():
     # Query the database for which lessons have been completed
-    completed_lessons = {}
+    completed_lessons = set()
+    completed_tests = set()
     lesson_progressions = {}
     for lesson in g.user.lessons:
+        if lesson.completed_test:
+            completed_tests.add(lesson.lesson_id)
+
         if lesson.completed_lesson:
-            completed_lessons[lesson.lesson_id] = True
+            completed_lessons.add(lesson.lesson_id)
             lesson_progressions[lesson.lesson_id] = 100
         else:
             lesson_object = LESSONS_BY_ID[lesson.lesson_id]
             lesson_progressions[lesson.lesson_id] = math.ceil(lesson.progression * 100 / lesson_object.max_progression)
 
-    return render_template("learn.html", user=g.user, lessons=get_all_lessons(), completed_lesson_ids=completed_lessons, lesson_progressions=lesson_progressions)
+    return render_template("learn.html", user=g.user, lessons=get_all_lessons(), completed_lessons=completed_lessons, completed_tests=completed_tests, lesson_progressions=lesson_progressions)
 
 @app.route("/stats")
 @login_required

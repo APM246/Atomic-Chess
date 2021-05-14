@@ -15,13 +15,16 @@
 }
 
 .ac-lesson-board {
-    width: 600px;
-    height: 600px;
+    width: min(70vw, 70vh);
+    height: min(70vw, 70vh);
+    min-width: min(70vw, 70vh);
+    min-height: min(70vw, 70vh);
     border: 2px solid black;
 }
 
 .ac-section {
     margin-top: 10px;
+    margin-bottom: 10px;
 }
 </style>
 {% endblock %}
@@ -48,6 +51,13 @@ window.onload = async () => {
     board0.incorrectMovePlayed.addEventListener((move) => {
         board0.reset();
     });
+
+    document.getElementById("complete-button").onclick = () => {
+        markLessonAsComplete({{ lesson_id }}).then(() => {
+            // Complete
+            window.location.href = "{{ url_for('learn') }}";
+        });
+    };
 };
 </script>
 {% endblock %}
@@ -77,6 +87,9 @@ window.onload = async () => {
             <li><b>Strategies to keep your king and pieces safe</b></li>
             <li><b>Interesting endgame strategies</b></li>
         </ul>
+        <div>
+            <button id="complete-button" type="button" class="btn btn-success">Complete!</button>
+        </div>
     </div>
 </div>
 {% endblock %}

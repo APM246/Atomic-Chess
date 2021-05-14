@@ -1,9 +1,10 @@
-import enum
 import click
+import getpass
 from flask.cli import with_appcontext
 
+from werkzeug.security import check_password_hash, generate_password_hash
 from app.lessons import LESSON_ATOMIC
-from app.models import Puzzle
+from app.models import Puzzle, User
 from app import db
 
 # Constants match constants defined in Chess.js
@@ -117,6 +118,24 @@ def clear_database():
         db.session.execute(table.delete())
     db.session.commit()
 
+def create_admin_user():
+    print("Create admin user")
+    username = input("Username: ")
+    password = getpass.getpass("Password: ")
+    confirm_password = getpass.getpass("Confirm password: ")
+    if password != confirm_password:
+        print("Passwords did not match")
+        return create_admin_user()
+    user = User(
+        username=username,
+        pwd_hash=generate_password_hash(password),
+        is_admin=True,
+        chess_beginner=True,
+    )
+    db.session.add(user)
+    db.session.commit()
+    print("Created admin user: {}".format(username))
+
 @click.command("init-db")
 @with_appcontext
 def init_db():
@@ -126,6 +145,8 @@ def init_db():
     clear_database()
     print("Cleared Database.")
     create_atomic_puzzles()
+
+    create_admin_user()
 
     db.session.commit()
     print("Success.")

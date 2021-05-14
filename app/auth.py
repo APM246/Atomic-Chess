@@ -25,6 +25,14 @@ def login_required(view):
         return view(**kwargs)
     return wrapped_view
 
+def admin_login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if (not "user" in g) or g.user is None or (not g.user.is_admin):
+            return redirect(url_for("login", next=url_for(request.endpoint, **request.view_args)))
+        return view(**kwargs)
+    return wrapped_view
+
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = SignUpForm(request.form)

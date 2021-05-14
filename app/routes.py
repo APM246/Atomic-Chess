@@ -1,6 +1,7 @@
 import math
 
 from app.api.lessons_api import get_lesson_progression
+from app.auth import admin_login_required
 from flask import render_template, abort, redirect, request, url_for, g
 from app import app, db
 from app.models import User, LessonCompletion
@@ -60,6 +61,7 @@ def test():
     return render_template("test_board.html")
 
 @app.route("/create_puzzle")
+@admin_login_required
 @login_required
 def create_puzzle():
     return render_template("create_puzzle.html", user=g.user, lessons=get_all_lessons())

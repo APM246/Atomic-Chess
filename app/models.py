@@ -38,6 +38,7 @@ class LessonCompletion(db.Model):
 	lesson_id = db.Column(db.Integer, primary_key=True, nullable=False)
 	progression = db.Column(db.Integer, nullable=False)
 	completed_test = db.Column(db.Boolean, nullable=False, default=False)
+	completed_lesson = db.Column(db.Boolean, nullable=False, default=False)
 
 class Puzzle(db.Model):
 	id = db.Column(db.Integer, primary_key=True)

@@ -21,7 +21,7 @@ def learn():
     completed_lessons = {}
     lesson_progressions = {}
     for lesson in g.user.lessons:
-        if lesson.completed_test:
+        if lesson.completed_lesson:
             completed_lessons[lesson.lesson_id] = True
             lesson_progressions[lesson.lesson_id] = 100
         else:
@@ -51,7 +51,13 @@ def lessons(name):
 @app.route("/puzzle")
 @login_required
 def puzzle():
-    lesson = LESSONS_BY_ID.get(int(request.args.get("lesson", -1)))
+    lesson_id = int(request.args.get("lesson", -1))
+    lesson = LESSONS_BY_ID.get(lesson_id)
+
+    lesson_model = LessonCompletion.query.filter_by(user=g.user.id, lesson_id=lesson_id).first()
+    if lesson_model is None or not lesson_model.completed_lesson:
+        return abort(403) # forbidden
+
     title = lesson.name if lesson is not None else "Puzzles"
     return render_template("puzzle.html", user=g.user, puzzle_uri=url_for("random_puzzle_api", **request.args), title=title, save=(lesson is None))
 

@@ -18,14 +18,14 @@ def update_lesson_completion(lesson_id, user_id, progression=None, is_complete=N
         if progression is not None:
             existing_completion.progression = progression
         if is_complete is not None:
-            existing_completion.completed_test = is_complete
+            existing_completion.completed_lesson = is_complete
         db.session.commit()
     else:
         lesson_completion = LessonCompletion(
             user=user_id,
             lesson_id=lesson_id,
             progression=progression if progression is not None else 0,
-            completed_test=is_complete if is_complete is not None else False,
+            completed_lesson=is_complete if is_complete is not None else False,
         )
         db.session.add(lesson_completion)
         db.session.commit()
@@ -67,7 +67,7 @@ def lesson_api(lesson_id):
     }
     for lesson in g.user.lessons:
         if lesson.lesson_id == lesson_id:
-            lesson_data["completed"] = lesson.completed_test
+            lesson_data["completed"] = lesson.completed_lesson
             lesson_data["progression"] = lesson.progression
             break
     return jsonify({ "lesson": lesson_data })

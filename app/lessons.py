@@ -26,7 +26,7 @@ LESSON_WIN_CONDITIONS = Lesson(
     lesson_id=2,
     name="Win Conditions",
     description="In Atomic Chess you can win by checkmate, but can also win by blowing up the enemy king. This lesson will teach you how this effects the game",
-    template="lessons/lesson1.html",
+    template="lessons/lesson2.html",
     max_progression=1,
 )
 

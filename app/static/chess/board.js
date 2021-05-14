@@ -1460,7 +1460,7 @@ class ChessBoard {
             const table = document.createElement("table");
             table.className = "ac-chess-board";
 
-            let coordinates = [];
+            const coordinates = [];
 
             const createCoordinate = (rank, file, onBottom) => {
                 const letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -1471,9 +1471,8 @@ class ChessBoard {
                 const color = (file + rank) % 2 === 0 ? this._options.darkSquareColor : this._options.lightSquareColor;
                 p.style.color = color;
                 if (this.isFlipped) {
-                    p.innerHTML = onBottom ? letters[8 - file - 1] : rank + 1
-                }
-                else {
+                    p.innerHTML = onBottom ? letters[8 - file - 1] : rank + 1;
+                } else {
                     p.innerHTML = onBottom ? letters[file] : RANK_COUNT - rank;
                 }
 
@@ -1508,7 +1507,7 @@ class ChessBoard {
             // know how big the board is
             for (const coord of coordinates) {
                 coord.style.fontSize = `${this.squareClientWidth / 7}px`;
-                coord.style.margin = `${this.squareClientWidth / 40}px`
+                coord.style.margin = `${this.squareClientWidth / 40}px`;
             }
         }
     }

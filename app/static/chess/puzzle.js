@@ -70,9 +70,6 @@ class Puzzle {
         this._options.eventColor = data.eventColor;
         this._eventColor = this._options.eventColor;
         this.reset();
-        if (this._eventColor === null || this._eventColor === undefined) {
-            this._eventColor = otherColor(this.board.position.colorToMove);
-        }
     }
 
     reset(sendEvent = true) {
@@ -80,6 +77,9 @@ class Puzzle {
             this.board.setFromFen(this._options.fen);
         } else {
             this.board.clear();
+        }
+        if (this._eventColor === null || this._eventColor === undefined) {
+            this._eventColor = otherColor(this.board.position.colorToMove);
         }
         this._currentMoveTree = null;
         if (this._options.moveTree) {

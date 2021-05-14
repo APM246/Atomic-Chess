@@ -5,4 +5,4 @@ __pycache__/
 instance/
 node_modules/
 app/app.db
-
+tests/test.db

@@ -40,7 +40,7 @@ class Puzzle {
 
         this._options = assignDefaults(options, DEFAULT_PUZZLE_OPTIONS);
         this._board = new ChessBoard(this._options.boardOptions);
-        this._eventColor = this._options.eventColor === undefined ? null : this._options.eventColor;
+        this._eventColor = this._options.eventColor;
 
         this.board.movePlayed.addEventListener((move) => {
             if (this.isCorrect(move)) {
@@ -61,7 +61,7 @@ class Puzzle {
     }
 
     get playerToMove() {
-        return this._eventColor === null || this.board.position.colorToMove === this._eventColor;
+        return this._eventColor === null || this._eventColor === undefined || this.board.position.colorToMove === this._eventColor;
     }
 
     setFromData(data) {

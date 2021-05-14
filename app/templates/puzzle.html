@@ -77,12 +77,16 @@
 {% block scripts %}
 {{ super() }}
 <script>
+    const isFinalTest = "{{ save }}" === "True";
+
     async function markPuzzleComplete(puzzleId, startTime, endTime, attempts) {
-        await ajax(`/api/puzzles/${puzzleId}`, "POST", {
-            attempts,
-            start_time: startTime,
-            end_time: endTime,
-        });
+        if (isFinalTest) {
+            await ajax(`/api/puzzles/${puzzleId}`, "POST", {
+                attempts,
+                start_time: startTime,
+                end_time: endTime,
+            });
+        }
     }
 
     window.onload = async () => {
@@ -146,12 +150,16 @@
         function showNextButton(puzzle, passed) {
             nextButton.style.display = "block";
             nextButton.className = "btn " + (passed ? "btn-success" : "btn-danger") + " ac-full-button";
-            nextButton.innerText = passed ? "Next" : "Retry";
+            nextButton.innerText = passed ? (isFinalTest ? "Next" : "Complete") : "Retry";
             nextButton.onclick = () => {
                 hideNextButton();
                 if (passed) {
                     markPuzzleComplete(puzzleId, startTime, endTime, attempts).then(() => {
-                        nextPuzzle();
+                        if (isFinalTest) {
+                            nextPuzzle();
+                        } else {
+                            window.location.href = "{{ url_for('learn') }}";
+                        }
                     });
                 } else {
                     attempts++;

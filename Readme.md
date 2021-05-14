@@ -12,7 +12,7 @@ Website designed to teach people how to play the chess variant [Atomic](https://
 3. Configure environment
 `SET FLASK_APP=app`
 `SET FLASK_ENV=development`
-4. Initialize database
+4. Initialize database (this will prompt you to create an admin account)
 `flask db upgrade`
 `flask init-db`
 5. Run server

@@ -1,16 +1,8 @@
 {% extends "lessons/lesson_base.html" %}
 
 {% block styles %}
+<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/lesson.css') }}">
 <style>
-    .ac-lesson-board {
-        width: min(70vw, 70vh);
-        height: min(70vw, 70vh);
-        min-width: min(70vw, 70vh);
-        min-height: min(70vw, 70vh);
-        border: 2px solid black;
-        margin-left: auto;
-    }
-
     .ac-puzzle-content {
         margin-top: 20px;
         margin-left: 10px;
@@ -22,43 +14,8 @@
         margin: auto;
     }
 
-    .ac-puzzle-helper {
-        margin-left: 5px;
-        width: min(40vw, 40vh);
-        height: min(70vw, 70vh);
-        margin-right: auto;
-        border: 2px solid black;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-    }
-
     .ac-lesson-task {
         margin-top: 50px;
-    }
-
-    .ac-next-button-container {
-        margin-top: auto;
-        align-self: flex-end;
-        width: 100%;
-    }
-
-    .ac-button-group {
-        margin-top: 10px;
-    }
-
-    .ac-full-button {
-        width: 100%;
-        border-radius: 0;
-        padding: 10px;
-    }
-
-    .ac-previous-button {
-        border-radius: 50%;
-        background-color: #f1f1f1;
-        color: black;
-        width: 50px;
-        height: 50px;
     }
 
     /* Override bootstrap classes */
@@ -113,12 +70,16 @@
         const puzzleTimerDiv = document.getElementById("timer");
         const nextButton = document.getElementById("next-button");
         const hintButton = document.getElementById("hint-button");
+        const resetButton = document.getElementById("reset-button");
         hintButton.onclick = () => {
             puzzle.board.emphasizer.clear();
             puzzle.showHint();
             // Increment attempts for using a hint
             attempts++;
-        }
+        };
+        resetButton.onclick = () => {
+            puzzle.reset();
+        };
 
         function updateTimer() {
             if (startTime) {
@@ -184,10 +145,21 @@
             nextButton.style.display = "none";
         }
 
+        function showResetButton() {
+            resetButton.style.display = "block";
+        }
+
+        function hideResetButton() {
+            resetButton.style.display = "none";
+        }
+
         puzzle.correctMovePlayed.addEventListener((move) => {
             puzzle.board.disableInteraction();
             if (puzzle.isComplete()) {
-                endTime = Date.now();
+                if (!endTime) {
+                    endTime = Date.now();
+                }
+                showResetButton();
                 showNextButton(puzzle, true);
             } else {
                 wait(300).then(() => {
@@ -206,6 +178,7 @@
         });
 
         puzzle.puzzleReset.addEventListener(() => {
+            hideResetButton();
             puzzle.hideHint();
             puzzle.board.emphasizer.resetColors();
             if (!puzzle.playerToMove) {
@@ -221,6 +194,7 @@
         });
 
         hideNextButton();
+        hideResetButton();
         nextPuzzle();
     };
 </script>
@@ -241,6 +215,7 @@
                     <div class="ac-next-button-container">
                         <div class="ac-button-group">
                             <button id="hint-button" type="button" class="btn btn-secondary ac-full-button">Hint</button>
+                            <button id="reset-button" style="display: none;" type="button" class="btn btn-primary ac-full-button">Reset</button>
                             <button id="next-button" style="display: none;" type="button" class="btn btn-success ac-full-button">Next</button>
                         </div>
                     </div>

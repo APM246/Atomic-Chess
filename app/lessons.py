@@ -41,9 +41,9 @@ LESSON_OPENING_TRAPS = Lesson(
 LESSON_PIECE_SAFETY = Lesson(
     lesson_id=4,
     name="Piece Safety",
-    description="TODO",
-    template="lessons/lesson1.html",
-    max_progression=1,
+    description="The rules of atomic changes the way you think about attacking and defending pieces",
+    template="lessons/lesson4.html",
+    max_progression=3,
 )
 
 LESSON_KINGS_TOUCHING = Lesson(

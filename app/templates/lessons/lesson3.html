@@ -31,7 +31,8 @@
 				},
 				text: [
 					`By moving knight to c6, black is now defending e5 square. However this is still lost for black. Using a similar idea from the first example can you find the winning strategy for white?`,
-					`Thats Right! By moving Ng5, white is threatening to captue on f7 and blow up the king. Therefore black is forced to play pawn f6 or f7`,
+					`Thats Right! By moving Ng5, white is threatening to captue on f7 and blow up the king. Therefore black is forced to play pawn f6 or f7.
+					Whats the next move for white?`,
 					`The queen is now trapped and will be captured on the next move, thereby blowing up the king`,
 				]
 			},
@@ -124,7 +125,7 @@
 			}
 		})
 
-		document.getElementById("continue-button").onclick = () => {
+		continueButton.onclick = () => {
 			puzzle.board.emphasizer.resetColors();
 			puzzle.board.enableInteraction();
 			stage++;

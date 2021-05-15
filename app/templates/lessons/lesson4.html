@@ -1,0 +1,141 @@
+{% extends "lessons/lesson_base.html" %}
+
+{% block styles %}
+<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/lesson.css') }}">
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+
+<script>
+	window.onload = async () => {
+		const stages = [
+			{
+				puzzleData: {
+					fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+					moveTree: null,
+					eventColor: COLORS.WHITE
+				},
+			},
+			{
+				puzzleData: {
+					fen: "r1bkqnbr/p2p2pp/1pp1pp2/8/8/1Q2P3/PPPP1PPP/RNB2KNR w kq - 0 1",
+					moveTree: createLinearMoveTree([moveFromString("b3c4"), moveFromString("c8a6"), moveFromString("d2d3"), moveFromString("a6c4")]),
+					eventColor: COLORS.BLACK
+				},
+				flip: true,
+				text: [
+					`Since the enemy loses their own piece when they capture, it means you can move pieces of lower value directly into the attacking range of an enemy piece of higher value.
+					
+					In this position is there a move for black that wins the queen?`,
+					`Thats Right! In normal chess, white could simply capture your bishop with their queen, however if white did that in atomic they would also lose their queen.
+					Since whites queen is pinned to the king, a trade of bishop for queen is inevitable`,
+				]
+			},
+			{
+				puzzleData: {
+					fen: "rnbqkbnr/ppp1p1pp/5p2/3p4/8/1P3N2/P1PPPPPP/RNBQKB1R w KQkq - 0 1",
+					moveTree: createLinearMoveTree([moveFromString("c1a3"), moveFromString("c7c5")]),
+					eventColor: COLORS.BLACK
+				},
+				flip: false,
+				text: [
+					`Whites bishop on a3 is threatening to blow up your king up by capturing your pawn on e7. How can you stop them?`,
+					`Thats Right! You can bravely push your pawn forward to block the bishop`,
+				]
+			},
+		];
+
+		const continueButton = document.getElementById("continue-button");
+
+		let stage = 0;
+		let subStage = 0;
+		
+		const userSettings = await ajax("{{ url_for('get_settings') }}");
+		const boardOptions = userSettings ? transformSettingsResponse(userSettings.settings) : {};
+		
+		const puzzle = new Puzzle({
+			boardOptions: {
+				target: "#board",
+				allowUndo: false,
+				...boardOptions,
+			},
+			...stages[stage].puzzleData
+		});
+		puzzle.board.position.isAtomic = true;
+
+		if (stage === 0) {
+			puzzle.board.disableInteraction();
+		}
+		
+		puzzle.correctMovePlayed.addEventListener((move) => {
+			puzzle.board.emphasizer.setColors("#00a00088", "#00700088");
+			
+			if (!puzzle.isComplete()) {
+				puzzle.board.disableInteraction();
+				wait(1000).then(()=>{
+					const p = document.getElementById("puzzle-text");
+					p.innerText = stages[stage].text[subStage++];
+					puzzle.board.emphasizer.resetColors();
+					puzzle.board.enableInteraction();
+					puzzle.playContinuation();
+				});
+			}
+			else if (stage === 2 && subStage == 1) { // hack in some behaviour: on the last puzzle we want to show text after the user has made a move instead of after the enemy responds
+				const p = document.getElementById("puzzle-text");
+				p.innerText = stages[2].text[1];
+			}
+		});
+
+		puzzle.incorrectMovePlayed.addEventListener((move) => {
+			puzzle.board.disableInteraction();
+			puzzle.board.emphasizer.setColors("#ff000088", "#aa000088");
+			wait(500).then(()=>{
+				puzzle.board.emphasizer.resetColors();
+				puzzle.board.enableInteraction();				
+				puzzle.board.undoLastMove(true);
+			});
+		});
+
+		puzzle.puzzleComplete.addEventListener(() => {
+			continueButton.style.display = "inline-block";
+			puzzle.board.disableInteraction();
+		})
+
+		continueButton.onclick = () => {
+			puzzle.board.emphasizer.resetColors();
+			puzzle.board.enableInteraction();
+			stage++;
+			subStage = 0;
+			setLessonProgression({{ lesson_id }}, stage);
+			puzzle.setFromData(stages[stage].puzzleData);
+			if (stages[stage].flip) {
+				puzzle.board.flip();
+			}
+			document.getElementById("puzzle-text").innerText = stages[stage].text[subStage++];
+
+			continueButton.style.display = "none";
+			wait(1000).then(() => {
+				puzzle.playContinuation();
+			});
+		};
+	}
+</script>
+{% endblock %}
+
+{% block content %}
+	<div class="ac-lesson-content">
+		<h2 class="ac-section">Piece Safety</h2>
+
+		<div class="ac-puzzle-container">
+			<div id="board" class="ac-board ac-lesson-board" tabindex="0"></div>
+			<div class="ac-puzzle-helper">
+				<p id="puzzle-text">
+					In atomic, if you capture an enemy piece, your own piece is also destroyed! 
+					This leads to some interesting consequences that will be explored in this lesson
+				</p>
+				<button id="continue-button" type="button" class="btn btn-secondary ac-full-button">Continue</button>
+			</div>
+		</div>
+	</div>
+{% endblock %}

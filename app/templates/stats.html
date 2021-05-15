@@ -22,13 +22,18 @@
               <h1> User stats </h1>
               <p> Number of completed lessons: {{ num_lessons }} </p>
                 {% for time in time_performance %}
-                  <h2 class="lesson"> {{ lessons_by_id[loop.index - 1].name }} </h2>
-                  {% if time != 0 %}
-                    <p> Average time taken for puzzles about this lesson: {{ time }} seconds. </li>
 
-                  {% else %}
-                    <p> You have not completed any puzzles from this lesson. </li>
-                  
+                  {% if loop.index - 1 > 0 %}
+                    <h2 class="lesson"> {{ lessons_by_id[loop.index - 1].name }} </h2>
+                    {% if time != 0 %}
+                      <p> Number of puzzles completed: {{ num_completed_puzzles[loop.index - 1]}} </p>
+                      <p> Average time taken: {{ time }} seconds. </li>
+                      <p> Average accuracy: {{ accuracy[loop.index - 1] }}% </p>
+
+                    {% else %}
+                      <p> You have not completed any puzzles from this lesson. </li>
+                    
+                    {% endif %}
                   {% endif %}
                 {% endfor %}
             </div>

@@ -46,6 +46,7 @@ class User(db.Model):
 	def get_performance(self):
 		time_taken_by_lesson_id = {}
 		num_puzzles_by_lesson_id = {}
+		accuracy_by_lesson_id = {}
 		completed_puzzles = PuzzleCompletion.query.filter(PuzzleCompletion.user==self.id)
 
 		for completed_puzzle in completed_puzzles:
@@ -53,16 +54,19 @@ class User(db.Model):
 			time_taken = completed_puzzle.end_time.timestamp() - completed_puzzle.start_time.timestamp()
 			time_taken_by_lesson_id[lesson_id] = time_taken_by_lesson_id.get(lesson_id, 0) + time_taken
 			num_puzzles_by_lesson_id[lesson_id] = num_puzzles_by_lesson_id.get(lesson_id, 0) + 1
+			accuracy_by_lesson_id[lesson_id] = accuracy_by_lesson_id.get(lesson_id, 0) + 1/completed_puzzle.attempts
 
 		NUM_LESSONS = len(get_all_lessons())
-		performance_by_lesson_id = [0]*NUM_LESSONS
+		time_performance = [0]*NUM_LESSONS
+		average_accuracy = [0]*NUM_LESSONS
 
 		for i in range(NUM_LESSONS):
 			if i in time_taken_by_lesson_id:
-				performance_by_lesson_id[i] = int(time_taken_by_lesson_id[i]/num_puzzles_by_lesson_id[i])
+				average_accuracy[i] = round(100*accuracy_by_lesson_id[i]/num_puzzles_by_lesson_id[i], 1)
+				time_performance[i] = int(time_taken_by_lesson_id[i]/num_puzzles_by_lesson_id[i])
 
 
-		return performance_by_lesson_id
+		return time_performance, num_puzzles_by_lesson_id, average_accuracy
 
 class LessonCompletion(db.Model):
 	user = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True, nullable=False)

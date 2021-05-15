@@ -65,7 +65,7 @@ def lesson_api(lesson_id):
 
         update_lesson_completion(lesson_id, g.user.id, progression=progression, completed_lesson=completed_lesson, completed_test=completed_test)
         return jsonify({"status": "Ok"})
-        
+
     lesson_data = {
         "id": lesson.id,
         "name": lesson.name,

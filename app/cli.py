@@ -5,6 +5,7 @@ from flask.cli import with_appcontext
 from werkzeug.security import check_password_hash, generate_password_hash
 from app.lessons import LESSON_ATOMIC
 from app.models import Puzzle, User
+from app.auth import create_user
 from app import db
 
 # Constants match constants defined in Chess.js
@@ -122,6 +123,19 @@ def create_atomic_puzzles():
         lesson_id=LESSON_ATOMIC.id,
     ))
 
+def create_opening_traps_puzzles():
+    db.session.add(Puzzle(
+        fen="rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq -",
+        move_tree=create_linear_move_tree([
+            create_move_from_string("f7f5"),
+            create_move_from_string("f3e5"),
+            create_move_from_string("d7d6"),
+            create_move_from_string("e5d7"),
+        ]),
+        is_atomic=True,
+        lesson_id=LESSON_ATOMIC.id,
+    ))
+
 def clear_database():
     for table in reversed(db.metadata.sorted_tables):
         db.session.execute(table.delete())
@@ -135,14 +149,7 @@ def create_admin_user():
     if password != confirm_password:
         print("Passwords did not match")
         return create_admin_user()
-    user = User(
-        username=username,
-        pwd_hash=generate_password_hash(password),
-        is_admin=True,
-        chess_beginner=True,
-    )
-    db.session.add(user)
-    db.session.commit()
+    create_user(username, password, False, admin=True)
     print("Created admin user: {}".format(username))
 
 @click.command("init-db")
@@ -154,6 +161,7 @@ def init_db():
     clear_database()
     print("Cleared Database.")
     create_atomic_puzzles()
+    create_opening_traps_puzzles()
 
     create_admin_user()
 

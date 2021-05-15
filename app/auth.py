@@ -33,6 +33,21 @@ def admin_login_required(view):
         return view(**kwargs)
     return wrapped_view
 
+def create_user(username, password, chess_beginner, admin=False):
+    user = User(
+        username=username,
+        pwd_hash=generate_password_hash(password),
+        chess_beginner=chess_beginner,
+        is_admin=admin,
+    )
+    db.session.add(user)
+    db.session.commit()
+
+    # Mark intro to chess lesson as complete
+    if not user.chess_beginner:
+        mark_lesson_complete(LESSON_INTRO.id, user.id)
+    return user
+
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = SignUpForm(request.form)
@@ -48,17 +63,7 @@ def register():
             flash('Password does not meet rules')
             return render_template('register.html', form=form)
 
-        user = User(
-            username=form.username.data,
-            pwd_hash=generate_password_hash(password),
-            chess_beginner=(not form.played_chess_before.data),
-        )
-        db.session.add(user)
-        db.session.commit()
-
-        # Mark intro to chess lesson as complete
-        if not user.chess_beginner:
-            mark_lesson_complete(LESSON_INTRO.id, user.id)
+        user = create_user(form.username.data, password, not form.played_chess_before.data, admin=False)
 
         session.clear()
         session["current_user"] = user.id

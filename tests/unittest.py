@@ -62,20 +62,20 @@ class PuzzleTestCase(unittest.TestCase):
         )
         db.session.add(user2)
 
-        puzzle1 = Puzzle(
+        self.puzzle1 = Puzzle(
             fen="",
             move_tree={},
             is_atomic=True,
             lesson_id=0,
         )
-        db.session.add(puzzle1)
-        puzzle2 = Puzzle(
+        db.session.add(self.puzzle1)
+        self.puzzle2 = Puzzle(
             fen="",
             move_tree={},
             is_atomic=True,
             lesson_id=1,
         )
-        db.session.add(puzzle2)
+        db.session.add(self.puzzle2)
 
         db.session.commit()
 
@@ -89,7 +89,7 @@ class PuzzleTestCase(unittest.TestCase):
         self.assertEqual(len(get_all_incomplete_puzzles()), 2)
         db.session.add(PuzzleCompletion(
             user=2,
-            puzzle_id=2,
+            puzzle_id=self.puzzle2.id,
             attempts=1,
             start_time=datetime.datetime.now(),
             end_time=datetime.datetime.now(),
@@ -98,7 +98,7 @@ class PuzzleTestCase(unittest.TestCase):
         self.assertEqual(len(get_all_incomplete_puzzles()), 2)
         db.session.add(PuzzleCompletion(
             user=1,
-            puzzle_id=2,
+            puzzle_id=self.puzzle2.id,
             attempts=1,
             start_time=datetime.datetime.now(),
             end_time=datetime.datetime.now(),
@@ -107,13 +107,14 @@ class PuzzleTestCase(unittest.TestCase):
         self.assertEqual(len(get_all_incomplete_puzzles()), 1)
         db.session.add(PuzzleCompletion(
             user=1,
-            puzzle_id=1,
+            puzzle_id=self.puzzle1.id,
             attempts=1,
             start_time=datetime.datetime.now(),
             end_time=datetime.datetime.now(),
         ))
         db.session.commit()
-        self.assertEqual(len(get_all_incomplete_puzzles()), 0)
+        # After all puzzles have been completed all are effectively incomplete again
+        self.assertEqual(len(get_all_incomplete_puzzles()), 2)
 
 if __name__ == "__main__":
     with app.app_context():

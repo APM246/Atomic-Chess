@@ -10,7 +10,8 @@
 		textTarget: "#puzzle-text",
 		nextButtonTarget: "#next-button",
 		backButtonTarget: "#back-button",
-		boardTarget: "#board"
+		boardTarget: "#board",
+		sandbox: false
 	}
 
 	async function runLesson(stages, options, boardOptions) {
@@ -37,8 +38,10 @@
 				stage++;
 				setLessonStage();
 				updateButtons();
-				setLessonProgression({{ lesson_id }}, stage);
-				console.log(`update progression to ${stage}`)
+				if (stage === maxProgression) {
+					setLessonProgression({{ lesson_id }}, stage);
+					console.log(`update progression to ${stage}`)
+				}
 			}
 		}
 		nextButton.onclick = onNextBtn;
@@ -86,6 +89,12 @@
 			...stages[stage].puzzleData
 		});
 		puzzle.board.position.isAtomic = true;
+
+		if (options.sandbox) {
+			// Disable checks for whether we/they have a king
+			puzzle.board.position.sandbox = true;
+			console.log("enabled sandbox");
+		}
 
 		function setLessonStage() {
 			if (stages[stage].scriptFirstMove) {
@@ -191,9 +200,9 @@
 	<div class="ac-puzzle-container">
 		<div id="board" class="ac-board ac-lesson-board" tabindex="0"></div>
 		<div class="ac-puzzle-helper">
-			<p id="puzzle-text">
+			<div id="puzzle-text">
 
-			</p>
+			</div>
 			<div class="ac-button-group">
 				<button id="back-button" class="ac-lesson-button">Back</button>
 				<button id="next-button" class="ac-lesson-button">Next</button>

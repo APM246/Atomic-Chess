@@ -30,6 +30,8 @@ def learn():
         if lesson.completed_lesson:
             completed_lessons.add(lesson.lesson_id)
             lesson_progressions[lesson.lesson_id] = 100
+            if lesson.lesson_id == 0:
+                completed_tests.add(0) # the first lesson dosent have a test, but the progress bar expects its "test" to be complete if the lesson is complete
         else:
             # Calculate the percentage progress through the lesson
             lesson_object = LESSONS_BY_ID[lesson.lesson_id]

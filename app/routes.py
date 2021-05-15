@@ -4,7 +4,7 @@ from app.api.lessons_api import get_lesson_progression
 from app.auth import admin_login_required
 from flask import render_template, abort, redirect, request, url_for, g
 from app import app, db
-from app.models import User, LessonCompletion
+from app.models import User, LessonCompletion, PuzzleCompletion
 from app.auth import login_required
 
 from app.lessons import get_all_lessons, get_lesson_by_name, LESSONS_BY_ID
@@ -43,10 +43,13 @@ def stats():
     """ Serves the stats page """
     num_users = User.get_num_users()
     num_completed_lessons = g.user.get_num_completed_lessons()
-    time_performance, num_completed_puzzles, accuracy = g.user.get_performance()
+    time_performance, num_completed_puzzles, total_num_completed_puzzles, accuracy = g.user.get_performance()
+    best_users = PuzzleCompletion.get_best_times()
+    
     return render_template("stats.html", user=g.user, num_users=num_users, 
     num_lessons=num_completed_lessons, time_performance=time_performance, 
-    lessons_by_id=LESSONS_BY_ID, num_completed_puzzles=num_completed_puzzles, accuracy=accuracy)
+    lessons_by_id=LESSONS_BY_ID, num_puzzles=num_completed_puzzles, 
+    total_num_completed_puzzles=total_num_completed_puzzles, accuracy=accuracy, best_users=best_users)
 
 @app.route("/settings")
 @login_required

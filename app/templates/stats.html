@@ -12,6 +12,14 @@
         font-family: Arial
       }
 
+      .leaderboard {
+        border: solid greenyellow
+      }
+      
+      .leaderboard th,td {
+        padding: 10px;
+      }
+
   </style>
   {% endblock %}
 
@@ -20,28 +28,44 @@
           <div class="row">
             <div class="col-6">
               <h1> User stats </h1>
-              <p> Number of completed lessons: {{ num_lessons }} </p>
+              <p> Number of lessons completed: {{ num_lessons }} </p>
+              <p> Number of puzzles completed: {{ total_num_completed_puzzles }} </p>
                 {% for time in time_performance %}
 
                   {% if loop.index - 1 > 0 %}
                     <h2 class="lesson"> {{ lessons_by_id[loop.index - 1].name }} </h2>
                     {% if time != 0 %}
-                      <p> Number of puzzles completed: {{ num_completed_puzzles[loop.index - 1]}} </p>
-                      <p> Average time taken: {{ time }} seconds. </li>
+                      <p> Number of puzzles completed: {{ num_puzzles[loop.index - 1]}} </p>
+                      <p> Average time taken: {{ time }} seconds. </p>
                       <p> Average accuracy: {{ accuracy[loop.index - 1] }}% </p>
 
                     {% else %}
-                      <p> You have not completed any puzzles from this lesson. </li>
+                      <p> You have not completed any puzzles from this lesson. </p>
                     
                     {% endif %}
                   {% endif %}
                 {% endfor %}
-            </div>
-    
+              </div>
+
             <div class="col-6">
               <h1> Global stats </h1>
               <p> Number of registered users: {{ num_users }} </p>
+              <p> Leaderboards </p>
+              <table class="leaderboard">
+                <tr>
+                  <th> Position </th>
+                  <th> Username </th>
+                  <th> Average Time (s) </th>
+                </tr>
+                {% for user in best_users %}
+                  <tr> 
+                    <td> {{ loop.index }} </td> 
+                    <td> {{ user[0].username }} </td>
+                    <td> {{ user[1] }} </td> 
+                  </tr>
+                {% endfor %}
+              </table>
             </div>
-          </div>
+          </div>  
         </div>
   {% endblock %}

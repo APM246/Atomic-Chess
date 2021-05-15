@@ -63,10 +63,10 @@ class User(db.Model):
 		for i in range(NUM_LESSONS):
 			if i in time_taken_by_lesson_id:
 				average_accuracy[i] = round(100*accuracy_by_lesson_id[i]/num_puzzles_by_lesson_id[i], 1)
-				time_performance[i] = int(time_taken_by_lesson_id[i]/num_puzzles_by_lesson_id[i])
+				time_performance[i] = round(time_taken_by_lesson_id[i]/num_puzzles_by_lesson_id[i], 1)
 
 
-		return time_performance, num_puzzles_by_lesson_id, average_accuracy
+		return time_performance, num_puzzles_by_lesson_id, len(list(completed_puzzles)), average_accuracy
 
 class LessonCompletion(db.Model):
 	user = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True, nullable=False)
@@ -110,3 +110,23 @@ class PuzzleCompletion(db.Model):
 	end_time = db.Column(db.DateTime, nullable=False)
 
 	puzzle = db.relationship("Puzzle", lazy=True, uselist=False, backref="completions")
+	#test_number = db.Column(db.Integer, nullable=False)
+
+	def get_best_times():
+		all_puzzles = PuzzleCompletion.query.all()
+		total_time_by_user = {}
+		num_puzzles_by_user = {}
+
+		for completed_puzzle in all_puzzles:
+			user = User.query.get(completed_puzzle.user)
+			time_taken = completed_puzzle.end_time.timestamp() - completed_puzzle.start_time.timestamp()
+			total_time_by_user[user] = total_time_by_user.get(user, 0) + time_taken
+			num_puzzles_by_user[user] = num_puzzles_by_user.get(user, 0) + 1
+		
+		average_time_by_user = {}
+		for user in total_time_by_user:
+			average_time_by_user[user] = round(total_time_by_user[user]/num_puzzles_by_user[user], 1)
+		
+		best_users = sorted(average_time_by_user.items(), key=lambda x: average_time_by_user[x[0]])
+		# return top 5
+		return best_users[:5]

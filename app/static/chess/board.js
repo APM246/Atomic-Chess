@@ -1132,6 +1132,13 @@ class ChessBoard {
         this.redraw();
     }
 
+    setFlip(flip) {
+        if (this._flipped !== flip) {
+            this._flipped = flip;
+            this.redraw();
+        }
+    }
+
     setAtomic(isAtomic) {
         this.position.isAtomic = isAtomic;
     }

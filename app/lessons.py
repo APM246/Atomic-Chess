@@ -56,7 +56,7 @@ LESSON_KINGS_TOUCHING = Lesson(
     name="Kings Touching",
     description="Kings can touch each other in Atomic Chess! This lesson teaches you the consequences of this strange rule",
     template="lessons/lesson5.html",
-    max_progression=1,
+    max_progression=3,
 )
 
 LESSONS_BY_ID = {}

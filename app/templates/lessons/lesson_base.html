@@ -181,6 +181,12 @@
 				maxProgression++;
 				updateButtons();
 			}
+			
+			// Some puzzles may optionally want to add some text after the user makes the final move
+			if (step + 1 < stages[stage].text.length) {
+				text.innerHTML = stages[stage].text[step + 1];
+				//console.log("extra text added");
+			}
 
 			puzzle.board.disableInteraction();
 		})

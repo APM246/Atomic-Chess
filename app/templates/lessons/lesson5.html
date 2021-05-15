@@ -1,0 +1,30 @@
+{% extends "lessons/lesson_base.html" %}
+
+{% block scripts %}
+{{ super() }}
+
+<script>
+	window.onload = async () => {
+		const stages = [
+			{
+				puzzleData: {
+					fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+					moveTree: null,
+					eventColor: COLORS.WHITE
+				},
+				text: [`some text`],
+				isFlipped: false,
+				scriptFirstMove: false,
+			},
+		];
+
+		const userSettings = await ajax("{{ url_for('get_settings') }}");
+		const boardOptions = userSettings ? transformSettingsResponse(userSettings.settings) : {};
+		runLesson(stages, DEFAULT_LESSON_OPTIONS, boardOptions);
+	}
+</script>
+{% endblock %}
+
+{% block header %}
+<h2 class="ac-section">Kings Touching</h2>
+{% endblock %}

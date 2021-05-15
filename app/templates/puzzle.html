@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "lessons/lesson_base.html" %}
 
 {% block styles %}
 <style>
@@ -86,6 +86,8 @@
                 start_time: startTime,
                 end_time: endTime,
             });
+        } else {
+            await markTestAsComplete("{{ lesson.id }}");
         }
     }
 

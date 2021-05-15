@@ -52,7 +52,7 @@
 			}
 
 			if (stage === stages.length - 1) {
-				nextButton.innerText = "Complete";
+				nextButton.innerHTML = "Complete";
 				nextButton.onclick = () => {
 					if ((lessonData.completed_lesson || maxProgression === stages.length) && !buttonLock) {
 						markLessonAsComplete({{ lesson_id }}).then(() => {
@@ -63,7 +63,7 @@
 				}
 			}
 			else {
-				nextButton.innerText = "Next";
+				nextButton.innerHTML = "Next";
 				nextButton.onclick = onNextBtn;
 			}
 
@@ -108,7 +108,7 @@
 			
 			step = 0;
 			puzzle.setFromData(stages[stage].puzzleData);
-			text.innerText = stages[stage].text[step];
+			text.innerHTML = stages[stage].text[step];
 
 			// Empty puzzle, just disable the board and enable the next button
 			if (stages[stage].puzzleData.moveTree === null) {
@@ -132,7 +132,7 @@
 				buttonLock = true;
 				wait(1000).then(() => {
 					step++;
-					text.innerText = stages[stage].text[step];
+					text.innerHTML = stages[stage].text[step];
 
 					puzzle.board.emphasizer.resetColors();
 					puzzle.board.enableInteraction();

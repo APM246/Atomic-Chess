@@ -42,6 +42,10 @@ class User(db.Model):
 
 	def get_num_completed_lessons(self):
 		return len(self.lessons)
+	
+	def get_percentage_chess_beginners():
+		num = len(User.query.filter_by(chess_beginner=True).all())
+		return int(100*num/User.get_num_users())
 
 	def get_performance(self):
 		time_taken_by_lesson_id = {}
@@ -65,8 +69,7 @@ class User(db.Model):
 				average_accuracy[i] = round(100*accuracy_by_lesson_id[i]/num_puzzles_by_lesson_id[i], 1)
 				time_performance[i] = round(time_taken_by_lesson_id[i]/num_puzzles_by_lesson_id[i], 1)
 
-
-		return time_performance, num_puzzles_by_lesson_id, len(list(completed_puzzles)), average_accuracy
+		return time_performance, num_puzzles_by_lesson_id, len(completed_puzzles.all()), average_accuracy
 
 class LessonCompletion(db.Model):
 	user = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True, nullable=False)
@@ -129,4 +132,8 @@ class PuzzleCompletion(db.Model):
 		
 		best_users = sorted(average_time_by_user.items(), key=lambda x: average_time_by_user[x[0]])
 		# return top 5
-		return best_users[:5]
+		return best_users[:10]
+	
+	def get_best_accuracy():
+		all_puzzles = PuzzleCompletion.query.all()
+		total_

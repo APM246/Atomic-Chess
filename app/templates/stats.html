@@ -5,20 +5,33 @@
 
       .stats {
         padding-top: 30px;
-        padding-left: 30px;
+        padding-left: 80px;
+        padding-right: 80px;
       }
 
       .lesson {
         font-family: Arial
       }
-
+      
       .leaderboard {
-        border: solid greenyellow
+        font-family: Arial;
+        padding-top: 50px;
+        padding-bottom: 50px;
+        border-bottom: solid rgba(60, 202, 4, 0.4);
+      }
+
+      .specific-stat {
+        margin-top: 30px;
+        margin-bottom: 30px; 
+        border-bottom: solid rgba(60, 202, 4, 0.4);
+        width: 300px;
+      }
+
+      .table-title {
+        font-size: 1.5em;
+        text-align: center;
       }
       
-      .leaderboard th,td {
-        padding: 10px;
-      }
 
   </style>
   {% endblock %}
@@ -33,38 +46,55 @@
                 {% for time in time_performance %}
 
                   {% if loop.index - 1 > 0 %}
-                    <h2 class="lesson"> {{ lessons_by_id[loop.index - 1].name }} </h2>
-                    {% if time != 0 %}
-                      <p> Number of puzzles completed: {{ num_puzzles[loop.index - 1]}} </p>
-                      <p> Average time taken: {{ time }} seconds. </p>
-                      <p> Average accuracy: {{ accuracy[loop.index - 1] }}% </p>
+                    <div class="specific-stat">
+                      <h2 class="lesson"> {{ lessons_by_id[loop.index - 1].name }} </h2>
+                        {% if time != 0 %}
+                          <p> Number of puzzles completed: {{ num_puzzles[loop.index - 1]}} </p>
+                          <p> Average time taken: {{ time }} seconds. </p>
+                          <p> Average accuracy: {{ accuracy[loop.index - 1] }}% </p>
 
-                    {% else %}
-                      <p> You have not completed any puzzles from this lesson. </p>
-                    
+                        {% else %}
+                          <p> You have not completed any puzzles from this lesson. </p>
+                        {% endif %}
+                    </div>
                     {% endif %}
-                  {% endif %}
                 {% endfor %}
               </div>
 
             <div class="col-6">
               <h1> Global stats </h1>
               <p> Number of registered users: {{ num_users }} </p>
-              <p> Leaderboards </p>
-              <table class="leaderboard">
-                <tr>
-                  <th> Position </th>
-                  <th> Username </th>
-                  <th> Average Time (s) </th>
-                </tr>
-                {% for user in best_users %}
-                  <tr> 
-                    <td> {{ loop.index }} </td> 
-                    <td> {{ user[0].username }} </td>
-                    <td> {{ user[1] }} </td> 
-                  </tr>
-                {% endfor %}
-              </table>
+              <p> Percentage of users who are chess beginners: {{ percentage_beginners }}% </p>
+              <div class="table-responsive leaderboard">
+                <p class="table-title"> Top 10 Users by <span> Average Time per puzzle </span> </p>
+                <table class="table table-hover">
+                  <thead>
+                    <th> Position </th>
+                    <th> Username </th>
+                    <th> Number of puzzles </th>
+                    <th> Average Time (s) </th>
+                  </thead>
+                  <tbody>
+                    {% for user in best_users %}
+                      {% if loop.index - 1 == 0 %} 
+                        <tr class="table-success">
+                      {% else %}
+                        <tr>
+                      {% endif %}
+
+                      <td> {{ loop.index }} </td>
+                      {% if user[0] == g.user %} 
+                        <td style="color:red"> {{ user[0].username }} </td>
+                      {% else %}
+                        <td> {{ user[0].username }} </td>
+                      {% endif %}
+                      <td> {{ user[0].completed_puzzles|length }} </td>
+                      <td> {{ user[1] }} </td> 
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>  
         </div>

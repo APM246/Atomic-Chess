@@ -1,0 +1,169 @@
+{% extends "lessons/lesson_base.html" %}
+
+{% block styles %}
+<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/lesson.css') }}">
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+
+<script>
+	window.onload = async () => {
+		const stages = [
+			{
+				puzzleData: {
+					fen: "rnbqkbnr/pppp1ppp/8/4p3/3PP3/1Q6/PPP2PPP/RNB1KBNR b - -",
+					moveTree: createLinearMoveTree([moveFromString("d7d6"), moveFromString("b3f7")]),
+					eventColor: COLORS.WHITE,
+				},
+				text: [
+					`The most common way to win in Atomic Chess to explode the opposition's king. Blow up the opposition's king by capturing a piece next to it.`,
+				]
+			},
+			{
+				puzzleData: {
+					fen: "rnbqkbnr/pppp11pp/8/4p3/3PP3/1Q6/PPP2PPP/RNB1KBNR b - -",
+					moveTree: createLinearMoveTree([moveFromString("d7d6"), moveFromString("b3f7")]),
+					eventColor: COLORS.WHITE,
+				},
+				text: [
+					`Another way to win is move the queen to a square directly adjacent to the opposition king. Move the queen next to the enemy king.`,
+					`Checkmate! Notice that the queen cannot be captured or the black king will explode.`,
+				]
+			},
+			{
+				puzzleData: {
+					fen: "rnbqkbnr/pppp1ppp/8/4p3/8/5P2/PPPPP1PP/RNBQKBNR w - -",
+					moveTree: createLinearMoveTree([moveFromString("g2g4"), moveFromString("d8h4")]),
+					eventColor: COLORS.BLACK,
+				},
+				text: [
+					`Classical checkmate also works, checkmate your opponent.`,
+				]
+			},
+			{
+				puzzleData: {
+					fen: "rnb1kbnr/pppp1Npp/4p3/5p2/7q/8/PPPPPPPP/RNBQKB1R w KQkq -",
+					moveTree: createLinearMoveTree([moveFromString("g2g3"), moveFromString("h4d4"), moveFromString("e2e3"), moveFromString("d4d2")]),
+					eventColor: COLORS.BLACK,
+				},
+				text: [
+					`A common way to win is to target the 2 pawns on <b>f2</b> and <b>d2</b> next to the opposition king with either a queen or a knight, commonly referred to as a fork.
+					Move the queen to attack both pawns next to the opposition king`,
+					`There is no way for white to defend both pawns. Blow up the king!`,
+				]
+			},
+		];
+
+		const continueButton = document.getElementById("continue-button");
+
+		let stage = await getCurrentLessonStage({{ lesson_id }});
+		let subStage = 0;
+		
+		const userSettings = await ajax("{{ url_for('get_settings') }}");
+		const boardOptions = userSettings ? transformSettingsResponse(userSettings.settings) : {};
+		
+		const puzzle = new Puzzle({
+			boardOptions: {
+				target: "#board",
+				allowUndo: false,
+				...boardOptions,
+			},
+			...stages[stage].puzzleData
+		});
+		puzzle.board.position.isAtomic = true;
+		if (puzzle.board.position.colorToMove === COLORS.WHITE) {
+			puzzle.board.flip();
+		}
+
+		// Play blacks move, except on the first puzzle, since white is opening on the puzzle
+		puzzle.board.disableInteraction();
+
+		wait(1000).then(() => {
+			puzzle.playContinuation();
+			puzzle.board.enableInteraction();
+		});
+		
+		document.getElementById("puzzle-text").innerHTML = stages[stage].text[subStage++];
+
+		puzzle.correctMovePlayed.addEventListener((move) => {
+			puzzle.board.emphasizer.setColors("#00a00088", "#00700088");
+			
+			if (!puzzle.isComplete()) {
+				puzzle.board.disableInteraction();
+				wait(1000).then(()=>{
+					const p = document.getElementById("puzzle-text");
+					p.innerHTML = stages[stage].text[subStage++];
+					puzzle.board.emphasizer.resetColors();
+					puzzle.board.enableInteraction();
+					puzzle.playContinuation();
+				});
+			} else if (stages[stage].text[subStage]) {
+				const p = document.getElementById("puzzle-text");
+				p.innerHTML = stages[stage].text[subStage];
+			}
+		});
+
+		puzzle.incorrectMovePlayed.addEventListener((move) => {
+			puzzle.board.disableInteraction();
+			puzzle.board.emphasizer.setColors("#ff000088", "#aa000088");
+			wait(500).then(()=>{
+				puzzle.board.emphasizer.resetColors();
+				puzzle.board.enableInteraction();
+				puzzle.board.undoLastMove(true);
+			});
+		});
+
+		puzzle.puzzleComplete.addEventListener(() => {
+			console.log("puzzle complete");
+			continueButton.style.display = "inline-block";
+			puzzle.board.disableInteraction();
+			if (stage == 3)  { // Last puzzle completed
+				continueButton.innerText = "Complete";
+				continueButton.onclick = () => {
+					markLessonAsComplete({{ lesson_id }}).then(() => {
+						// Complete
+						window.location.href = "{{ url_for('learn') }}";
+					});
+				};
+			}
+		});
+
+		document.getElementById("continue-button").onclick = () => {
+			puzzle.board.emphasizer.resetColors();
+			puzzle.board.enableInteraction();
+			stage++;
+			subStage = 0;
+			setLessonProgression({{ lesson_id }}, stage);
+			puzzle.setFromData(stages[stage].puzzleData);
+			document.getElementById("puzzle-text").innerHTML = stages[stage].text[subStage++];
+
+			if ((puzzle.board.position.colorToMove === COLORS.WHITE) !== puzzle.board.isFlipped) {
+				puzzle.board.flip();
+			}
+
+			continueButton.style.display = "none";
+			wait(1000).then(() => {
+				puzzle.playContinuation();
+			});
+		};
+	}
+</script>
+{% endblock %}
+
+{% block content %}
+	<div class="ac-lesson-content">
+		<h2 class="ac-section">Win Conditions</h2>
+		<p>In this lesson you will learn the multiple different ways to win in Atomic Chess.</p>
+
+		<div class="ac-puzzle-container">
+			<div id="board" class="ac-board ac-lesson-board" tabindex="0"></div>
+			<div class="ac-puzzle-helper">
+				<p id="puzzle-text">
+					
+				</p>
+				<button id="continue-button" type="button" class="btn btn-secondary ac-full-button" style="display: none;">Continue</button>
+			</div>
+		</div>
+	</div>
+{% endblock %}

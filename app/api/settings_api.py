@@ -16,11 +16,13 @@ DEFAULT_USER_SETTINGS = {
 @app.route("/api/settings", methods=["GET", "POST"])
 @api_login_required
 def get_settings():
+    """ API route which handles personal user settings """
     if request.method == "POST":
         data = request.get_json()
         if data is None:
             return error_response(400, message="Invalid JSON data")
         settings = {}
+        # Only assign valid keys obtained from DEFAULT_USER_SETTINGS
         for key in DEFAULT_USER_SETTINGS:
             if key in data:
                 settings[key] = data[key]
@@ -28,9 +30,11 @@ def get_settings():
         db.session.commit()
         return error_response(200)
 
+    # Return user settings - return default values if missing key
     settings = { **DEFAULT_USER_SETTINGS, **g.user.settings }
     return jsonify({ "settings": settings })
 
 @app.route("/api/default_settings")
 def get_default_settings():
+    """ API route which returns the default settings """
     return jsonify({ "settings": DEFAULT_USER_SETTINGS })

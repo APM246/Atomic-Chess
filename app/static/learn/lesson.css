@@ -93,12 +93,12 @@
 }
 
 /* Override bootstrap classes */
-#next-button {
+.btn-success #next-button {
 	background-color: var(--ac-green);
 	border-color: var(--ac-green);
 }
 
-#next-button:hover {
+.btn-success #next-button:hover {
 	background-color: var(--ac-deep-green);
 	border-color: var(--ac-deep-green);
 } 

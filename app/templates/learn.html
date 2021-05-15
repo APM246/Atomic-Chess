@@ -16,11 +16,15 @@ onLoad="InitializeProgressBar()" class="d-flex flex-column" style="min-height: 1
 {% block content %}
 <ul class="ac-progress-bar nav nav-tabs">
   {% for lesson in lessons %}
-  <li {% if lesson.id in completed_lesson_ids %} class="completed" {% endif %}>
+  <li {% if lesson.id in completed_tests %} class="completed" {% endif %}>
     <a class="node" data-bs-toggle="tab" href="#lesson-{{ loop.index }}"></a>
     {{ lesson.name }}
   </li>
   {% endfor %}
+  <li>
+    <a class="node" data-bs-toggle="tab" href="#final-test"></a>
+    Final Test
+  </li>
 </ul>
 
 <div class="tab-content ac-lesson-outline flex-grow-1">
@@ -40,12 +44,30 @@ onLoad="InitializeProgressBar()" class="d-flex flex-column" style="min-height: 1
         <div class="col-4">
           <a class="ac-lesson-button" href="{{ url_for('lessons', name=lesson.name) }}">{{ "Begin" if ((lesson_progressions[lesson.id] or 0) in [0, 100]) else "Resume" }} Lesson</a>
           {% if lesson.id != 0 %}
-          <a class="ac-lesson-button {% if lesson.id not in completed_lesson_ids %} ac-disable-access {% endif %}" href="{{ url_for('puzzle', lesson=lesson.id) }}">Begin Test</a>
+          <a class="ac-lesson-button {% if lesson.id not in completed_lessons %} ac-disable-access {% endif %}"
+          {% if lesson.id in completed_lessons %} href="{{ url_for('puzzle', lesson=lesson.id) }}" {% endif %}>Practice</a>
           {% endif %}
         </div>
       </div>
     </div>
   </div>
   {% endfor %}
+  <div class="tab-pane fade" id="final-test">
+    <div class="container">
+      <div class="row align-items-start">
+        <div class="col-8">
+          <h1>
+            Final Test
+          </h1>
+          <p>
+            this is the final test!
+          </p>
+        </div>
+        <div class="col-4">
+          <a class="ac-lesson-button" href="{{ url_for('puzzle') }}">Begin Test</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

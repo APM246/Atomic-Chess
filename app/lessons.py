@@ -1,9 +1,14 @@
+""" Module that creates all the lessons instead of storing the static data in the database """
+
 class Lesson:
     def __init__(self, lesson_id, name, description, template, max_progression):
         self.id = lesson_id
         self.name = name
         self.description = description
+        # Path to the template filename
         self.template = template
+        # Represents the maximum progression value
+        # Used to calculate the percentage completion of a lesson
         self.max_progression = max_progression
 
 LESSON_INTRO = Lesson(
@@ -27,7 +32,7 @@ LESSON_WIN_CONDITIONS = Lesson(
     name="Win Conditions",
     description="In Atomic Chess you can win by checkmate, but can also win by blowing up the enemy king. This lesson will teach you how this effects the game",
     template="lessons/lesson2.html",
-    max_progression=3,
+    max_progression=4,
 )
 
 LESSON_OPENING_TRAPS = Lesson(
@@ -57,14 +62,17 @@ LESSON_KINGS_TOUCHING = Lesson(
 LESSONS_BY_ID = {}
 
 def get_all_lessons():
+    """ Returns a list of all lessons """
     return [LESSON_INTRO, LESSON_ATOMIC, LESSON_WIN_CONDITIONS, LESSON_OPENING_TRAPS, LESSON_PIECE_SAFETY, LESSON_KINGS_TOUCHING]
 
 def get_lesson_by_name(name):
+    """ Get the lesson with a given name """
     for lesson in get_all_lessons():
         if lesson.name == name:
             return lesson
     return None
 
 def init():
+    """ Sets up LESSONS_BY_ID """
     for lesson in get_all_lessons():
         LESSONS_BY_ID[lesson.id] = lesson

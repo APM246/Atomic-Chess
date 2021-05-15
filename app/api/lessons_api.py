@@ -5,13 +5,16 @@ from app.api.auth import api_login_required, error_response
 from app.models import LessonCompletion
 
 def get_lesson_progression(lesson_id, user_id):
+    """ Returns the progression value for a given lesson """
     completion = LessonCompletion.query.filter_by(lesson_id=lesson_id, user=user_id).first()
     if completion is None:
         return 0
     return completion.progression
 
 def update_lesson_completion(lesson_id, user_id, progression=None, completed_lesson=None, completed_test=None):
+    """ Update lesson for a given user """
     existing_completion = LessonCompletion.query.filter_by(lesson_id=lesson_id, user=user_id).first()
+    # If there is an existing completion, update its values
     if existing_completion is not None:
         if progression is not None:
             existing_completion.progression = progression
@@ -19,8 +22,10 @@ def update_lesson_completion(lesson_id, user_id, progression=None, completed_les
             existing_completion.completed_lesson = completed_lesson
         if completed_test is not None:
             existing_completion.completed_test = completed_test
+        # Save to database
         db.session.commit()
     else:
+        # Create a new completion record
         lesson_completion = LessonCompletion(
             user=user_id,
             lesson_id=lesson_id,
@@ -29,6 +34,7 @@ def update_lesson_completion(lesson_id, user_id, progression=None, completed_les
             completed_test=completed_test if completed_test is not None else False
         )
         db.session.add(lesson_completion)
+        # Save to database
         db.session.commit()
 
 # Marks the lesson (and the test for that lesson) as complete for the given user
@@ -36,20 +42,26 @@ def mark_lesson_complete(lesson_id, user_id, progression=0):
     update_lesson_completion(lesson_id, user_id, progression=progression, completed_lesson=True, completed_test=True)
 
 def is_valid_progression(progression, max_progression):
+    """ Validates progression value """
     return progression >= 0 and progression < max_progression
 
 def is_valid_complete(is_complete):
+    """ Validates completion value """
     return is_complete is True or is_complete is False
 
 @app.route("/api/lessons/<int:lesson_id>", methods=["GET", "PUT"])
 @api_login_required
 def lesson_api(lesson_id):
+    """ Serves the data for a given lesson
+    Use PUT request to update the progression through the lesson.
+    """
     lesson = LESSONS_BY_ID.get(lesson_id, None)
     if not lesson:
         return error_response(404)
     if request.method == "PUT":
         data = request.get_json()
         if not data:
+            # BAD Request
             return error_response(400)
 
         completed_lesson = data.get("completed_lesson", None)
@@ -65,7 +77,8 @@ def lesson_api(lesson_id):
 
         update_lesson_completion(lesson_id, g.user.id, progression=progression, completed_lesson=completed_lesson, completed_test=completed_test)
         return jsonify({"status": "Ok"})
-        
+
+    # Convert lesson to JSON
     lesson_data = {
         "id": lesson.id,
         "name": lesson.name,

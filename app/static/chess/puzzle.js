@@ -31,6 +31,7 @@ function transformSettingsResponse(settings) {
     };
 }
 
+// Class that represents a Puzzle, wraps a board with a starting position and tree of valid moves
 class Puzzle {
     constructor(options) {
         this.correctMovePlayed = new EventEmitter();
@@ -40,6 +41,7 @@ class Puzzle {
 
         this._options = assignDefaults(options, DEFAULT_PUZZLE_OPTIONS);
         this._board = new ChessBoard(this._options.boardOptions);
+        // Event color represents the color that the player is playing
         this._eventColor = this._options.eventColor;
 
         this.board.movePlayed.addEventListener((move) => {
@@ -79,6 +81,7 @@ class Puzzle {
             this.board.clear();
         }
         if (this._eventColor === null || this._eventColor === undefined) {
+            // If no explicit player color use the opposite color of the colorToMove
             this._eventColor = otherColor(this.board.position.colorToMove);
         }
         this._currentMoveTree = null;
@@ -90,10 +93,12 @@ class Puzzle {
         }
     }
 
+    // Check that puzzle has been completed (no correct moves left)
     isComplete() {
         return this._currentMoveTree === null;
     }
 
+    // Get a list of current correct moves
     getCorrectMoves() {
         if (this._currentMoveTree) {
             return this._currentMoveTree.map(branch => branch.move);
@@ -101,6 +106,7 @@ class Puzzle {
         return [];
     }
 
+    // Check if a move is correct
     isCorrect(move) {
         for (const mv of this.getCorrectMoves()) {
             if (movesEqual(mv, move)) {
@@ -110,6 +116,7 @@ class Puzzle {
         return false;
     }
 
+    // Play the next correct move
     playContinuation() {
         if (!this.isComplete()) {
             // Animate move
@@ -122,6 +129,22 @@ class Puzzle {
         this.board.undoLastMove(false);
     }
 
+    // Highlight the piece for the correct move
+    showHint() {
+        const moves = this.getCorrectMoves();
+        if (moves.length > 0) {
+            const move = moves[0];
+            this.board.emphasizer.setColors("#00d0d0", "#00b9b9");
+            this.board.emphasizer.onGrab(move.from);
+        }
+    }
+
+    hideHint() {
+        this.board.emphasizer.clear();
+        this.board.emphasizer.resetColors();
+    }
+
+    // After playing a correct move advance to the next stage of the tree
     _advanceMoveTree(move) {
         if (this._currentMoveTree) {
             for (const branch of this._currentMoveTree) {

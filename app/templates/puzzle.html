@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "lessons/lesson_base.html" %}
 
 {% block styles %}
 <style>
@@ -86,6 +86,8 @@
                 start_time: startTime,
                 end_time: endTime,
             });
+        } else {
+            await markTestAsComplete("{{ lesson.id }}");
         }
     }
 
@@ -101,15 +103,22 @@
             }
         });
 
-        const lessonTextDiv = document.getElementById("lesson-text");
-        const puzzleTitleDiv = document.getElementById("puzzle-title");
-        const puzzleTimerDiv = document.getElementById("timer");
-        const nextButton = document.getElementById("next-button");
-
         let puzzleId = null;
         let startTime = null;
         let endTime = null;
         let attempts = 1;
+
+        const lessonTextDiv = document.getElementById("lesson-text");
+        const puzzleTitleDiv = document.getElementById("puzzle-title");
+        const puzzleTimerDiv = document.getElementById("timer");
+        const nextButton = document.getElementById("next-button");
+        const hintButton = document.getElementById("hint-button");
+        hintButton.onclick = () => {
+            puzzle.board.emphasizer.clear();
+            puzzle.showHint();
+            // Increment attempts for using a hint
+            attempts++;
+        }
 
         function updateTimer() {
             if (startTime) {
@@ -197,6 +206,7 @@
         });
 
         puzzle.puzzleReset.addEventListener(() => {
+            puzzle.hideHint();
             puzzle.board.emphasizer.resetColors();
             if (!puzzle.playerToMove) {
                 wait(500).then(() => {
@@ -230,6 +240,7 @@
                     <div id="lesson-text" class="ac-lesson-task"></div>
                     <div class="ac-next-button-container">
                         <div class="ac-button-group">
+                            <button id="hint-button" type="button" class="btn btn-secondary ac-full-button">Hint</button>
                             <button id="next-button" style="display: none;" type="button" class="btn btn-success ac-full-button">Next</button>
                         </div>
                     </div>

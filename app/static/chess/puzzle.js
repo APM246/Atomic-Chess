@@ -122,6 +122,20 @@ class Puzzle {
         this.board.undoLastMove(false);
     }
 
+    showHint() {
+        const moves = this.getCorrectMoves();
+        if (moves.length > 0) {
+            const move = moves[0];
+            this.board.emphasizer.setColors("#00d0d0", "#00b9b9");
+            this.board.emphasizer.onGrab(move.from);
+        }
+    }
+
+    hideHint() {
+        this.board.emphasizer.clear();
+        this.board.emphasizer.resetColors();
+    }
+
     _advanceMoveTree(move) {
         if (this._currentMoveTree) {
             for (const branch of this._currentMoveTree) {

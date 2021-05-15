@@ -59,8 +59,8 @@ def puzzle():
     lesson = LESSONS_BY_ID.get(lesson_id)
 
     lesson_model = LessonCompletion.query.filter_by(user=g.user.id, lesson_id=lesson_id).first()
-    if lesson_model is None or not lesson_model.completed_lesson:
-        return abort(403) # forbidden
+    # if lesson_model is None or not lesson_model.completed_lesson:
+    #     return abort(403) # forbidden
 
     title = lesson.name if lesson is not None else "Puzzles"
     return render_template("puzzle.html", user=g.user, puzzle_uri=url_for("random_puzzle_api", **request.args), title=title, save=(lesson is None))

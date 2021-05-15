@@ -41,7 +41,7 @@ onLoad="InitializeProgressBar()" class="d-flex flex-column" style="min-height: 1
           <a class="ac-lesson-button" href="{{ url_for('lessons', name=lesson.name) }}">{{ "Begin" if ((lesson_progressions[lesson.id] or 0) in [0, 100]) else "Resume" }} Lesson</a>
           {% if lesson.id != 0 %}
           <a class="ac-lesson-button {% if lesson.id not in completed_lessons %} ac-disable-access {% endif %}"
-          {% if lesson.id in completed_lessons %} href="{{ url_for('puzzle', lesson=lesson.id) }}" {% endif %}>Practice</a>
+          {% if lesson.id in completed_lessons or True %} href="{{ url_for('puzzle', lesson=lesson.id) }}" {% endif %}>Practice</a>
           {% endif %}
         </div>
       </div>

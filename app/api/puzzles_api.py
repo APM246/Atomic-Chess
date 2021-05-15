@@ -6,7 +6,8 @@ from app.lessons import LESSONS_BY_ID
 from flask import jsonify, g, request
 from app import app, db
 from app.api.auth import api_admin_login_required, api_login_required, error_response
-from app.models import LessonCompletion, Puzzle, PuzzleCompletion
+from app.models import Puzzle, PuzzleCompletion
+from flask_sqlalchemy import sqlalchemy
 
 def validate_puzzle_data(puzzle):
     """ Validate puzzle data from client """
@@ -26,12 +27,16 @@ def get_all_puzzles(lesson_id=None):
         return Puzzle.query.all()
     return Puzzle.query.filter_by(lesson_id=lesson_id).all()
 
-def get_all_incomplete_puzzles(lesson_id=None):
+def get_all_incomplete_puzzles(lesson_id=None, count=1):
     """ Returns all puzzles for a given lesson that haven't been completed by the current user, if lesson_id==None, returns all puzzles """
-    query = Puzzle.query.outerjoin(PuzzleCompletion, (PuzzleCompletion.user==g.user.id) & (Puzzle.id==PuzzleCompletion.puzzle_id)).filter(PuzzleCompletion.puzzle_id==None)
+    subquery = db.session.query(PuzzleCompletion.id).filter_by(user=g.user.id).group_by(PuzzleCompletion.puzzle_id).having(sqlalchemy.func.count(PuzzleCompletion.puzzle_id) > (count - 1)).subquery()
+    query = Puzzle.query.filter(Puzzle.id.notin_(subquery))
     if lesson_id is not None:
         query = query.filter(Puzzle.lesson_id==lesson_id)
-    return query.all()
+    puzzles = query.all()
+    if len(puzzles) == 0:
+        return get_all_incomplete_puzzles(lesson_id=lesson_id, count=count + 1)
+    return puzzles
 
 @app.route("/api/puzzles/random")
 @api_login_required
@@ -60,11 +65,9 @@ def random_incomplete_puzzle_api():
 @app.route("/api/puzzles/<int:puzzle_id>", methods=["POST"])
 @api_login_required
 def puzzle_api(puzzle_id):
-    """ API route which allows updating the completion of a puzzle. Note that a puzzle can only be completed once by any user """
+    """ API route which allows updating the completion of a puzzle """
     puzzle = Puzzle.query.filter_by(id=puzzle_id).first()
-    # Ensure there is not already a completion for the puzzle
-    current_completion = PuzzleCompletion.query.filter_by(user=g.user.id, puzzle_id=puzzle_id).first()
-    if puzzle is not None and current_completion is None:
+    if puzzle is not None:
         data = request.get_json()
         if validate_completion_data(data):
             completion = PuzzleCompletion(

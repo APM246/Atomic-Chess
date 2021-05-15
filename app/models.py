@@ -68,8 +68,9 @@ class Puzzle(db.Model):
 		}
 
 class PuzzleCompletion(db.Model):
-	user = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True, nullable=False)
-	puzzle_id = db.Column(db.Integer, db.ForeignKey("puzzle.id"), primary_key=True, nullable=False)
+	id = db.Column(db.Integer, primary_key=True)
+	user = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+	puzzle_id = db.Column(db.Integer, db.ForeignKey("puzzle.id"), nullable=False)
 	# Number of attempts before the puzzle was solved
 	attempts = db.Column(db.Integer, nullable=False)
 	# Times used to calculate the length of time taken to solve

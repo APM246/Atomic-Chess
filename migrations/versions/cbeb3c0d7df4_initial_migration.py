@@ -45,6 +45,7 @@ def upgrade():
     sa.PrimaryKeyConstraint('user', 'lesson_id')
     )
     op.create_table('puzzle_completion',
+    sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user', sa.Integer(), nullable=False),
     sa.Column('puzzle_id', sa.Integer(), nullable=False),
     sa.Column('attempts', sa.Integer(), nullable=False),
@@ -52,7 +53,7 @@ def upgrade():
     sa.Column('end_time', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['puzzle_id'], ['puzzle.id'], ),
     sa.ForeignKeyConstraint(['user'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('user', 'puzzle_id')
+    sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
 

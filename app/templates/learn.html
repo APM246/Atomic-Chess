@@ -21,6 +21,10 @@ onLoad="InitializeProgressBar()" class="d-flex flex-column" style="min-height: 1
     {{ lesson.name }}
   </li>
   {% endfor %}
+  <li>
+    <a class="node" data-bs-toggle="tab" href="#final-test"></a>
+    Final Test
+  </li>
 </ul>
 
 <div class="tab-content ac-lesson-outline flex-grow-1">
@@ -48,5 +52,22 @@ onLoad="InitializeProgressBar()" class="d-flex flex-column" style="min-height: 1
     </div>
   </div>
   {% endfor %}
+  <div class="tab-pane fade" id="final-test">
+    <div class="container">
+      <div class="row align-items-start">
+        <div class="col-8">
+          <h1>
+            Final Test
+          </h1>
+          <p>
+            this is the final test!
+          </p>
+        </div>
+        <div class="col-4">
+          <a class="ac-lesson-button">Begin Test</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

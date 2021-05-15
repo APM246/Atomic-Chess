@@ -41,7 +41,10 @@ def learn():
 @login_required
 def stats():
     """ Serves the stats page """
-    return render_template("stats.html", user=g.user)
+    num_users = User.get_num_users()
+    num_completed_lessons = g.user.get_num_completed_lessons()
+    return render_template("stats.html", user=g.user, num_users=num_users,
+    num_lessons=num_completed_lessons)
 
 @app.route("/settings")
 @login_required

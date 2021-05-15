@@ -1,4 +1,16 @@
 {% extends "base.html" %}
   {% block content %} 
-    <p> Stats page </p>
+      <div class="container-fluid">
+          <div class="row">
+            <div class="col-6">
+              <h1> User stats </h1>
+              <p> Number of completed lessons: {{ num_lessons }} </p>
+            </div>
+    
+            <div class="col-6">
+              <h1> Global stats </h1>
+              <p> Number of registered users: {{ num_users }} </p>
+            </div>
+          </div>
+        </div>
   {% endblock %}

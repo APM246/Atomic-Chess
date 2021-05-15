@@ -36,6 +36,16 @@ class User(db.Model):
 	def __repr__(self):
 		return '<User %r>' % self.username
 
+	def get_num_users():
+		return len(User.query.all())
+
+	def get_num_completed_lessons(self):
+		return len(self.lessons)
+
+	def get_puzzles_completed(self):
+		puzzles_completed = PuzzleCompletion.query.filter_by(user=self.id)
+		return puzzles_completed
+
 class LessonCompletion(db.Model):
 	user = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True, nullable=False)
 	lesson_id = db.Column(db.Integer, primary_key=True, nullable=False)

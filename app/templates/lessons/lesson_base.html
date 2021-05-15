@@ -35,7 +35,7 @@
 		function onNextBtn() {
 			if (stage < maxProgression && !buttonLock) {
 				stage++;
-				setLessonStage(stage);
+				setLessonStage();
 				updateButtons();
 				setLessonProgression({{ lesson_id }}, stage);
 				console.log(`update progression to ${stage}`)
@@ -52,26 +52,27 @@
 			}
 
 			if (stage === stages.length - 1) {
-				nextButton.classList.remove("ac-disable-access");
 				nextButton.innerText = "Complete";
 				nextButton.onclick = () => {
-				markLessonAsComplete({{ lesson_id }}).then(() => {
-						// Complete
-						window.location.href = "{{ url_for('learn') }}";
-					});
+					if ((lessonData.completed_lesson || maxProgression === stages.length) && !buttonLock) {
+						markLessonAsComplete({{ lesson_id }}).then(() => {
+							// Complete
+							window.location.href = "{{ url_for('learn') }}";
+						});
+					}
 				}
 			}
 			else {
 				nextButton.innerText = "Next";
 				nextButton.onclick = onNextBtn;
-				if (stage === maxProgression) {
-					nextButton.classList.add("ac-disable-access");
-				}
-				else {
-					nextButton.classList.remove("ac-disable-access");
-				}
 			}
 
+			if (stage < maxProgression || lessonData.completed_lesson) {
+				nextButton.classList.remove("ac-disable-access");
+			}
+			else {
+				nextButton.classList.add("ac-disable-access");
+			}
 		}
 
 		updateButtons();
@@ -86,7 +87,7 @@
 		});
 		puzzle.board.position.isAtomic = true;
 
-		function setLessonStage(_stage) {
+		function setLessonStage() {
 			if (stages[stage].scriptFirstMove) {
 				buttonLock = true;
 				puzzle.board.disableInteraction();
@@ -103,14 +104,23 @@
 
 			puzzle.board.emphasizer.resetColors();
 			puzzle.board.enableInteraction();
-			puzzle.board.setFlip(stages[_stage].isFlipped);
-
+			puzzle.board.setFlip(stages[stage].isFlipped);
+			
 			step = 0;
-			puzzle.setFromData(stages[_stage].puzzleData);
-			text.innerText = stages[_stage].text[step];
+			puzzle.setFromData(stages[stage].puzzleData);
+			text.innerText = stages[stage].text[step];
+
+			// Empty puzzle, just disable the board and enable the next button
+			if (stages[stage].puzzleData.moveTree === null) {
+				puzzle.board.disableInteraction();
+				if (stage === maxProgression) {
+					maxProgression++;
+					updateButtons();
+				}
+			}
 		}
 
-		setLessonStage(stage, false);
+		setLessonStage();
 
 		puzzle.correctMovePlayed.addEventListener((move) => {
 			console.log("correct move");
@@ -165,10 +175,30 @@
 		backButton.onclick = () => {
 			if (stage > 0 && !buttonLock) {
 				stage--;
-				setLessonStage(stage);
+				setLessonStage();
 				updateButtons();
 			}
 		}
 	}
 </script>
+{% endblock %}
+
+{% block content %}
+<div class="ac-lesson-content">
+	{% block header %}
+	{% endblock %}
+
+	<div class="ac-puzzle-container">
+		<div id="board" class="ac-board ac-lesson-board" tabindex="0"></div>
+		<div class="ac-puzzle-helper">
+			<p id="puzzle-text">
+
+			</p>
+			<div class="ac-button-group">
+				<button id="back-button" class="ac-lesson-button">Back</button>
+				<button id="next-button" class="ac-lesson-button">Next</button>
+			</div>
+		</div>
+	</div>
+</div>
 {% endblock %}

@@ -24,8 +24,3 @@
     background-color: var(--ac-deep-green);
     color: white;
 }
-
-.ac-lesson-button.ac-disable-access {
-	background-color: var(--ac-grey);
-	cursor: not-allowed;
-}

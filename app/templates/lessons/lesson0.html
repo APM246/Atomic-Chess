@@ -1,27 +1,19 @@
 {% extends "lessons/lesson_base.html" %}
 
-{% block styles %}
-<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/lesson.css') }}">
-{% endblock %}
-
 {% block scripts %}
 {{ super() }}
 <script>
     window.onload = async () => {
         // Data which represents the stages of the lesson
-        const puzzleData = [
+        const stages = [
             {
-                eventColor: COLORS.WHITE,
-                fen: "8/8/8/8/8/8/8/8 w - - 0 1",
-                moveTree: [],
-                text: "",
-                title: "Loading...",
-            },
-            {
-                eventColor: COLORS.WHITE,
-                fen: "8/8/8/8/4K3/8/8/8 w - - 0 1",
-                moveTree: createLinearMoveTree([moveFromString("e4f3")]),
-                text: `
+                puzzleData: {
+                    eventColor: COLORS.WHITE,
+                    fen: "8/8/8/8/4K3/8/8/8 w - - 0 1",
+                    moveTree: createLinearMoveTree([moveFromString("e4f3")]),
+                },
+                text: [`
+                    <h4>Moving Pieces</h4>
                     <div>
                         <b>Board coordinates</b> are used to describe each square of the chess board. You can refer to the letters and numbers along the edge of the board,
                         for example, the bottom left square is <b>a1</b> and the top right square is <b>h8</b>.
@@ -30,24 +22,32 @@
                     <div>
                         The king can move to any square directly adjacent to it. Move the king towards the bottom right of the board, from <b>e4</b> to <b>f3</b>.
                     </div>
-                `,
-                title: "Moving Pieces",
+                `],
+                isFlipped: false,
+                scriptFirstMove: false,
             },
             {
+                puzzleData: {
                 eventColor: COLORS.WHITE,
                 fen: "8/8/8/8/8/2P5/8/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("c3c4")]),
-                text: "Pawns can only move forward. Move the pawn 1 square forward.",
-                title: "Moving Pieces",
+                },
+                text: ["<h4>Moving Pieces</h4>Pawns can only move forward. Move the pawn 1 square forward."],
+                isFlipped: false,
+                scriptFirstMove: false,
             },
             {
+                puzzleData: {
                 eventColor: COLORS.WHITE,
                 fen: "8/8/8/8/8/8/2P5/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("c2c4")]),
-                text: "If a pawn is on it's starting rank it can move up to 2 squares forward. Move the pawn 2 squares forward.",
-                title: "Moving Pieces",
+                },
+                text: ["<h4>Moving Pieces</h4>If a pawn is on it's starting rank it can move up to 2 squares forward. Move the pawn 2 squares forward."],
+                isFlipped: false,
+                scriptFirstMove: false,
             },
             {
+                puzzleData: {
                 eventColor: COLORS.WHITE,
                 fen: "8/8/8/3N4/8/8/8/8 w - - 0 1",
                 moveTree: [
@@ -60,266 +60,115 @@
                     { move: moveFromString("d5c3") },
                     { move: moveFromString("d5b4") },
                 ],
-                text: "The knight moves in an L pattern ignoring any pieces between its current and square and the destination square. Move the knight to any legal square.",
-                title: "Moving Pieces",
+                },
+                text: ["<h4>Moving Pieces</h4>The knight moves in an L pattern ignoring any pieces between its current and square and the destination square. Move the knight to any legal square."],
+                isFlipped: false,
+                scriptFirstMove: false,
             },
             {
-                eventColor: COLORS.WHITE,
-                fen: "8/8/6P1/8/8/3B4/8/8 w - - 0 1",
-                moveTree: createLinearMoveTree([moveFromString("d3f5")]),
-                text: "Bishops move diagonally but their movement is blocked by other pieces. Move the bishop as close as possible to the pawn.",
-                title: "Moving Pieces",
+                puzzleData: {
+                    eventColor: COLORS.WHITE,
+                    fen: "8/8/6P1/8/8/3B4/8/8 w - - 0 1",
+                    moveTree: createLinearMoveTree([moveFromString("d3f5")]),
+                },
+                text: ["<h4>Moving Pieces</h4>Bishops move diagonally but their movement is blocked by other pieces. Move the bishop as close as possible to the pawn."],
+                isFlipped: false,
+                scriptFirstMove: false,
             },
             {
-                eventColor: COLORS.WHITE,
-                fen: "8/8/8/8/8/3R4/8/8 w - - 0 1",
-                moveTree: createLinearMoveTree([moveFromString("d3d8")]),
-                text: "Rooks can move horizontally and vertically. Move the rook all the way to the top of the board.",
-                title: "Moving Pieces",
+                puzzleData: {
+                    eventColor: COLORS.WHITE,
+                    fen: "8/8/8/8/8/3R4/8/8 w - - 0 1",
+                    moveTree: createLinearMoveTree([moveFromString("d3d8")]),
+                },
+                text: ["<h4>Moving Pieces</h4>Rooks can move horizontally and vertically. Move the rook all the way to the top of the board."],
+                isFlipped: false,
+                scriptFirstMove: false,
             },
             {
-                eventColor: COLORS.WHITE,
-                fen: "8/8/8/8/8/2Q5/8/8 w - - 0 1",
-                moveTree: createLinearMoveTree([moveFromString("c3h8")]),
-                text: "The queen has the movement of both a rook and a bishop. Move the queen to the very top right corner of the board.",
-                title: "Moving Pieces",
+                puzzleData: {
+                    eventColor: COLORS.WHITE,
+                    fen: "8/8/8/8/8/2Q5/8/8 w - - 0 1",
+                    moveTree: createLinearMoveTree([moveFromString("c3h8")]),
+                },
+                text: ["<h4>Moving Pieces</h4>The queen has the movement of both a rook and a bishop. Move the queen to the very top right corner of the board."],
+                isFlipped: false,
+                scriptFirstMove: false,
             },
             {
-                eventColor: COLORS.WHITE,
-                fen: "8/5p2/8/4N3/8/8/8/8 w - - 0 1",
-                moveTree: createLinearMoveTree([moveFromString("e5f7")]),
-                text: "If you move one of your pieces to the same square as an opposition piece, you capture it, removing it from the board. Move the knight to capture the black pawn.",
-                title: "Capturing Pieces",
+                puzzleData: {
+                    eventColor: COLORS.WHITE,
+                    fen: "8/5p2/8/4N3/8/8/8/8 w - - 0 1",
+                    moveTree: createLinearMoveTree([moveFromString("e5f7")]),
+                },
+                text: ["<h4>Capturing Pieces</h4>If you move one of your pieces to the same square as an opposition piece, you capture it, removing it from the board. Move the knight to capture the black pawn."],
+                isFlipped: false,
+                scriptFirstMove: false,
             },
             {
-                eventColor: COLORS.WHITE,
-                fen: "8/2n5/8/8/4P3/8/8/8 b - - 0 1",
-                moveTree: createLinearMoveTree([moveFromString("c7d5"), moveFromString("e4d5")]),
-                text: "Pawns are special in that normally they can only move straight forward, however, if there is an opposition piece diagonally in front of it the pawn can capture it. Capture the black knight.",
-                title: "Capturing Pieces",
+                puzzleData: {
+                    eventColor: COLORS.WHITE,
+                    fen: "8/2n5/8/8/4P3/8/8/8 b - - 0 1",
+                    moveTree: createLinearMoveTree([moveFromString("c7d5"), moveFromString("e4d5")]),
+                },
+                text: ["<h4>Capturing Pieces</h4>Pawns are special in that normally they can only move straight forward, however, if there is an opposition piece diagonally in front of it the pawn can capture it. Capture the black knight."],
+                isFlipped: false,
+                scriptFirstMove: true,
             },
             {
-                eventColor: COLORS.WHITE,
-                fen: "6k1/5p1p/6p1/8/8/4Q3/8/8 w - - 0 1",
-                moveTree: createLinearMoveTree([moveFromString("e3e8")]),
-                text: `To win a game of chess you must capture the opposition's king (or create a situation where avoiding the capture is impossible, known as checkmate). An important step in doing this is putting the king in check.
-                 This means moving a piece such that on the <b>next turn</b> you could capture the king (if the opponent does nothing). Move the queen to put the black king in check.`,
-                title: "Check",
+                puzzleData: {
+                    eventColor: COLORS.WHITE,
+                    fen: "6k1/5p1p/6p1/8/8/4Q3/8/8 w - - 0 1",
+                    moveTree: createLinearMoveTree([moveFromString("e3e8")]),
+                },
+                text: [`<h4>Check</h4>To win a game of chess you must capture the opposition's king (or create a situation where avoiding the capture is impossible, known as checkmate). An important step in doing this is putting the king in check.
+                 This means moving a piece such that on the <b>next turn</b> you could capture the king (if the opponent does nothing). Move the queen to put the black king in check.`],
+                isFlipped: false,
+                scriptFirstMove: false,
             },
             {
-                eventColor: COLORS.WHITE,
-                fen: "8/8/8/8/8/8/8/4K2R w K - 0 1",
-                moveTree: createLinearMoveTree([moveFromString("e1g1")]),
-                text: `There are a couple of special rules that govern how pieces can move in chess. The first of which is castling. If neither your king or rook have moved from their starting position and 
-                there is a clear path between your king and the rook you can castle your king by moving it 2 squares towards the rook. Castle the king.`,
-                title: "Special Rules",
+                puzzleData: {
+                    eventColor: COLORS.WHITE,
+                    fen: "8/8/8/8/8/8/8/4K2R w K - 0 1",
+                    moveTree: createLinearMoveTree([moveFromString("e1g1")]),
+                },
+                text: [`<h4>Special Rules</h4>There are a couple of special rules that govern how pieces can move in chess. The first of which is castling. If neither your king or rook have moved from their starting position and 
+                there is a clear path between your king and the rook you can castle your king by moving it 2 squares towards the rook. Castle the king.`],
+                isFlipped: false,
+                scriptFirstMove: false,
             },
             {
-                eventColor: COLORS.WHITE,
-                fen: "8/8/8/8/8/8/8/R3K3 w Q - 0 1",
-                moveTree: createLinearMoveTree([moveFromString("e1c1")]),
-                text: `You can also castle to the other side of the board. Castle the king.`,
-                title: "Special Rules",
+                puzzleData: {
+                    eventColor: COLORS.WHITE,
+                    fen: "8/8/8/8/8/8/8/R3K3 w Q - 0 1",
+                    moveTree: createLinearMoveTree([moveFromString("e1c1")]),
+                },
+                text: [`<h4>Special Rules</h4>You can also castle to the other side of the board. Castle the king.`],
+                isFlipped: false,
+                scriptFirstMove: false,
             },
             {
-                eventColor: COLORS.WHITE,
-                fen: "8/4p3/8/3P4/8/8/8/8 b - - 0 1",
-                moveTree: createLinearMoveTree([moveFromString("e7e5"), moveFromString("d5e6")]),
-                text: `A second special rule is En passant. If an opposition pawn moves 2 squares forward and ends up directly next to our pawn, our pawn can move diagonally forward to the square behind the opposition pawn and capture it.
-                 Capture the black pawn using the En passant rule.`,
-                title: "Special Rules",
+                puzzleData: {
+                    eventColor: COLORS.WHITE,
+                    fen: "8/4p3/8/3P4/8/8/8/8 b - - 0 1",
+                    moveTree: createLinearMoveTree([moveFromString("e7e5"), moveFromString("d5e6")]),
+                },
+                text: [`<h4>Special Rules</h4>A second special rule is En passant. If an opposition pawn moves 2 squares forward and ends up directly next to our pawn, our pawn can move diagonally forward to the square behind the opposition pawn and capture it.
+                 Capture the black pawn using the En passant rule.`],
+                isFlipped: false,
+                scriptFirstMove: true,
             },
         ];
-        let index = 0;
 
-        // Load the board settings for the user
         const userSettings = await ajax("{{ url_for('get_settings') }}");
         const boardOptions = userSettings ? transformSettingsResponse(userSettings.settings) : {};
-
-        let puzzle = new Puzzle({
-            ...puzzleData[0],
-            boardOptions: {
-                target: "#board",
-                ...boardOptions,
-            }
-        });
-        // Disable checks for whether we/they have a king
-        puzzle.board.position.sandbox = true;
-
-        const lessonTextDiv = document.getElementById("lesson-text");
-        const lessonTitleDiv = document.getElementById("lesson-title");
-        const nextButton = document.getElementById("next-button");
-        const resetButton = document.getElementById("reset-button");
-        const backButton = document.getElementById("back-button");
-
-        resetButton.onclick = () => {
-            hideResetButton();
-            hideNextButton();
-            puzzle.reset();
-        };
-
-        lessonTextDiv.innerText = puzzleData[0].text;
-
-        function showNextButton(puzzle, passed, isLast = false) {
-            hideBackButton();
-            nextButton.style.display = "block";
-            nextButton.className = "btn " + (passed ? "btn-success" : "btn-danger") + " ac-full-button";
-            nextButton.innerText = passed ? (isLast ? "Complete!" : "Next") : "Retry";
-            nextButton.onclick = () => {
-                hideNextButton();
-                if (passed) {
-                    nextPuzzle();
-                } else {
-                    puzzle.board.enableInteraction();
-                    puzzle.undoLastMove();
-                    if (index > 1) {
-                        showBackButton();
-                    }
-                }
-                puzzle.board.emphasizer.resetColors();
-                puzzle.board.emphasizer.clear();
-            };
-        }
-
-        function hideNextButton() {
-            nextButton.style.display = "none";
-        }
-
-        function showResetButton() {
-            resetButton.style.display = "block";
-        }
-
-        function hideResetButton() {
-            resetButton.style.display = "none";
-        }
-
-        function showBackButton() {
-            backButton.style.display = "block";
-        }
-
-        function hideBackButton() {
-            backButton.style.display = "none";
-        }
-
-        puzzle.correctMovePlayed.addEventListener((move) => {
-            puzzle.board.disableInteraction();
-            if (puzzle.isComplete()) {
-                // If the puzzle is complete show a button that takes them to the next puzzle
-                showResetButton();
-                showNextButton(puzzle, true, index >= puzzleData.length - 1);
-            } else {
-                // Wait 300ms then play the other player's move
-                wait(300).then(() => {
-                    puzzle.board.emphasizer.resetColors();
-                    puzzle.playContinuation();
-                    puzzle.board.enableInteraction();
-                });
-            }
-            // Use green move highlights
-            puzzle.board.emphasizer.setColors("#00a00088", "#00700088");
-        });
-
-        puzzle.incorrectMovePlayed.addEventListener((move) => {
-            puzzle.board.disableInteraction();
-            // Show retry button
-            showNextButton(puzzle, false);
-            // Use red highlights
-            puzzle.board.emphasizer.setColors("#ff000088", "#aa000088");
-        });
-
-        puzzle.puzzleReset.addEventListener(() => {
-            if (index > 1) {
-                showBackButton();
-            }
-            puzzle.board.emphasizer.resetColors();
-            if (!puzzle.playerToMove) {
-                // If the puzzle starts on the opponent's turn, wait 200ms and play it
-                showResetButton();
-                wait(200).then(() => {
-                    if (!puzzle.playerToMove) {
-                        puzzle.playContinuation();
-                    }
-                });
-            } else {
-                puzzle.board.enableInteraction();
-            }
-        });
-
-        function handleNewPuzzle(data, update = true) {
-            puzzle.setFromData(data);
-            puzzle.board.enableInteraction();
-            lessonTextDiv.innerHTML = data.text;
-            lessonTitleDiv.innerHTML = data.title;
-
-            if (update) {
-                // Update the progression
-                setLessonProgression({{ lesson_id }}, index - 1);
-            }
-        }
-
-        function nextPuzzle(update = true) {
-            hideResetButton();
-            index++;
-            if (index < puzzleData.length) {
-                handleNewPuzzle(puzzleData[index], update);
-            } else {
-                hideResetButton();
-                if (update) {
-                    markTestAsComplete({{ lesson_id }}) // No test for lesson 0, but we mark its "test" as complete anyways so the progress bar fills up
-                    markLessonAsComplete({{ lesson_id }}).then(() => {
-                        // Complete
-                        window.location.href = "{{ url_for('learn') }}";
-                    });
-
-                }
-            }
-        }
-
-        function previousPuzzle() {
-            hideBackButton();
-            if (index > 1) {
-                index--;
-                handleNewPuzzle(puzzleData[index], false);
-            }
-        }
-
-        backButton.onclick = previousPuzzle;
-
-        hideNextButton();
-
-        // Skip through stages up to the user's progression
-        const progression = await getCurrentLessonStage({{ lesson_id }});
-        while (index - 1 !== progression) {
-            nextPuzzle(false);
-        }
+        runLesson(stages, {...DEFAULT_LESSON_OPTIONS, sandbox: true}, boardOptions);
     };
 </script>
 {% endblock %}
 
-{% block content %}
-    <div style="text-align: center;">
-        <div class="ac-lesson-content">
-            <h1>Introduction to Chess</h1>
-            <p>
-                Atomic chess is a variant of the classic game of chess. In order to begin playing atomic chess, you are first going to need to understand the basics of how chess pieces move.
-            </p>
-            <div class="ac-puzzle-container">
-                <div id="board" class="ac-board ac-lesson-board" tabindex="0"></div>
-                <div class="ac-puzzle-helper">
-                    <h3 id="lesson-title">Loading...</h3>
-                    <div>
-                        Pick up a piece using the left mouse button to see the piece's legal moves. Follow the instructions below to progress.
-                    </div>
-                    <div id="lesson-text" class="ac-lesson-task"></div>
-                    <div class="ac-next-button-container">
-                        <div class="ac-button-group">
-                            <button id="reset-button" style="display: none;" type="button" class="btn btn-secondary ac-full-button">Reset</button>
-                            <button id="next-button" style="display: none;" type="button" class="btn btn-success ac-full-button">Next</button>
-                            <button id="back-button" style="display: none;" type="button" class="btn btn-primary ac-full-button">Back</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+{% block header %}
+<h2 class="ac-section">Introduction to Chess</h2>
+<p>Atomic chess is a variant of the classic game of chess. In order to begin playing atomic chess, you are first going to
+need to understand the basics of how chess pieces move.</p>
 {% endblock %}

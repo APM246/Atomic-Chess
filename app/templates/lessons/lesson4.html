@@ -1,0 +1,59 @@
+{% extends "lessons/lesson_base.html" %}
+
+{% block scripts %}
+{{ super() }}
+
+<script>
+	window.onload = async () => {
+		const stages = [
+			{
+				puzzleData: {
+					fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+					moveTree: null,
+					eventColor: COLORS.WHITE
+				},
+				text: [`In atomic, if you capture an enemy piece, your own piece is also destroyed! This leads to some interesting consequences that will be explored in this lesson`],
+				isFlipped: false,
+				scriptFirstMove: false,
+			},
+			{
+				puzzleData: {
+					fen: "r1bkqnbr/p2p2pp/1pp1pp2/8/8/1Q2P3/PPPP1PPP/RNB2KNR w kq - 0 1",
+					moveTree: createLinearMoveTree([moveFromString("b3c4"), moveFromString("c8a6"), moveFromString("d2d3"), moveFromString("a6c4")]),
+					eventColor: COLORS.BLACK
+				},
+				text: [
+				`Since the enemy loses their own piece when they capture, it means you can move pieces of lower value directly into the attacking range of an enemy piece of higher value.
+				
+				In this position is there a move for black that wins the queen?`,
+				`Thats Right! In normal chess, white could simply capture your bishop with their queen, however if white did that in atomic they would also lose their queen.
+				Since whites queen is pinned to the king, a trade of bishop for queen is inevitable`,
+				],
+				isFlipped: true,
+				scriptFirstMove: true,
+			},
+			{
+				puzzleData: {
+					fen: "rnbqkbnr/ppp1p1pp/5p2/3p4/8/1P3N2/P1PPPPPP/RNBQKB1R w KQkq - 0 1",
+					moveTree: createLinearMoveTree([moveFromString("c1a3"), moveFromString("c7c5")]),
+					eventColor: COLORS.BLACK
+				},
+				text: [
+				`Whites bishop on <b>a3</b> is threatening to blow up your king up by capturing your pawn on <b>e7</b>. How can you stop them?`,
+				`Thats Right! You can bravely push your pawn forward to block the bishop`,
+				],
+				isFlipped: true,
+				scriptFirstMove: true,
+			},
+		];
+
+		const userSettings = await ajax("{{ url_for('get_settings') }}");
+		const boardOptions = userSettings ? transformSettingsResponse(userSettings.settings) : {};
+		runLesson(stages, DEFAULT_LESSON_OPTIONS, boardOptions);
+	}
+</script>
+{% endblock %}
+
+{% block header %}
+<h2 class="ac-section">Piece Safety</h2>
+{% endblock %}

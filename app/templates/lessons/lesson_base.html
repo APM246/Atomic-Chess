@@ -1,5 +1,217 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/lesson.css') }}">
+{% endblock %}
+
 {% block scripts %}
 <script src="{{ url_for('static', filename='learn/utils.js') }}"></script>
+<script>
+	// stages format:
+	// [{puzzleData:{fen, eventColor, moveTree}, text: [string], isFlipped: bool, scriptFirstMove: bool}]
+
+	DEFAULT_LESSON_OPTIONS = {
+		textTarget: "#puzzle-text",
+		nextButtonTarget: "#next-button",
+		backButtonTarget: "#back-button",
+		boardTarget: "#board",
+		sandbox: false
+	}
+
+	async function runLesson(stages, options, boardOptions) {
+		const text = getElement(options.textTarget);
+		const nextButton = getElement(options.nextButtonTarget);
+		const backButton = getElement(options.backButtonTarget);
+		let buttonLock = false
+
+		const lessonData = await getLessonData({{ lesson_id }});
+		let maxProgression = 0;
+		let stage = 0;
+		if (lessonData === null) {
+			console.log("error! couldnt fetch lesson data from the server");
+		}
+		else {
+			maxProgression = lessonData.completed_lesson ? stages.length - 1 : lessonData.progression;
+			stage = lessonData.progression;
+			console.log(stage);
+		}
+		let step = 0;
+
+		function onNextBtn() {
+			if (stage < maxProgression && !buttonLock) {
+				stage++;
+				setLessonStage();
+				updateButtons();
+				if (stage === maxProgression) {
+					setLessonProgression({{ lesson_id }}, stage);
+					console.log(`update progression to ${stage}`)
+				}
+			}
+		}
+		nextButton.onclick = onNextBtn;
+
+		function updateButtons() {
+			if (stage === 0) {
+				backButton.classList.add("ac-disable-access");
+			}
+			else {
+				backButton.classList.remove("ac-disable-access");
+			}
+
+			if (stage === stages.length - 1) {
+				nextButton.innerHTML = "Complete";
+				nextButton.onclick = () => {
+					if ((lessonData.completed_lesson || maxProgression === stages.length) && !buttonLock) {
+						markLessonAsComplete({{ lesson_id }}).then(() => {
+							// Complete
+							window.location.href = "{{ url_for('learn') }}";
+						});
+					}
+				}
+			}
+			else {
+				nextButton.innerHTML = "Next";
+				nextButton.onclick = onNextBtn;
+			}
+
+			if (stage < maxProgression || lessonData.completed_lesson) {
+				nextButton.classList.remove("ac-disable-access");
+			}
+			else {
+				nextButton.classList.add("ac-disable-access");
+			}
+		}
+
+		updateButtons();
+
+		const puzzle = new Puzzle({
+			boardOptions: {
+				target: options.boardTarget,
+				allowUndo: false,
+				...boardOptions,
+			},
+			...stages[stage].puzzleData
+		});
+		puzzle.board.position.isAtomic = true;
+
+		if (options.sandbox) {
+			// Disable checks for whether we/they have a king
+			puzzle.board.position.sandbox = true;
+			console.log("enabled sandbox");
+		}
+
+		function setLessonStage() {
+			if (stages[stage].scriptFirstMove) {
+				buttonLock = true;
+				puzzle.board.disableInteraction();
+				wait(1000).then(() => {
+					puzzle.playContinuation();
+					if (step !== stages[stage].text.length - 1) { // dont bother re-enabling interaction if its the last step of the puzzle
+						puzzle.board.enableInteraction();
+					}
+					puzzle.board.waitForAnimation().then(() =>{
+						buttonLock = false;
+					});
+				});
+			}
+
+			puzzle.board.emphasizer.resetColors();
+			puzzle.board.enableInteraction();
+			puzzle.board.setFlip(stages[stage].isFlipped);
+			
+			step = 0;
+			puzzle.setFromData(stages[stage].puzzleData);
+			text.innerHTML = stages[stage].text[step];
+
+			// Empty puzzle, just disable the board and enable the next button
+			if (stages[stage].puzzleData.moveTree === null) {
+				puzzle.board.disableInteraction();
+				if (stage === maxProgression) {
+					maxProgression++;
+					updateButtons();
+				}
+			}
+		}
+
+		setLessonStage();
+
+		puzzle.correctMovePlayed.addEventListener((move) => {
+			console.log("correct move");
+
+			puzzle.board.emphasizer.setColors("#00a00088", "#00700088");
+
+			if (!puzzle.isComplete()) {
+				puzzle.board.disableInteraction();
+				buttonLock = true;
+				wait(1000).then(() => {
+					step++;
+					text.innerHTML = stages[stage].text[step];
+
+					puzzle.board.emphasizer.resetColors();
+					puzzle.board.enableInteraction();
+					puzzle.playContinuation();
+
+					puzzle.board.waitForAnimation().then(() => {
+						buttonLock = false;
+					});
+				});
+			}
+		});
+
+		puzzle.incorrectMovePlayed.addEventListener((move) => {
+			console.log("wrong move");
+
+			puzzle.board.disableInteraction();
+			puzzle.board.emphasizer.setColors("#ff000088", "#aa000088");
+			buttonLock = true;
+			wait(500).then(() => {
+				puzzle.board.emphasizer.resetColors();
+				puzzle.board.enableInteraction();
+				puzzle.board.undoLastMove(true);
+
+				puzzle.board.waitForAnimation().then(() => {
+					buttonLock = false;
+				});
+			});
+		});
+
+		puzzle.puzzleComplete.addEventListener(() => {
+			console.log("puzzle complete");
+			if (stage === maxProgression) {
+				maxProgression++;
+				updateButtons();
+			}
+
+			puzzle.board.disableInteraction();
+		})
+
+		backButton.onclick = () => {
+			if (stage > 0 && !buttonLock) {
+				stage--;
+				setLessonStage();
+				updateButtons();
+			}
+		}
+	}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="ac-lesson-content">
+	{% block header %}
+	{% endblock %}
+
+	<div class="ac-puzzle-container">
+		<div id="board" class="ac-board ac-lesson-board" tabindex="0"></div>
+		<div class="ac-puzzle-helper">
+			<div id="puzzle-text">
+
+			</div>
+			<div class="ac-button-group">
+				<button id="back-button" class="ac-full-button">Back</button>
+				<button id="next-button" class="ac-full-button">Next</button>
+			</div>
+		</div>
+	</div>
+</div>
 {% endblock %}

@@ -45,23 +45,37 @@
 	margin-top: 10px;
 }
 
-#continue-button {
-	margin-top: auto;
-	align-self: flex-end;
-	width: 100%;
+#next-button {
 	background-color: var(--ac-green);
-	border-color: var(--ac-green);
 }
 
-#continue-button:hover {
+#next-button:hover {
 	background-color: var(--ac-deep-green);
-	border-color: var(--ac-deep-green);
 }
+
+#back-button, #reset-button {
+	background-color: var(--ac-blue);
+}
+
+#back-button:hover, #reset-button:hover {
+	background-color: var(--ac-deep-blue);
+}
+
+#hint-button {
+	background-color: var(--ac-grey);
+}
+
+#hint-button:hover {
+	background-color: var(--ac-dark-grey);
+}
+
 
 .ac-full-button {
 	width: 100%;
+	border-style: none;
 	border-radius: 0;
-	padding: 10px;
+	color: white;
+	padding: 0.5rem 0.75rem;
 }
 
 .ac-lesson-task {
@@ -75,13 +89,8 @@
 }
 
 .ac-button-group {
-	margin-top: 10px;
-}
-
-.ac-full-button {
-	width: 100%;
-	border-radius: 0;
-	padding: 10px;
+	display: flex;
+	margin-top: auto;
 }
 
 .ac-previous-button {
@@ -90,15 +99,4 @@
 	color: black;
 	width: 50px;
 	height: 50px;
-}
-
-/* Override bootstrap classes */
-.btn-success #next-button {
-	background-color: var(--ac-green);
-	border-color: var(--ac-green);
-}
-
-.btn-success #next-button:hover {
-	background-color: var(--ac-deep-green);
-	border-color: var(--ac-deep-green);
 }

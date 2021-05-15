@@ -1,96 +1,57 @@
 {% extends "lessons/lesson_base.html" %}
 
-{% block styles %}
-<style>
-.ac-lesson-content {
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    width: 50vw;
-}
-
-.ac-board-container {
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.ac-lesson-board {
-    width: min(70vw, 70vh);
-    height: min(70vw, 70vh);
-    min-width: min(70vw, 70vh);
-    min-height: min(70vw, 70vh);
-    border: 2px solid black;
-}
-
-.ac-section {
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-</style>
-{% endblock %}
-
 {% block scripts %}
 {{ super() }}
 <script>
 window.onload = async () => {
+    const stages = [
+        {
+            puzzleData: {
+                fen: "rnb5/ppp5/2b5/2N5/8/8/8/8 w - - 0 1",
+                moveTree: [{ move: createMove(SQUARES.C5, SQUARES.B7) }],
+                eventColor: COLORS.WHITE,
+            },
+            text: [
+                `In Atomic Chess, all the pieces move using the same rules as classical chess.
+                The major difference is how pieces are captured. Firstly, whenever you capture a piece
+                both your piece and the opponent's piece are removed from the board. Secondly, the reason
+                Atomic chess has its name, when any piece is captured, all pieces except <b>pawns</b> in a
+                3x3 area around the captured piece are also removed from the board.
+                <br><br>Capture the black pawn with your knight on the board below.`,
+            ],
+            isFlipped: false,
+            scriptFirstMove: false,
+        },
+        {
+            puzzleData: {
+                fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                moveTree: null,
+                eventColor: COLORS.WHITE,
+            },
+            text: [
+                `These rules completely change how you think about and play the game, introducing crazy new strategies
+                that are not possible in classic chess. These concepts are covered in later lessons:
+                <ul style="list-style-type: none; padding: 0;">
+                    <li><b>New ways to win</b></li>
+                    <li><b>Opening traps</b></li>
+                    <li><b>Strategies to keep your king and pieces safe</b></li>
+                    <li><b>Interesting endgame strategies</b></li>
+                </ul>`,
+            ],
+            isFlipped: false,
+            scriptFirstMove: false,
+        },
+    ];
+
     const userSettings = await ajax("{{ url_for('get_settings') }}");
     const boardOptions = userSettings ? transformSettingsResponse(userSettings.settings) : {};
-    const board0 = new Puzzle({
-        boardOptions: {
-            target: "#board0",
-            ...boardOptions,
-        },
-        fen: "rnb5/ppp5/2b5/2N5/8/8/8/8 w - - 0 1",
-        moveTree: [{ move: createMove(SQUARES.C5, SQUARES.B7) }],
-        eventColor: COLORS.WHITE,
-    });
-    board0.board.position.isAtomic = true;
-    board0.board.position.sandbox = true;
-    board0.correctMovePlayed.addEventListener((move) => {
-        board0.board.disableInteraction();
-    });
-    board0.incorrectMovePlayed.addEventListener((move) => {
-        board0.reset();
-    });
-
-    document.getElementById("complete-button").onclick = () => {
-        markLessonAsComplete({{ lesson_id }}).then(() => {
-            // Complete
-            window.location.href = "{{ url_for('learn') }}";
-        });
-    };
+    runLesson(stages, { ...DEFAULT_LESSON_OPTIONS, sandbox: true }, boardOptions);
 };
 </script>
 {% endblock %}
 
-{% block content %}
-<div class="ac-lesson-content">
-    <h2 class="ac-section">Atomic</h2>
-    <div>
-        In Atomic Chess, all the pieces move using the same rules as classical chess.
-        The major difference is how pieces are captured. Firstly, whenever you capture a piece
-        both your piece and the opponent's piece are removed from the board. Secondly, the reason
-        Atomic chess has its name, when any piece is captured, all pieces except <b>pawns</b> in a
-        3x3 area around the captured piece are also removed from the board.
-    </div>
-    <div class="ac-section">
-        Capture the black pawn with your knight on the board below.
-    </div>
-    <div>
-        <div id="board0" class="ac-lesson-board ac-board-container" tabindex="0"></div>
-    </div>
-    <div class="ac-section">
-        These rules completely change how you think about and play the game, introducing crazy new strategies
-        that are not possible in classic chess. These concepts are covered in later lessons:
-        <ul style="list-style-type: none;">
-            <li><b>New ways to win</b></li>
-            <li><b>Opening traps</b></li>
-            <li><b>Strategies to keep your king and pieces safe</b></li>
-            <li><b>Interesting endgame strategies</b></li>
-        </ul>
-        <div>
-            <button id="complete-button" type="button" class="btn btn-success">Complete!</button>
-        </div>
-    </div>
-</div>
+
+
+{% block header %}
+<h2 class="ac-section">Atomic</h2>
 {% endblock %}

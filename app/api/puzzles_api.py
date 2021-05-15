@@ -29,12 +29,17 @@ def get_all_puzzles(lesson_id=None):
 
 def get_all_incomplete_puzzles(lesson_id=None, count=1):
     """ Returns all puzzles for a given lesson that haven't been completed by the current user, if lesson_id==None, returns all puzzles """
+    # Handle multiple completions for puzzles
+    # If all lessons have been completed x times, then return all puzzles completed less than x + 1 times
+    # SELECT * FROM puzzle WHERE id NOT IN (SELECT puzzle_id FROM puzzle_completion WHERE user = g.user.id GROUP BY puzzle_id HAVING COUNT(puzzle_id) > (count - 1));
     subquery = db.session.query(PuzzleCompletion.puzzle_id).filter_by(user=g.user.id).group_by(PuzzleCompletion.puzzle_id).having(sqlalchemy.func.count(PuzzleCompletion.puzzle_id) > (count - 1)).subquery(reduce_columns=True)
     query = Puzzle.query.filter(Puzzle.id.notin_(subquery))
     if lesson_id is not None:
         query = query.filter(Puzzle.lesson_id==lesson_id)
     puzzles = query.all()
     if len(puzzles) == 0:
+        # For now recursively increase the count
+        # Probably better to store this value for each user
         return get_all_incomplete_puzzles(lesson_id=lesson_id, count=count + 1)
     return puzzles
 

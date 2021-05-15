@@ -37,7 +37,12 @@ def create_linear_move_tree(moves):
         current = { "move": moves[0] }
         result.append(current)
         for i in range(1, len(moves)):
-            current["continuation"] = [{ "move": moves[i] }]
+            move = moves[i]
+            if isinstance(move, list):
+                assert(i == len(moves) - 1)
+                current["continuation"] = list(map(lambda mv: { "move": mv }, move))
+            else:
+                current["continuation"] = [{ "move": moves[i] }]
             current = current["continuation"][0]
     return result
 
@@ -112,7 +117,7 @@ def create_win_condition_puzzles():
             create_move_from_string("e8f7"),
             create_move_from_string("h3e6"),
             create_move_from_string("f7g7"),
-            create_move_from_string("e6g6"),
+            [create_move_from_string("e6g6"), create_move_from_string("e6g8")],
         ]),
         is_atomic=True,
         lesson_id=LESSON_WIN_CONDITIONS.id,
@@ -193,13 +198,13 @@ def create_win_condition_puzzles():
             create_move_from_string("d7d6"),
             create_move_from_string("h6f8"),
             create_move_from_string("e8d7"),
-            create_move_from_string("f8d8"),
+            [create_move_from_string("f8d8"), create_move_from_string("f8d6")],
         ]),
         is_atomic=True,
         lesson_id=LESSON_WIN_CONDITIONS.id,
     ))
     db.session.add(Puzzle(
-        fen="rnbqkbnr/pp2pp1p/2p5/1B1p4/4P3/BP6/P1PP1PPP/RN2K1NR b KQkq -",
+        fen="rnbqkbnr/pp2pp1p/8/3p4/4P3/BP6/P1PP1PPP/RN2K1NR b KQkq -",
         move_tree=create_linear_move_tree([
             create_move_from_string("d8d6"),
             create_move_from_string("e4d5"),

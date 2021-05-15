@@ -53,16 +53,24 @@
 	background-color: var(--ac-deep-green);
 }
 
-#back-button {
+#back-button, #reset-button {
 	background-color: var(--ac-blue);
 }
 
-#back-button:hover {
+#back-button:hover, #reset-button:hover {
 	background-color: var(--ac-deep-blue);
 }
 
+#hint-button {
+	background-color: var(--ac-grey);
+}
 
-.ac-lesson-button {
+#hint-button:hover {
+	background-color: var(--ac-dark-grey);
+}
+
+
+.ac-full-button {
 	width: 100%;
 	border-style: none;
 	border-radius: 0;

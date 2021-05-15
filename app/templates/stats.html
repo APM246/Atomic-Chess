@@ -1,21 +1,36 @@
 {% extends "base.html" %}
+  
+  {% block styles %}
+    <style>
+
+      .stats {
+        padding-top: 30px;
+        padding-left: 30px;
+      }
+
+      .lesson {
+        font-family: Arial
+      }
+
+  </style>
+  {% endblock %}
+
   {% block content %} 
-      <div class="container-fluid">
+      <div class="container-fluid stats">
           <div class="row">
             <div class="col-6">
               <h1> User stats </h1>
               <p> Number of completed lessons: {{ num_lessons }} </p>
-              <ul> 
                 {% for time in time_performance %}
+                  <h2 class="lesson"> {{ lessons_by_id[loop.index - 1].name }} </h2>
                   {% if time != 0 %}
-                    <li> Average time taken for puzzles from Lesson: {{ lessons_by_id[loop.index - 1].name }} is {{ time }} seconds. </li>
+                    <p> Average time taken for puzzles about this lesson: {{ time }} seconds. </li>
 
                   {% else %}
-                    <li> You have not completed any puzzles from Lesson: {{ lessons_by_id[loop.index - 1].name }} </li>
+                    <p> You have not completed any puzzles from this lesson. </li>
                   
                   {% endif %}
                 {% endfor %}
-              </ul>
             </div>
     
             <div class="col-6">

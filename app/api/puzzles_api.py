@@ -63,7 +63,7 @@ def puzzle_api(puzzle_id):
     """ API route which allows updating the completion of a puzzle. Note that a puzzle can only be completed once by any user """
     puzzle = Puzzle.query.filter_by(id=puzzle_id).first()
     # Ensure there is not already a completion for the puzzle
-    current_completion = PuzzleCompletion.query.filter_by(user=g.user.id, puzzle_id=puzzle_id)
+    current_completion = PuzzleCompletion.query.filter_by(user=g.user.id, puzzle_id=puzzle_id).first()
     if puzzle is not None and current_completion is None:
         data = request.get_json()
         if validate_completion_data(data):

@@ -103,6 +103,11 @@
             }
         });
 
+        let puzzleId = null;
+        let startTime = null;
+        let endTime = null;
+        let attempts = 1;
+
         const lessonTextDiv = document.getElementById("lesson-text");
         const puzzleTitleDiv = document.getElementById("puzzle-title");
         const puzzleTimerDiv = document.getElementById("timer");
@@ -111,12 +116,9 @@
         hintButton.onclick = () => {
             puzzle.board.emphasizer.clear();
             puzzle.showHint();
+            // Increment attempts for using a hint
+            attempts++;
         }
-
-        let puzzleId = null;
-        let startTime = null;
-        let endTime = null;
-        let attempts = 1;
 
         function updateTimer() {
             if (startTime) {

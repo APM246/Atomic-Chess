@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='forms.css') }}">
+{% endblock %}
+
 {% block scripts %}
 <script src="{{ url_for('static', filename='forms.js') }}"></script>
 {% endblock %}

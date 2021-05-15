@@ -18,6 +18,7 @@ def load_logged_in_user():
         g.user = User.query.get(user_id)
 
 def login_required(view):
+    """ Decorator used to ensure the user is logged in """
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None:
@@ -26,6 +27,7 @@ def login_required(view):
     return wrapped_view
 
 def admin_login_required(view):
+    """ Decorator used to ensure the user is logged in and is an admin """
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if (not "user" in g) or g.user is None or (not g.user.is_admin):
@@ -34,6 +36,7 @@ def admin_login_required(view):
     return wrapped_view
 
 def create_user(username, password, chess_beginner, admin=False):
+    """ Utility function that creates a user and updates the database """
     user = User(
         username=username,
         pwd_hash=generate_password_hash(password),
@@ -50,6 +53,7 @@ def create_user(username, password, chess_beginner, admin=False):
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    """ Serves the register page """
     form = SignUpForm(request.form)
     if form.validate_on_submit():
         # Check if username exists
@@ -58,6 +62,7 @@ def register():
             flash("Username already taken")
             return render_template('register.html', form=form)
         
+        # Check that the password matches some basic criteria
         password = form.password.data
         if len(password) < 6 or re.search('\w*\d\w*', password) == None:
             flash('Password does not meet rules')
@@ -65,6 +70,7 @@ def register():
 
         user = create_user(form.username.data, password, not form.played_chess_before.data, admin=False)
 
+        # Assign the user to the session
         session.clear()
         session["current_user"] = user.id
         redirect_url = request.args.get("next", None) or url_for("index")
@@ -75,29 +81,34 @@ def register():
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
+    """ Serves the login page """
     form = LoginForm(request.form)
     redirect_url = request.args.get("next", None) or url_for("index")
-    # TODO: Validate that the redirect url is on our domain (not some other site)
+
     if form.validate_on_submit():
+        # Find the user with given username
         user = User.query.filter_by(username=form.username.data).first()
         error = None
 
+        # Validate password
         if user is None:
             error = "Incorrect Username"
         elif not check_password_hash(user.pwd_hash, form.password.data):
             error = "Incorrect Password"
 
         if error is None:
+            # Assign user to session
             session.clear()
             session["current_user"] = user.id
 
+            # TODO: Validate that the redirect url is on our domain (not some other site)
             return redirect(redirect_url)
-
         flash(error)
 
     return render_template('login.html', form=form, next=redirect_url)
 
-@app.route('/logout')
+@app.route("/logout")
 def logout():
+    """ Clears the user from the session """
     session.clear()
     return redirect(url_for('index'))

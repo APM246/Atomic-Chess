@@ -8,6 +8,7 @@
 {{ super() }}
 <script>
     window.onload = async () => {
+        // Data which represents the stages of the lesson
         const puzzleData = [
             {
                 eventColor: COLORS.WHITE,
@@ -131,6 +132,7 @@
         ];
         let index = 0;
 
+        // Load the board settings for the user
         const userSettings = await ajax("{{ url_for('get_settings') }}");
         const boardOptions = userSettings ? transformSettingsResponse(userSettings.settings) : {};
 
@@ -202,21 +204,26 @@
         puzzle.correctMovePlayed.addEventListener((move) => {
             puzzle.board.disableInteraction();
             if (puzzle.isComplete()) {
+                // If the puzzle is complete show a button that takes them to the next puzzle
                 showResetButton();
                 showNextButton(puzzle, true, index >= puzzleData.length - 1);
             } else {
+                // Wait 300ms then play the other player's move
                 wait(300).then(() => {
                     puzzle.board.emphasizer.resetColors();
                     puzzle.playContinuation();
                     puzzle.board.enableInteraction();
                 });
             }
+            // Use green move highlights
             puzzle.board.emphasizer.setColors("#00a00088", "#00700088");
         });
 
         puzzle.incorrectMovePlayed.addEventListener((move) => {
             puzzle.board.disableInteraction();
+            // Show retry button
             showNextButton(puzzle, false);
+            // Use red highlights
             puzzle.board.emphasizer.setColors("#ff000088", "#aa000088");
         });
 
@@ -226,6 +233,7 @@
             }
             puzzle.board.emphasizer.resetColors();
             if (!puzzle.playerToMove) {
+                // If the puzzle starts on the opponent's turn, wait 200ms and play it
                 showResetButton();
                 wait(200).then(() => {
                     if (!puzzle.playerToMove) {
@@ -279,6 +287,7 @@
 
         hideNextButton();
 
+        // Skip through stages up to the user's progression
         const progression = await getCurrentLessonStage({{ lesson_id }});
         while (index - 1 !== progression) {
             nextPuzzle(false);

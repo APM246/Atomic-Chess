@@ -22,6 +22,11 @@ Website designed to teach people how to play the chess variant [Atomic](https://
 ## Running backend tests:
 1. Activate virtualenv as above
 2. `python -m tests.unittest`
+### Selenium tests
+If you are running on windows and have Chrome Version 90.0 you can run the system tests using the provided chromedriver
+1. Activate virtualenv
+2. Run the app using the instructions above
+3. `python -m tests.systemtest`
 
 ## Running frontend tests:
 1. Install NodeJS and npm

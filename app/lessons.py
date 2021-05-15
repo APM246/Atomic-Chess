@@ -46,17 +46,17 @@ LESSON_OPENING_TRAPS = Lesson(
 LESSON_PIECE_SAFETY = Lesson(
     lesson_id=4,
     name="Piece Safety",
-    description="TODO",
-    template="lessons/lesson1.html",
-    max_progression=1,
+    description="The rules of atomic changes the way you think about attacking and defending pieces",
+    template="lessons/lesson4.html",
+    max_progression=3,
 )
 
 LESSON_KINGS_TOUCHING = Lesson(
     lesson_id=5,
     name="Kings Touching",
     description="Kings can touch each other in Atomic Chess! This lesson teaches you the consequences of this strange rule",
-    template="lessons/lesson1.html",
-    max_progression=1,
+    template="lessons/lesson5.html",
+    max_progression=3,
 )
 
 LESSONS_BY_ID = {}

@@ -6,12 +6,16 @@ import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
 from app import app, db
 from app.models import Puzzle, PuzzleCompletion, User
+from app.auth import create_user
 from app.api.puzzles_api import get_all_incomplete_puzzles
 
 from flask import g
 
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 DATABASE_URI = "sqlite:///" + os.path.join(BASEDIR, "test.db")
+
+def init_database():
+    pass
 
 class UserModelCase(unittest.TestCase):
     def setUp(self):
@@ -42,6 +46,17 @@ class UserModelCase(unittest.TestCase):
         self.assertTrue(check_password_hash(fetched_user.pwd_hash, "password"))
         self.assertFalse(check_password_hash(fetched_user.pwd_hash, "password1"))
         self.assertFalse(check_password_hash(fetched_user.pwd_hash, "random_password"))
+
+    def test_unique_usernames(self):
+        create_user("Username", "password", chess_beginner=False)
+        self.assertRaises(Exception, create_user, "Username", "password", False)
+        self.assertRaises(Exception, create_user, "Username", "password", False)
+        db.session.rollback()
+        create_user("Username1", "password", chess_beginner=False)
+        create_user("User", "password", chess_beginner=False)
+        create_user("Admin", "password", chess_beginner=False)
+        self.assertRaises(Exception, create_user, "Admin", "new_password", False)
+        db.session.rollback()
 
 class PuzzleTestCase(unittest.TestCase):
     def setUp(self):

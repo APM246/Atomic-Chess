@@ -28,6 +28,15 @@ async function getCurrentLessonStage(lessonId, apiBase = "/api") {
     return 0;
 }
 
+// Return all the lesson data
+async function getLessonData(lessonId, apiBase = "/api") {
+    const lessonData = await ajax(`${apiBase}/lessons/${lessonId}`);
+    if (lessonData) {
+        return lessonData.lesson;
+    }
+    return null;
+}
+
 // Set the current progression through the lesson
 async function setLessonProgression(lessonId, progression, apiBase = "/api") {
     const response = await ajax(`${apiBase}/lessons/${lessonId}`, "PUT", {
@@ -41,7 +50,7 @@ async function markLessonAsComplete(lessonId, apiBase = "/api") {
     // Also reset progression
     const response = await ajax(`${apiBase}/lessons/${lessonId}`, "PUT", {
         completed_lesson: true,
-        progression: 0,
+        progression: 0
     });
     return response;
 }

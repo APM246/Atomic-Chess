@@ -43,8 +43,9 @@ def stats():
     """ Serves the stats page """
     num_users = User.get_num_users()
     num_completed_lessons = g.user.get_num_completed_lessons()
+    time_performance = g.user.get_performance()
     return render_template("stats.html", user=g.user, num_users=num_users,
-    num_lessons=num_completed_lessons)
+    num_lessons=num_completed_lessons, time_performance=time_performance, lessons_by_id=LESSONS_BY_ID)
 
 @app.route("/settings")
 @login_required

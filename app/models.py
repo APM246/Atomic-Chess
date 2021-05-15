@@ -1,5 +1,6 @@
 import json
 
+from app.lessons import get_all_lessons
 from flask_sqlalchemy import sqlalchemy
 from app import db
 from datetime import datetime
@@ -42,9 +43,26 @@ class User(db.Model):
 	def get_num_completed_lessons(self):
 		return len(self.lessons)
 
-	def get_puzzles_completed(self):
-		puzzles_completed = PuzzleCompletion.query.filter_by(user=self.id)
-		return puzzles_completed
+	def get_performance(self):
+		time_taken_by_lesson_id = {}
+		num_puzzles_by_lesson_id = {}
+		completed_puzzles = PuzzleCompletion.query.filter(PuzzleCompletion.user==self.id)
+
+		for completed_puzzle in completed_puzzles:
+			lesson_id = completed_puzzle.puzzle.lesson_id
+			time_taken = completed_puzzle.end_time.timestamp() - completed_puzzle.start_time.timestamp()
+			time_taken_by_lesson_id[lesson_id] = time_taken_by_lesson_id.get(lesson_id, 0) + time_taken
+			num_puzzles_by_lesson_id[lesson_id] = num_puzzles_by_lesson_id.get(lesson_id, 0) + 1
+
+		NUM_LESSONS = len(get_all_lessons())
+		performance_by_lesson_id = [0]*NUM_LESSONS
+
+		for i in range(NUM_LESSONS):
+			if i in time_taken_by_lesson_id:
+				performance_by_lesson_id[i] = int(time_taken_by_lesson_id[i]/num_puzzles_by_lesson_id[i])
+
+
+		return performance_by_lesson_id
 
 class LessonCompletion(db.Model):
 	user = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True, nullable=False)

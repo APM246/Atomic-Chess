@@ -5,6 +5,17 @@
             <div class="col-6">
               <h1> User stats </h1>
               <p> Number of completed lessons: {{ num_lessons }} </p>
+              <ul> 
+                {% for time in time_performance %}
+                  {% if time != 0 %}
+                    <li> Average time taken for puzzles from Lesson: {{ lessons_by_id[loop.index - 1].name }} is {{ time }} seconds. </li>
+
+                  {% else %}
+                    <li> You have not completed any puzzles from Lesson: {{ lessons_by_id[loop.index - 1].name }} </li>
+                  
+                  {% endif %}
+                {% endfor %}
+              </ul>
             </div>
     
             <div class="col-6">

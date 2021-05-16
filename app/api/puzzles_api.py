@@ -29,28 +29,12 @@ def get_all_puzzles(lesson_id=None):
         return Puzzle.query.all()
     return Puzzle.query.filter_by(lesson_id=lesson_id).all()
 
-def get_all_incomplete_puzzles(lesson_id=None, count=1):
-    """ Returns all puzzles for a given lesson that haven't been completed by the current user, if lesson_id==None, returns all puzzles """
-    # Handle multiple completions for puzzles
-    # If all lessons have been completed x times, then return all puzzles completed less than x + 1 times
-    # SELECT * FROM puzzle WHERE id NOT IN (SELECT puzzle_id FROM puzzle_completion WHERE user = g.user.id GROUP BY puzzle_id HAVING COUNT(puzzle_id) > (count - 1));
-    subquery = db.session.query(PuzzleCompletion.puzzle_id).filter_by(user=g.user.id).group_by(PuzzleCompletion.puzzle_id).having(sqlalchemy.func.count(PuzzleCompletion.puzzle_id) > (count - 1)).subquery(reduce_columns=True)
-    query = Puzzle.query.filter(Puzzle.id.notin_(subquery))
-    if lesson_id is not None:
-        query = query.filter(Puzzle.lesson_id==lesson_id)
-    puzzles = query.all()
-    if len(puzzles) == 0:
-        # For now recursively increase the count
-        # Probably better to store this value for each user
-        return get_all_incomplete_puzzles(lesson_id=lesson_id, count=count + 1)
-    return puzzles
-
 def get_incomplete_puzzles_for_test(test_id, user_id):
     query = Puzzle.query.outerjoin(PuzzleCompletion, (Puzzle.id==PuzzleCompletion.puzzle_id) & (PuzzleCompletion.test_number==test_id) & (PuzzleCompletion.user==user_id)).filter(PuzzleCompletion.id==None)
     return query.all()
 
-def get_puzzle_completions_for_test(test_id, user_id):
-    return PuzzleCompletion.query.filter_by(test_number=test_id, user=user_id).all()
+def get_unique_puzzle_completions_for_test(test_id, user_id):
+    return PuzzleCompletion.query.filter_by(test_number=test_id, user=user_id).group_by(PuzzleCompletion.puzzle_id).all()
 
 @app.route("/api/puzzles/random")
 @api_login_required
@@ -70,7 +54,7 @@ def random_test_puzzle_api(test_id):
     """ API route which serves a random puzzle that hasn't been completed by the current user """
     puzzles = get_incomplete_puzzles_for_test(test_id, g.user.id)
     if len(puzzles) > 0:
-        return jsonify({ "puzzle": random.choice(puzzles).to_json(), "is_final": len(get_puzzle_completions_for_test(test_id, g.user.id)) >= (PUZZLES_PER_TEST - 1) })
+        return jsonify({ "puzzle": random.choice(puzzles).to_json(), "is_final": len(get_unique_puzzle_completions_for_test(test_id, g.user.id)) >= (PUZZLES_PER_TEST - 1) })
     return jsonify({ "puzzle": None, "is_final": True })
 
 @app.route("/api/tests/<int:test_id>", methods=["POST"])

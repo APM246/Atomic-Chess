@@ -50,8 +50,8 @@ class SystemTest(unittest.TestCase):
 
     def test_login(self):
         user = User(
-            username="Admin",
-            pwd_hash=generate_password_hash("password"),
+            username="Test_Admin",
+            pwd_hash=generate_password_hash("password1"),
             chess_beginner=False,
         )
         db.session.add(user)
@@ -61,8 +61,8 @@ class SystemTest(unittest.TestCase):
         self.driver.implicitly_wait(5)
         username_field = self.driver.find_element_by_id("username")
         password_field = self.driver.find_element_by_id("password")
-        username_field.send_keys("Admin")
-        password_field.send_keys("password")
+        username_field.send_keys("Test_Admin")
+        password_field.send_keys("password1")
         submit = self.driver.find_element_by_id("submit")
         self.driver.implicitly_wait(5)
         submit.click()
@@ -72,8 +72,8 @@ class SystemTest(unittest.TestCase):
 
     def test_learn(self):
         user = User(
-            username="Admin",
-            pwd_hash=generate_password_hash("password"),
+            username="Test_Admin",
+            pwd_hash=generate_password_hash("password1"),
             chess_beginner=False,
         )
         db.session.add(user)
@@ -84,8 +84,8 @@ class SystemTest(unittest.TestCase):
         # We should be redirected to login page
         username_field = self.driver.find_element_by_id("username")
         password_field = self.driver.find_element_by_id("password")
-        username_field.send_keys("Admin")
-        password_field.send_keys("password")
+        username_field.send_keys("Test_Admin")
+        password_field.send_keys("password1")
         submit = self.driver.find_element_by_id("submit")
         self.driver.implicitly_wait(5)
         submit.click()

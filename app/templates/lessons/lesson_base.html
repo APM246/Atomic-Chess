@@ -59,12 +59,12 @@
 			}
 
 			if (stage === stages.length - 1) {
-				nextButton.innerHTML = "Practice";
+				nextButton.innerHTML = {% if lesson_id == 0 %} "Continue" {% else %} "Practice" {% endif %};
 				nextButton.onclick = () => {
 					if ((lessonData.completed_lesson || maxProgression === stages.length) && !buttonLock) {
 						markLessonAsComplete({{ lesson_id }}).then(() => {
 							// Complete
-							window.location.href = "{{ url_for('puzzle', lesson=lesson_id) }}";
+							window.location.href = {% if lesson_id == 0 %} "{{ url_for('learn') }}" {% else %} "{{ url_for('puzzle', lesson=lesson_id) }}" {% endif %};
 						});
 					}
 				}

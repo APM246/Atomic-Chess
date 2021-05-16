@@ -2,6 +2,7 @@
 
 {% block styles %}
   <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='forms.css') }}">
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/lesson_outline.css') }}">
 {% endblock %}
 
 
@@ -25,7 +26,7 @@
         <p class="ac-errors">{{ message }}</p>
         {% endfor %}
 
-        {{ form.submit }} <br><br>
+        {{ form.submit(class="ac-lesson-button") }} <br><br>
       </form>
     </div>
 

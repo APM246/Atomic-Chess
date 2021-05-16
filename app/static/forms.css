@@ -7,7 +7,7 @@
 .ac-form-container {
     background-color: rgba(34, 34, 34, 0.3);
     border: ridge black 5px;
-    border-radius: 20px;
+    border-radius: 10px;
     color: black;
     padding-left: 0px;
 }
@@ -40,14 +40,13 @@
 }
 
 .ac-forms > input[type="submit"] {
-    background-color: black;
-    color: white;
+    border: none;
+    margin-top: 5px;
     margin-left: 10px;
-    border-radius: 7px;
-}
-
-.ac-forms > input[type="submit"]:hover {
-    background-color: var(--ac-green);
+    width: 90px;
+    height: 40px;
+    font-family: FiraCode, Georgia;
+    font-size: 1rem;
 }
 
 .ac-forms > label {
@@ -74,16 +73,3 @@
     border-left: solid black 4px;
     display: none;
 }
-
-/* not working, trying to create 'fade into right' animation
-@keyframes fadeIn {
-    start {
-        opacity: 0;
-        transform: translateX(
-    } 
-    end {
-        
-        opacity: 100%;
-    }
-}
-*/

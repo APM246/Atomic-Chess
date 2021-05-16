@@ -5,6 +5,9 @@
   <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/lesson_outline.css') }}">
 {% endblock %}
 
+{% block body_attributes %}
+class="d-flex flex-column" style="min-height: 100vh;"
+{% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='forms.js') }}"></script>
@@ -12,26 +15,30 @@
 
 {% block content %}
 
-<div class="container ac-form-section">
-  <div class=row>
-    <div class="col-5 ac-form-container">
+<div class="ac-form-section d-flex flex-grow-1">
+  <div style="margin: auto; display: flex;">
+    <div class="ac-form-container">
       <form method="POST" action='' class="ac-forms">
         {{ form.hidden_tag() }}
-
+        
         {{ form.username(placeholder="Username", autocomplete="username") }} <br>
-
+        
         {{ form.password(placeholder="Password", autocomplete="current-password") }} <br>
-
+        <br>
+        {{ form.submit(class="ac-button-small") }}
+        
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
         {% for message in get_flashed_messages() %}
         <p class="ac-errors">{{ message }}</p>
         {% endfor %}
-
-        {{ form.submit(class="ac-lesson-button") }} <br><br>
+        {% endif %}
+        {% endwith %}
       </form>
     </div>
-
-    <div class="col-4 ac-form-info">
-      <h3> Info </h3>
+    
+    <div class="ac-form-info">
+      <h3> Login </h3>
       <p>
         {% if next != url_for('index') %}
         Please sign in to continue 
@@ -42,5 +49,6 @@
     </div>
   </div>
 </div>
+
 
 {% endblock %}

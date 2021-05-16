@@ -43,6 +43,7 @@ class Puzzle {
         this._board = new ChessBoard(this._options.boardOptions);
         // Event color represents the color that the player is playing
         this._eventColor = this._options.eventColor;
+        this._hintVisible = false;
 
         this.board.movePlayed.addEventListener((move) => {
             if (this.isCorrect(move)) {
@@ -54,6 +55,11 @@ class Puzzle {
                 this.incorrectMovePlayed.trigger(move);
             }
         });
+        this.board.piecePickedUp.addEventListener(() => {
+            if (this._hintVisible) {
+                this.board.emphasizer.resetColors();
+            }
+        })
 
         this.reset();
     }
@@ -71,6 +77,7 @@ class Puzzle {
         this._options.moveTree = data.moveTree;
         this._options.eventColor = data.eventColor;
         this._eventColor = this._options.eventColor;
+        this._hintVisible = false;
         this.reset();
     }
 
@@ -136,12 +143,14 @@ class Puzzle {
             const move = moves[0];
             this.board.emphasizer.setColors("#00d0d0", "#00b9b9");
             this.board.emphasizer.onGrab(move.from);
+            this._hintVisible = true;
         }
     }
 
     hideHint() {
         this.board.emphasizer.clear();
         this.board.emphasizer.resetColors();
+        this._hintVisible = false;
     }
 
     // After playing a correct move advance to the next stage of the tree

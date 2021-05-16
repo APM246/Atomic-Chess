@@ -3,7 +3,7 @@ import getpass
 from flask.cli import with_appcontext
 
 from werkzeug.security import check_password_hash, generate_password_hash
-from app.lessons import LESSON_ATOMIC, LESSON_OPENING_TRAPS, LESSON_WIN_CONDITIONS
+from app.lessons import LESSON_ATOMIC, LESSON_OPENING_TRAPS, LESSON_WIN_CONDITIONS, LESSON_PIECE_SAFETY, LESSON_KINGS_TOUCHING
 from app.models import Puzzle, User
 from app.auth import create_user
 from app import db
@@ -313,6 +313,51 @@ def create_opening_traps_puzzles():
         lesson_id=LESSON_OPENING_TRAPS.id,
     ))
 
+def create_piece_safety_puzzles():
+    db.session.add(Puzzle(
+        fen="2k1q3/pn2b3/bp1pp3/2p5/4P1P1/QP1P3P/P1PB1N2/R1N1K2R b - - 0 1",
+        move_tree=create_linear_move_tree([
+            create_move_from_string("e8f8"),
+            create_move_from_string("d2f4")
+        ]),
+        is_atomic=True,
+        lesson_id=LESSON_PIECE_SAFETY.id
+    ))
+    db.session.add(Puzzle(
+        fen="rnbqkbnr/pp2pppp/2pp4/8/2P5/1P1P1N2/P2NPPPP/R1BQKB1R b KQkq - 0 1",
+        move_tree=create_linear_move_tree([
+            create_move_from_string("d8a5"),
+            create_move_from_string("b3b4"),
+            create_move_from_string("a5a4"),
+            create_move_from_string("d1a4")
+        ]),
+        is_atomic=True,
+        lesson_id=LESSON_PIECE_SAFETY.id
+    ))
+
+def create_kings_touching_puzzles():
+    db.session.add(Puzzle(
+        fen="8/8/4k3/8/6K1/8/1Q6/8 w - - 0 1",
+        move_tree=create_linear_move_tree([
+            create_move_from_string("b2e5"),
+            create_move_from_string("e6f5"),
+            create_move_from_string("g4h3"),
+            create_move_from_string("f5g4")
+        ]),
+        is_atomic=True,
+        lesson_id=LESSON_KINGS_TOUCHING.id
+    ))
+    db.session.add(Puzzle(
+        fen="8/6Q1/8/8/5K2/7k/8/8 b - - 0 1",
+        move_tree=[{ "move": create_move_from_string("h3h4"), "continuation" : [
+                { "move": create_move_from_string("f4e3"), "continuation": [{ "move": create_move_from_string("h4h5"), "continuation": [{ "move": create_move_from_string("g7g5") }] }] },
+				{ "move": create_move_from_string("f4e4"), "continuation": [{ "move": create_move_from_string("h4h5"), "continuation": [{ "move": create_move_from_string("g7g5") }] }] },
+				{ "move": create_move_from_string("f4e5"), "continuation": [{ "move": create_move_from_string("h4h5"), "continuation": [{ "move": create_move_from_string("g7g5") }] }] }]
+                }],
+        is_atomic=True,
+        lesson_id=LESSON_KINGS_TOUCHING.id
+    ))
+
 def clear_database():
     """ Utility function that clears the data from all tables """
     for table in reversed(db.metadata.sorted_tables):
@@ -343,6 +388,8 @@ def init_db():
     create_atomic_puzzles()
     create_win_condition_puzzles()
     create_opening_traps_puzzles()
+    create_piece_safety_puzzles()
+    create_kings_touching_puzzles()
 
     create_admin_user()
 

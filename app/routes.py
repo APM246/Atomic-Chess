@@ -91,7 +91,7 @@ def puzzle():
 
     # Check that the lesson for this test has been completed
     lesson_model = LessonCompletion.query.filter_by(user=g.user.id, lesson_id=lesson_id).first()
-    if lesson_model is not None and not lesson_model.completed_lesson:
+    if lesson_model is None or not lesson_model.completed_lesson:
         # Forbidden
         return abort(403)
 

@@ -30,7 +30,7 @@ LESSON_ATOMIC = Lesson(
 LESSON_WIN_CONDITIONS = Lesson(
     lesson_id=2,
     name="Win Conditions",
-    description="In Atomic Chess you can win by checkmate, but can also win by blowing up the enemy king. This lesson will teach you how this effects the game",
+    description="In Atomic Chess you can win by checkmate or by blowing up the enemy king. This lesson will teach you how the latter affects the game",
     template="lessons/lesson2.html",
     max_progression=4,
 )
@@ -38,7 +38,7 @@ LESSON_WIN_CONDITIONS = Lesson(
 LESSON_OPENING_TRAPS = Lesson(
     lesson_id=3,
     name="Opening Traps",
-    description="White has many traps they can set in the opening, learn these traps to crush your oppenent!",
+    description="White has many traps they can set in the opening. Learn these traps to crush your opponent!",
     template="lessons/lesson3.html",
     max_progression=3,
 )
@@ -46,7 +46,7 @@ LESSON_OPENING_TRAPS = Lesson(
 LESSON_PIECE_SAFETY = Lesson(
     lesson_id=4,
     name="Piece Safety",
-    description="The rules of atomic changes the way you think about attacking and defending pieces",
+    description="The rules of Atomic Chess change the way you think about attacking and defending pieces",
     template="lessons/lesson4.html",
     max_progression=3,
 )

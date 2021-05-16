@@ -24,7 +24,7 @@ LESSON_ATOMIC = Lesson(
     name="Atomic",
     description="Learn the rules of Atomic Chess and how they differ from traditional chess",
     template="lessons/lesson1.html",
-    max_progression=1,
+    max_progression=2,
 )
 
 LESSON_WIN_CONDITIONS = Lesson(

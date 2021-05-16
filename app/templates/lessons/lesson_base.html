@@ -40,12 +40,12 @@
 		function onNextBtn() {
 			if (stage < maxProgression && !buttonLock) {
 				stage++;
-				setLessonStage();
-				updateButtons();
 				if (stage === maxProgression) {
 					setLessonProgression({{ lesson_id }}, stage);
 					console.log(`update progression to ${stage}`)
 				}
+				setLessonStage();
+				updateButtons();
 			}
 		}
 		nextButton.onclick = onNextBtn;
@@ -59,12 +59,12 @@
 			}
 
 			if (stage === stages.length - 1) {
-				nextButton.innerHTML = "Complete";
+				nextButton.innerHTML = "Practice";
 				nextButton.onclick = () => {
 					if ((lessonData.completed_lesson || maxProgression === stages.length) && !buttonLock) {
 						markLessonAsComplete({{ lesson_id }}).then(() => {
 							// Complete
-							window.location.href = "{{ url_for('learn') }}";
+							window.location.href = "{{ url_for('puzzle', lesson=lesson_id) }}";
 						});
 					}
 				}

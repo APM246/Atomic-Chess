@@ -9,11 +9,15 @@
 <script src="{{ url_for('static', filename='forms.js') }}"></script>
 {% endblock %}
 
+{% block body_attributes %}
+class="d-flex flex-column" style="min-height: 100vh;"
+{% endblock %}
+
 {% block content %}
 
-<div class="container ac-form-section">
-  <div class="row">
-    <div class="col-5 ac-form-container">
+<div class="ac-form-section d-flex flex-grow-1">
+  <div style="margin: auto; display: flex;">
+    <div class="ac-form-container">
       <form method="POST" action='' class='ac-forms'> 
         {{ form.hidden_tag() }}
 
@@ -24,15 +28,19 @@
         {{ form.played_chess_before.label }}
         {{ form.played_chess_before }} <br>
 
+        {{ form.submit(class="ac-button-small") }}
+        
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
         {% for message in get_flashed_messages() %}
         <p class="ac-errors">{{ message }}</p>
         {% endfor %}
-
-        {{ form.submit(class="ac-lesson-button") }}
+        {% endif %}
+        {% endwith %}
       </form>
     </div>
 
-    <div class="col-4 ac-form-info"> 
+    <div class="ac-form-info"> 
       <h3>Rules</h3>
       <p> 
         The password must be at least 6 characters long with at least 1 number. 

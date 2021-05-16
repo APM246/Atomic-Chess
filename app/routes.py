@@ -77,6 +77,7 @@ def lessons(name):
 @login_required
 def puzzle():
     """ Serves the puzzles page, either for a mini-test or the final test """
+    finishedTest = int(request.args.get("finishedTest", 0))
     lesson_id = int(request.args.get("lesson", -1))
     lesson = LESSONS_BY_ID.get(lesson_id)
     puzzle_uri = url_for("random_puzzle_api", **request.args)
@@ -101,7 +102,11 @@ def puzzle():
             return abort(403)
 
     title = lesson.name if lesson is not None else "Puzzles"
-    return render_template("puzzle.html", user=g.user, lesson=lesson, puzzle_uri=puzzle_uri, test_id=test_id, title=title, save=(lesson is None))
+
+    if finishedTest == 1:
+        return render_template("puzzle.html", user=g.user, finishedTest=finishedTest, lesson=lesson, puzzle_uri=puzzle_uri, test_id=test_id, title=title, save=(lesson is None))
+
+    return render_template("puzzle.html", finishedTest=finishedTest, user=g.user, lesson=lesson, puzzle_uri=puzzle_uri, test_id=test_id, title=title, save=(lesson is None))
 
 # todo: unroute this in production 
 @app.route("/test")

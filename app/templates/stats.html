@@ -3,6 +3,11 @@
   {% block styles %}
     <style>
 
+      .stats-container {
+         width: fit-content;
+         margin: auto;
+      }
+
       .stats {
         padding-top: 30px;
         padding-left: 80px;
@@ -21,10 +26,8 @@
       }
 
       .specific-stat {
-        margin-top: 30px;
-        margin-bottom: 30px; 
+        margin: 10px 0;
         border-bottom: solid var(--ac-light-green);
-        width: 300px;
       }
 
       .table-title {
@@ -39,29 +42,31 @@
   {% block content %} 
       <div class="container-fluid stats">
           <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-6" style="text-align: center;">
               <h1> User stats </h1>
               <p> Number of lessons completed: {{ num_lessons }} </p>
               <p> Number of puzzles completed: {{ total_num_completed_puzzles }} </p>
+              <div class="d-flex flex-column align-self-stretch stats-container">
                 {% for time in time_performance %}
-
-                  {% if loop.index - 1 > 0 %}
-                    <div class="specific-stat">
-                      <h2 class="lesson"> {{ lessons_by_id[loop.index - 1].name }} </h2>
-                        {% if time != 0 %}
-                          <p> Number of puzzles completed: {{ num_puzzles[loop.index - 1]}} </p>
-                          <p> Average time taken: {{ time }} seconds. </p>
-                          <p> Average accuracy: {{ accuracy[loop.index - 1] }}% </p>
-
-                        {% else %}
-                          <p> You have not completed any puzzles from this lesson. </p>
-                        {% endif %}
-                    </div>
-                    {% endif %}
+                
+                {% if loop.index - 1 > 0 %}
+                <div class="specific-stat">
+                  <h2 class="lesson"> {{ lessons_by_id[loop.index - 1].name }} </h2>
+                  {% if time != 0 %}
+                  <p> Number of puzzles completed: {{ num_puzzles[loop.index - 1]}} </p>
+                  <p> Average time taken: {{ time }} seconds. </p>
+                  <p> Average accuracy: {{ accuracy[loop.index - 1] }}% </p>
+                  
+                  {% else %}
+                  <p> You have not completed any puzzles from this lesson. </p>
+                  {% endif %}
+                </div>
+                {% endif %}
                 {% endfor %}
               </div>
+            </div>
 
-            <div class="col-md-6">
+            <div class="col-md-6" style="text-align: center;">
               <h1> Global stats </h1>
               <p> Number of registered users: {{ num_users }} </p>
               <p> Percentage of users who are chess beginners: {{ percentage_beginners }}% </p>

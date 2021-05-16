@@ -26,6 +26,7 @@ class="d-flex flex-column" style="min-height: 100vh;"
         background-color: var(--ac-deep-green);
         border-color: var(--ac-deep-green);
     }
+
 </style>
 {% endblock %}
 
@@ -51,7 +52,16 @@ class="d-flex flex-column" style="min-height: 100vh;"
     async function markFinalTestComplete() {
         {% if test_id %}
         await ajax("{{ url_for('test_api', test_id=test_id) }}", "POST", {});
-        window.location.href = "{{ url_for('learn') }}";
+        
+        ajax("{{ url_for('get_stats', test_id=test_id) }}", "GET").then((stats)=> {
+            $('#time-taken').html(stats["time_taken"]);
+            $('#accuracy').html(stats["accuracy"]);
+        });
+        $('#modal').modal('show');
+        $("#ok-button").click(function() {
+            window.location.href = "{{ url_for('stats') }}"
+        });
+
         {% endif %}
     }
 
@@ -221,7 +231,27 @@ class="d-flex flex-column" style="min-height: 100vh;"
 {% endblock %}
 
 {% block content %}
-    <div class="flex-grow-1 d-flex" style="text-align: center;">
+    <div id="modal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered"> 
+            <div class="modal-content"> 
+                <div class="modal-header"> 
+                    <h5 class="modal-title"> CONGRATS </h5>
+                </div>
+                <div class="modal-body">
+                    <p> You finished the test! </p>
+                    <p> Total time taken: <span id="time-taken"> </span>s </p>
+                    <p> Average accuracy: <span id="accuracy"> </span>% </p>
+                    <p> Clicking ok will bring you to the stats page where you can see more detailed statistics
+                    </p>
+                </div>
+                <div class="modal-footer"> 
+                    <button id="ok-button" type="button" class="btn"> Ok </button>
+                </div>
+            </div>      
+        </div>
+    </div>
+
+    <div id="lessn" class="flex-grow-1 d-flex" style="text-align: center;">
         <div class="ac-puzzle-container">
             <div id="board" class="ac-board ac-lesson-board" tabindex="0"></div>
             <div class="ac-puzzle-helper">

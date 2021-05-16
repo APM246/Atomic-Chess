@@ -116,3 +116,18 @@ def puzzles_post_api():
         db.session.commit()
         return jsonify({ "status": "Ok" })
     return error_response(400)
+
+@app.route("/api/stats/<int:test_id>", methods=["GET"])
+@api_login_required
+def get_stats(test_id):
+    test = Test.query.filter_by(id=test_id).first()
+    time_taken = round(test.end_time.timestamp() - test.start_time.timestamp(), 1)
+
+    total_accuracy = 0
+    puzzles = PuzzleCompletion.query.filter_by(test_number=test_id).all()
+    for puzzle in puzzles:
+        total_accuracy += 1/puzzle.attempts
+    
+    average_accuracy = round(100*total_accuracy/len(puzzles), 1)
+
+    return jsonify({ "time_taken": time_taken, "accuracy": average_accuracy})

@@ -101,6 +101,7 @@ def puzzle():
             return abort(403)
 
     title = lesson.name if lesson is not None else "Puzzles"
+
     return render_template("puzzle.html", user=g.user, lesson=lesson, puzzle_uri=puzzle_uri, test_id=test_id, title=title, save=(lesson is None))
 
 # todo: unroute this in production 

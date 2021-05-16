@@ -79,6 +79,7 @@
         const puzzleTitleDiv = document.getElementById("puzzle-title");
         const puzzleTimerDiv = document.getElementById("timer");
         const nextButton = document.getElementById("next-button");
+        const retryButton = document.getElementById("retry-button");
         const hintButton = document.getElementById("hint-button");
         const resetButton = document.getElementById("reset-button");
         hintButton.onclick = () => {
@@ -129,12 +130,11 @@
         }
 
         function showNextButton(puzzle, passed) {
-            nextButton.style.display = "block";
-            nextButton.className = "btn " + (passed ? "btn-success" : "btn-danger") + " ac-full-button";
-            nextButton.innerText = passed ? ((isFinalTest && !finalPuzzle) ? "Next" : "Complete") : "Retry";
-            nextButton.onclick = () => {
-                hideNextButton();
-                if (passed) {
+            if (passed) {
+                nextButton.style.display = "block";
+                nextButton.innerText = (isFinalTest && !finalPuzzle) ? "Next" : "Complete";
+                nextButton.onclick = () => {
+                    hideNextButton();
                     markPuzzleComplete(puzzleId, startTime, endTime, attempts).then(() => {
                         if (isFinalTest) {
                             if (finalPuzzle) {
@@ -146,18 +146,25 @@
                             window.location.href = "{{ url_for('learn') }}";
                         }
                     });
-                } else {
+                    puzzle.board.emphasizer.resetColors();
+                    puzzle.board.emphasizer.clear();
+                };
+            } else {
+                retryButton.style.display = "block";
+                retryButton.onclick = () => {
+                    hideNextButton();
                     attempts++;
                     puzzle.board.enableInteraction();
                     puzzle.undoLastMove();
+                    puzzle.board.emphasizer.resetColors();
+                    puzzle.board.emphasizer.clear();
                 }
-                puzzle.board.emphasizer.resetColors();
-                puzzle.board.emphasizer.clear();
-            };
+            }
         }
 
         function hideNextButton() {
             nextButton.style.display = "none";
+            retryButton.style.display = "none";
         }
 
         function showResetButton() {
@@ -231,7 +238,8 @@
                         <div class="ac-button-group">
                             <button id="hint-button" type="button" class="ac-full-button">Hint</button>
                             <button id="reset-button" style="display: none;" type="button" class="ac-full-button">Reset</button>
-                            <button id="next-button" style="display: none;" type="button" class=" ac-full-button">Next</button>
+                            <button id="next-button" style="display: none;" type="button" class="btn btn-success ac-full-button">Next</button>
+                            <button id="retry-button" style="display: none;" type="button" class="btn-danger ac-full-button">Retry</button>
                         </div>
                     </div>
                 </div>

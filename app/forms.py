@@ -9,7 +9,7 @@ password_field = PasswordField(validators=[DataRequired()])
 class SignUpForm(FlaskForm):
     username = username_field
     password = password_field
-    played_chess_before = BooleanField('Chess experience:', default=True, render_kw={'checked':''})
+    played_chess_before = BooleanField('Chess Experience:', default=False)
     submit = SubmitField('Register')
 
 class LoginForm(FlaskForm):

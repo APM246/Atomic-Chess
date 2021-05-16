@@ -17,13 +17,13 @@
         font-family: Arial;
         padding-top: 50px;
         padding-bottom: 50px;
-        border-bottom: solid rgba(60, 202, 4, 0.4);
+        border-bottom: solid var(--ac-light-green);
       }
 
       .specific-stat {
         margin-top: 30px;
         margin-bottom: 30px; 
-        border-bottom: solid rgba(60, 202, 4, 0.4);
+        border-bottom: solid var(--ac-light-green);
         width: 300px;
       }
 
@@ -39,7 +39,7 @@
   {% block content %} 
       <div class="container-fluid stats">
           <div class="row">
-            <div class="col-6">
+            <div class="col-md-6">
               <h1> User stats </h1>
               <p> Number of lessons completed: {{ num_lessons }} </p>
               <p> Number of puzzles completed: {{ total_num_completed_puzzles }} </p>
@@ -61,18 +61,17 @@
                 {% endfor %}
               </div>
 
-            <div class="col-6">
+            <div class="col-md-6">
               <h1> Global stats </h1>
               <p> Number of registered users: {{ num_users }} </p>
               <p> Percentage of users who are chess beginners: {{ percentage_beginners }}% </p>
               <div class="table-responsive leaderboard">
-                <p class="table-title"> Top 10 Users by <span> Average Time per puzzle </span> </p>
+                <p class="table-title"> Fastest times on Final Test </p>
                 <table class="table table-hover">
                   <thead>
                     <th> Position </th>
                     <th> Username </th>
-                    <th> Number of puzzles </th>
-                    <th> Average Time (s) </th>
+                    <th> Time (s) </th>
                   </thead>
                   <tbody>
                     {% for user in best_users %}
@@ -88,7 +87,6 @@
                       {% else %}
                         <td> {{ user[0].username }} </td>
                       {% endif %}
-                      <td> {{ user[0].completed_puzzles|length }} </td>
                       <td> {{ user[1] }} </td> 
                       </tr>
                     {% endfor %}

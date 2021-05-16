@@ -115,25 +115,6 @@ class PuzzleCompletion(db.Model):
 
 	puzzle = db.relationship("Puzzle", lazy=True, uselist=False, backref="completions")
 
-	def get_best_times():
-		all_puzzles = PuzzleCompletion.query.all()
-		total_time_by_user = {}
-		num_puzzles_by_user = {}
-
-		for completed_puzzle in all_puzzles:
-			user = User.query.get(completed_puzzle.user)
-			time_taken = completed_puzzle.end_time.timestamp() - completed_puzzle.start_time.timestamp()
-			total_time_by_user[user] = total_time_by_user.get(user, 0) + time_taken
-			num_puzzles_by_user[user] = num_puzzles_by_user.get(user, 0) + 1
-		
-		average_time_by_user = {}
-		for user in total_time_by_user:
-			average_time_by_user[user] = round(total_time_by_user[user]/num_puzzles_by_user[user], 1)
-		
-		best_users = sorted(average_time_by_user.items(), key=lambda x: average_time_by_user[x[0]])
-		# return top 5
-		return best_users[:10]
-
 # A series of puzzles make up the final test
 class Test(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -142,4 +123,19 @@ class Test(db.Model):
 	end_time = db.Column(db.DateTime, nullable=True)
 
 	def __repr__(self):
-		return "Test {} completed by {}".format(self.id, self.user)
+		return "Test {} completed by User {}".format(self.id, self.user)
+	
+	def get_best_times():
+		all_tests = Test.query.all()
+		times = {}
+		for test in all_tests:
+			if test.end_time:
+				user = User.query.get(test.user)
+				time_taken = round(test.end_time.timestamp() - test.start_time.timestamp(), 1)
+				if user not in times or time_taken < times[user]:
+					times[user] = time_taken
+		
+		best_users = sorted(times.items(), key=lambda x: times[x[0]])
+		return best_users[:10]
+				
+				

@@ -1,5 +1,21 @@
 {% extends "base.html" %}
 
+{% block styles %} 
+  <style>
+    .settings {
+      width: fit-content;
+      margin: 100px;
+      padding-left: 20px;
+      border-left: solid var(--ac-light-green);
+      font-size: 1.2em;
+    }
+
+    .setting {
+      padding: 10px;
+    }
+  </style>  
+{% endblock %}
+
 {% block scripts %}
 <script>
 
@@ -75,28 +91,28 @@
 {% endblock %}
 
 {% block content %}
-<div id="root">
-  <div>
+<div id="root" class="settings">
+  <div class="setting">
     <span>Light Square Colour:</span>
     <input id="light_square_color" type="color"></input>
   </div>
-  <div>
+  <div class="setting">
     <span>Dark Square Colour:</span>
     <input id="dark_square_color" type="color"></input>
   </div>
-  <div>
+  <div class="setting">
     <span>Show Move Markers:</span>
     <input id="show_move_markers" type="checkbox"></input>
   </div>
-  <div>
+  <div class="setting">
     <span>Show Highlights:</span>
     <input id="show_square_highlights" type="checkbox"></input>
   </div>
-  <div>
+  <div class="setting">
     <span>Animate Moves:</span>
     <input id="use_move_animations" type="checkbox"></input>
   </div>
-  <div>
+  <div class="setting">
     <input id="submit" type="button" value="Save"></input>
     <input id="reset-default" type="button" value="Restore Defaults"></input>
   </div>

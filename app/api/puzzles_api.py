@@ -62,9 +62,11 @@ def random_test_puzzle_api(test_id):
 def test_api(test_id):
     test = Test.query.filter_by(id=test_id).first()
     if test is not None:
-        # TODO: assert that there are 10 puzzle completions for this test
-        test.end_time = datetime.datetime.now()
-        db.session.commit()
+        if len(get_unique_puzzle_completions_for_test(test_id, g.user.id)) >= PUZZLES_PER_TEST:
+            test.end_time = datetime.datetime.now()
+            db.session.commit()
+            return jsonify({ "status": "Ok" })
+        return error_response(403)
     return error_response(404)
 
 @app.route("/api/puzzles/<int:puzzle_id>", methods=["POST"])

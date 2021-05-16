@@ -1,4 +1,4 @@
-{% extends "lessons/lesson_base.html" %}
+{% extends "base.html" %}
 
 {% block styles %}
 <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/lesson.css') }}">
@@ -33,6 +33,7 @@
 
 {% block scripts %}
 {{ super() }}
+<script src="{{ url_for('static', filename='learn/utils.js') }}"></script>
 <script>
     const isFinalTest = "{{ save }}" === "True";
 
@@ -42,10 +43,18 @@
                 attempts,
                 start_time: startTime,
                 end_time: endTime,
+                test_id: {{ test_id }},
             });
         } else {
             await markTestAsComplete("{{ lesson.id }}");
         }
+    }
+
+    async function markFinalTestComplete() {
+        {% if test_id %}
+        await ajax("{{ url_for('test_api', test_id=test_id) }}", "POST", {});
+        window.location.href = "{{ url_for('learn') }}";
+        {% endif %}
     }
 
     window.onload = async () => {
@@ -64,6 +73,7 @@
         let startTime = null;
         let endTime = null;
         let attempts = 1;
+        let finalPuzzle = false;
 
         const lessonTextDiv = document.getElementById("lesson-text");
         const puzzleTitleDiv = document.getElementById("puzzle-title");
@@ -100,6 +110,7 @@
             const puzzleData = await ajax("{{ puzzle_uri }}");
             puzzleTitleDiv.innerText = "{{ title }}";
             if (puzzleData.puzzle) {
+                finalPuzzle = !!puzzleData.is_final;
                 puzzleId = puzzleData.puzzle.id;
                 attempts = 1;
                 puzzle.board.position.isAtomic = puzzleData.puzzle.is_atomic;
@@ -120,13 +131,17 @@
         function showNextButton(puzzle, passed) {
             nextButton.style.display = "block";
             nextButton.className = "btn " + (passed ? "btn-success" : "btn-danger") + " ac-full-button";
-            nextButton.innerText = passed ? (isFinalTest ? "Next" : "Complete") : "Retry";
+            nextButton.innerText = passed ? ((isFinalTest && !finalPuzzle) ? "Next" : "Complete") : "Retry";
             nextButton.onclick = () => {
                 hideNextButton();
                 if (passed) {
                     markPuzzleComplete(puzzleId, startTime, endTime, attempts).then(() => {
                         if (isFinalTest) {
-                            nextPuzzle();
+                            if (finalPuzzle) {
+                                markFinalTestComplete()
+                            } else {
+                                nextPuzzle();
+                            }
                         } else {
                             window.location.href = "{{ url_for('learn') }}";
                         }

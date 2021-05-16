@@ -66,13 +66,12 @@
               <p> Number of registered users: {{ num_users }} </p>
               <p> Percentage of users who are chess beginners: {{ percentage_beginners }}% </p>
               <div class="table-responsive leaderboard">
-                <p class="table-title"> Top 10 Users by <span> Average Time per puzzle </span> </p>
+                <p class="table-title"> Fastest times on Final Test </p>
                 <table class="table table-hover">
                   <thead>
                     <th> Position </th>
                     <th> Username </th>
-                    <th> Number of puzzles </th>
-                    <th> Average Time (s) </th>
+                    <th> Time (s) </th>
                   </thead>
                   <tbody>
                     {% for user in best_users %}
@@ -88,7 +87,6 @@
                       {% else %}
                         <td> {{ user[0].username }} </td>
                       {% endif %}
-                      <td> {{ user[0].completed_puzzles|length }} </td>
                       <td> {{ user[1] }} </td> 
                       </tr>
                     {% endfor %}

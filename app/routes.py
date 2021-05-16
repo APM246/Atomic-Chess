@@ -52,7 +52,7 @@ def stats():
     percentage_beginners = User.get_percentage_chess_beginners()
     num_completed_lessons = g.user.get_num_completed_lessons()
     time_performance, num_completed_puzzles, total_num_completed_puzzles, accuracy = g.user.get_performance()
-    best_users = PuzzleCompletion.get_best_times()
+    best_users = Test.get_best_times()
     
     return render_template("stats.html", user=g.user, num_users=num_users, percentage_beginners=percentage_beginners,
     num_lessons=num_completed_lessons, time_performance=time_performance, lessons_by_id=LESSONS_BY_ID, 

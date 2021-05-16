@@ -328,8 +328,6 @@ def create_piece_safety_puzzles():
         move_tree=create_linear_move_tree([
             create_move_from_string("d8a5"),
             create_move_from_string("b3b4"),
-            create_move_from_string("a5a4"),
-            create_move_from_string("d1a4")
         ]),
         is_atomic=True,
         lesson_id=LESSON_PIECE_SAFETY.id

@@ -38,7 +38,11 @@ def learn():
             lesson_object = LESSONS_BY_ID[lesson.lesson_id]
             lesson_progressions[lesson.lesson_id] = math.ceil(lesson.progression * 100 / lesson_object.max_progression)
 
-    return render_template("learn.html", user=g.user, lessons=get_all_lessons(), completed_lessons=completed_lessons, completed_tests=completed_tests, lesson_progressions=lesson_progressions)
+    test = Test.query.filter_by(user=g.user.id).first()
+    done_test = test is not None
+
+    return render_template("learn.html", user=g.user, lessons=get_all_lessons(), completed_lessons=completed_lessons,
+     completed_tests=completed_tests, lesson_progressions=lesson_progressions, done_test=done_test)
 
 @app.route("/stats")
 @login_required

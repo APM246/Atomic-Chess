@@ -21,7 +21,7 @@ onLoad="InitializeProgressBar()" class="d-flex flex-column" style="min-height: 1
     {{ lesson.name }}
   </li>
   {% endfor %}
-  <li>
+  <li {% if done_test %} class="completed" {% endif %}>
     <a class="node" data-bs-toggle="tab" href="#final-test"></a>
     Final Test
   </li>

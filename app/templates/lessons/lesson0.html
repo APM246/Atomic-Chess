@@ -15,8 +15,8 @@
                 text: [`
                     <h4>Moving Pieces</h4>
                     <div>
-                        <b>Board coordinates</b> are used to describe each square of the chess board. You can refer to the letters and numbers along the edge of the board,
-                        for example, the bottom left square is <b>a1</b> and the top right square is <b>h8</b>.
+                        <b>Board coordinates</b> are used to describe each square by referring to the letters and numbers along the edge of the board.
+                        For example, the bottom left square is <b>a1</b> and the top right square is <b>h8</b>.
                     </div>
                     <br/>
                     <div>
@@ -42,7 +42,7 @@
                 fen: "8/8/8/8/8/8/2P5/8 w - - 0 1",
                 moveTree: createLinearMoveTree([moveFromString("c2c4")]),
                 },
-                text: ["<h4>Moving Pieces</h4>If a pawn is on it's starting rank it can move up to 2 squares forward. Move the pawn 2 squares forward."],
+                text: ["<h4>Moving Pieces</h4>If a pawn is on its starting rank it can move up to 2 squares forward. Move the pawn 2 squares forward."],
                 isFlipped: false,
                 scriptFirstMove: false,
             },
@@ -61,7 +61,7 @@
                     { move: moveFromString("d5b4") },
                 ],
                 },
-                text: ["<h4>Moving Pieces</h4>The knight moves in an L pattern ignoring any pieces between its current and square and the destination square. Move the knight to any legal square."],
+                text: ["<h4>Moving Pieces</h4>The knight moves in an L pattern ignoring any pieces between its current square and the destination square. Move the knight to any legal square."],
                 isFlipped: false,
                 scriptFirstMove: false,
             },
@@ -91,7 +91,7 @@
                     fen: "8/8/8/8/8/2Q5/8/8 w - - 0 1",
                     moveTree: createLinearMoveTree([moveFromString("c3h8")]),
                 },
-                text: ["<h4>Moving Pieces</h4>The queen has the movement of both a rook and a bishop. Move the queen to the very top right corner of the board."],
+                text: ["<h4>Moving Pieces</h4>The queen has the movement of both a rook and a bishop. Move the queen to the top right corner of the board."],
                 isFlipped: false,
                 scriptFirstMove: false,
             },
@@ -111,7 +111,7 @@
                     fen: "8/2n5/8/8/4P3/8/8/8 b - - 0 1",
                     moveTree: createLinearMoveTree([moveFromString("c7d5"), moveFromString("e4d5")]),
                 },
-                text: ["<h4>Capturing Pieces</h4>Pawns are special in that normally they can only move straight forward, however, if there is an opposition piece diagonally in front of it the pawn can capture it. Capture the black knight."],
+                text: ["<h4>Capturing Pieces</h4>Pawns usually only move straight forward. However, if there is an opposition piece diagonally in front of it the pawn can capture it. Capture the black knight."],
                 isFlipped: false,
                 scriptFirstMove: true,
             },
@@ -153,7 +153,7 @@
                     fen: "8/4p3/8/3P4/8/8/8/8 b - - 0 1",
                     moveTree: createLinearMoveTree([moveFromString("e7e5"), moveFromString("d5e6")]),
                 },
-                text: [`<h4>Special Rules</h4>A second special rule is En passant. If an opposition pawn moves 2 squares forward and ends up directly next to our pawn, our pawn can move diagonally forward to the square behind the opposition pawn and capture it.
+                text: [`<h4>Special Rules</h4>The second rule is En passant. If an opposition pawn moves 2 squares forward and ends up directly next to your pawn, your pawn can move diagonally forward to the square behind the opposition pawn and capture it.
                  Capture the black pawn using the En passant rule.`],
                 isFlipped: false,
                 scriptFirstMove: true,

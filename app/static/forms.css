@@ -59,11 +59,6 @@
     color: #aa0000;
 }
 
-.ac-disable-access {
-	background-color: var(--ac-grey) !important;
-	cursor: not-allowed !important;
-}
-
 .ac-form-info {
     font-size: 12pt;
     margin-left: 20px;

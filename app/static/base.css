@@ -24,6 +24,11 @@ body::before {
     user-select: none;
 }
 
+.ac-disable-access {
+	background-color: var(--ac-grey) !important;
+	cursor: not-allowed !important;
+}
+
 .container-fluid, #collapsing-navbar {
     height: 100%;
 }

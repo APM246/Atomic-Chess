@@ -91,9 +91,10 @@ def puzzle():
 
     # Check that the lesson for this test has been completed
     lesson_model = LessonCompletion.query.filter_by(user=g.user.id, lesson_id=lesson_id).first()
-    if lesson_model is None or not lesson_model.completed_lesson:
-        # Forbidden
-        return abort(403)
+    if lesson_id != -1:
+        if lesson_model is None or not lesson_model.completed_lesson:
+            # Forbidden
+            return abort(403)
 
     title = lesson.name if lesson is not None else "Puzzles"
     return render_template("puzzle.html", user=g.user, lesson=lesson, puzzle_uri=puzzle_uri, test_id=test_id, title=title, save=(lesson is None))

@@ -38,7 +38,7 @@ def learn():
             lesson_object = LESSONS_BY_ID[lesson.lesson_id]
             lesson_progressions[lesson.lesson_id] = math.ceil(lesson.progression * 100 / lesson_object.max_progression)
 
-    test = Test.query.filter_by(user=g.user.id).first()
+    test = Test.query.filter(Test.user==g.user.id, Test.end_time!=None).first()
     done_test = test is not None
 
     return render_template("learn.html", user=g.user, lessons=get_all_lessons(), completed_lessons=completed_lessons,

@@ -9,7 +9,7 @@ from app.api.auth import api_admin_login_required, api_login_required, error_res
 from app.models import Puzzle, PuzzleCompletion, Test
 from flask_sqlalchemy import sqlalchemy
 
-PUZZLES_PER_TEST = 5
+PUZZLES_PER_TEST = 10
 
 def validate_puzzle_data(puzzle):
     """ Validate puzzle data from client """

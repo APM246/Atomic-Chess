@@ -27,6 +27,24 @@ class="d-flex flex-column" style="min-height: 100vh;"
         border-color: var(--ac-deep-green);
     }
 
+    .ac-button {
+        display: flex;
+        color: white;
+        text-decoration: none;
+        width: 170px;
+        height: 3em;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--ac-green);
+        border-radius: 5px;
+        margin: auto auto 1em auto;
+    }
+    
+    .ac-button:hover {
+        background-color: var(--ac-deep-green);
+        color: white;
+    }
+
 </style>
 {% endblock %}
 
@@ -239,13 +257,11 @@ class="d-flex flex-column" style="min-height: 100vh;"
                 </div>
                 <div class="modal-body">
                     <p> You finished the test! </p>
-                    <p> Total time taken: <span id="time-taken"> </span>s </p>
+                    <p> Total time taken: <span id="time-taken"> </span> seconds </p>
                     <p> Average accuracy: <span id="accuracy"> </span>% </p>
-                    <p> Clicking ok will bring you to the stats page where you can see more detailed statistics
-                    </p>
                 </div>
                 <div class="modal-footer"> 
-                    <button id="ok-button" type="button" class="btn"> Ok </button>
+                    <button id="ok-button" type="button" class="btn ac-button"> View summary </button>
                 </div>
             </div>      
         </div>

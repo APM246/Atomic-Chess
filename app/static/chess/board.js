@@ -850,6 +850,7 @@ class SquareEmphasizer {
 class ChessBoard {
     constructor(options) {
         this.movePlayed = new EventEmitter();
+        this.piecePickedUp = new EventEmitter();
 
         this._options = assignDefaults(options, DEFAULT_CHESS_BOARD_OPTIONS);
         const targetElement = getElement(this._options.target);
@@ -1659,6 +1660,8 @@ class ChessBoard {
                 // Move piece to new mouse location
                 setTransform(e.clientX, e.clientY);
             };
+
+            this.piecePickedUp.trigger();
         };
 
         // Support mobile inputs
@@ -1696,6 +1699,8 @@ class ChessBoard {
                         setTransform(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
                     }
                 };
+
+                this.piecePickedUp.trigger();
             }
         };
     }

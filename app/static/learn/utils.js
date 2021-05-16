@@ -50,7 +50,7 @@ async function markLessonAsComplete(lessonId, apiBase = "/api") {
     // Also reset progression
     const response = await ajax(`${apiBase}/lessons/${lessonId}`, "PUT", {
         completed_lesson: true,
-        progression: 0
+        progression: 0,
     });
     return response;
 }

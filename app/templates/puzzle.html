@@ -1,14 +1,12 @@
 {% extends "base.html" %}
 
+{% block body_attributes %}
+class="d-flex flex-column" style="min-height: 100vh;"
+{% endblock %}
+
 {% block styles %}
 <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='learn/lesson.css') }}">
 <style>
-    .ac-puzzle-content {
-        margin-top: 20px;
-        margin-left: 10px;
-        padding-bottom: 15px;
-    }
-
     .ac-puzzle-container {
         display: flex;
         margin: auto;
@@ -223,24 +221,22 @@
 {% endblock %}
 
 {% block content %}
-    <div style="text-align: center;">
-        <div class="ac-puzzle-content">
-            <div class="ac-puzzle-container">
-                <div id="board" class="ac-board ac-lesson-board" tabindex="0"></div>
-                <div class="ac-puzzle-helper">
-                    <h3 id="puzzle-title">Loading...</h3>
-                    <div id="timer"></div>
-                    <div>
-                        Find the best move.
-                    </div>
-                    <div id="lesson-text" class="ac-lesson-task"></div>
-                    <div class="ac-next-button-container">
-                        <div class="ac-button-group">
-                            <button id="hint-button" type="button" class="ac-full-button">Hint</button>
-                            <button id="reset-button" style="display: none;" type="button" class="ac-full-button">Reset</button>
-                            <button id="next-button" style="display: none;" type="button" class="btn btn-success ac-full-button">Next</button>
-                            <button id="retry-button" style="display: none;" type="button" class="btn-danger ac-full-button">Retry</button>
-                        </div>
+    <div class="flex-grow-1 d-flex" style="text-align: center;">
+        <div class="ac-puzzle-container">
+            <div id="board" class="ac-board ac-lesson-board" tabindex="0"></div>
+            <div class="ac-puzzle-helper">
+                <h3 id="puzzle-title">Loading...</h3>
+                <div id="timer"></div>
+                <div>
+                    Find the best move.
+                </div>
+                <div id="lesson-text" class="ac-lesson-task"></div>
+                <div class="ac-next-button-container">
+                    <div class="ac-button-group">
+                        <button id="hint-button" type="button" class="ac-full-button">Hint</button>
+                        <button id="reset-button" style="display: none;" type="button" class="ac-full-button">Reset</button>
+                        <button id="next-button" style="display: none;" type="button" class="btn btn-success ac-full-button">Next</button>
+                        <button id="retry-button" style="display: none;" type="button" class="btn-danger ac-full-button">Retry</button>
                     </div>
                 </div>
             </div>

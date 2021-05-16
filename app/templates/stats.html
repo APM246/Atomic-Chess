@@ -39,7 +39,7 @@
   {% block content %} 
       <div class="container-fluid stats">
           <div class="row">
-            <div class="col-6">
+            <div class="col-md-6">
               <h1> User stats </h1>
               <p> Number of lessons completed: {{ num_lessons }} </p>
               <p> Number of puzzles completed: {{ total_num_completed_puzzles }} </p>
@@ -61,7 +61,7 @@
                 {% endfor %}
               </div>
 
-            <div class="col-6">
+            <div class="col-md-6">
               <h1> Global stats </h1>
               <p> Number of registered users: {{ num_users }} </p>
               <p> Percentage of users who are chess beginners: {{ percentage_beginners }}% </p>

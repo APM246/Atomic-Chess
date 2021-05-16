@@ -8,14 +8,14 @@ window.onload = async () => {
         {
             puzzleData: {
                 fen: "rnb5/ppp5/2b5/2N5/8/8/8/8 w - - 0 1",
-                moveTree: [{ move: createMove(SQUARES.C5, SQUARES.B7) }],
+                moveTree: createLinearMoveTree([moveFromString("c5b7")]),
                 eventColor: COLORS.WHITE,
             },
             text: [
                 `In Atomic Chess, all the pieces move using the same rules as classical chess.
                 The major difference is how pieces are captured. Firstly, whenever you capture a piece
-                both your piece and the opponent's piece are removed from the board. Secondly, the reason
-                Atomic chess has its name, when any piece is captured, all pieces except <b>pawns</b> in a
+                both your piece and the opponent's piece are removed from the board. <br><br> Secondly,
+                Atomic chess has its name because when any piece is captured, all pieces except <b>pawns</b> in a
                 3x3 area around the captured piece are also removed from the board.
                 <br><br>Capture the black pawn with your knight on the board below.`,
             ],

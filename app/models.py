@@ -111,9 +111,9 @@ class PuzzleCompletion(db.Model):
 	# Times used to calculate the length of time taken to solve
 	start_time = db.Column(db.DateTime, nullable=False)
 	end_time = db.Column(db.DateTime, nullable=False)
+	test_number = db.Column(db.Integer, db.ForeignKey("test.id"), nullable=False)
 
 	puzzle = db.relationship("Puzzle", lazy=True, uselist=False, backref="completions")
-	#test_number = db.Column(db.Integer, nullable=False)
 
 	def get_best_times():
 		all_puzzles = PuzzleCompletion.query.all()
@@ -133,7 +133,13 @@ class PuzzleCompletion(db.Model):
 		best_users = sorted(average_time_by_user.items(), key=lambda x: average_time_by_user[x[0]])
 		# return top 5
 		return best_users[:10]
-	
-	def get_best_accuracy():
-		all_puzzles = PuzzleCompletion.query.all()
-		total_
+
+# A series of puzzles make up the final test
+class Test(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	user = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+	start_time = db.Column(db.DateTime, nullable=False)
+	end_time = db.Column(db.DateTime, nullable=True)
+
+	def __repr__(self):
+		return "Test {} completed by {}".format(self.id, self.user)

@@ -76,4 +76,12 @@ During the assessment, users use the concepts they have learnt to play through r
 The application is implemented as a flask web server. It supports the creation of user accounts to track the user's learning progress as they complete lessons and assessments. The server tracks which lessons and assessments have been completed and displays this information to the user. Once the user begins a lesson the client handles the logic which progresses them through the lesson, making AJAX calls to save progress.
 
 The assessments are implemented as a single page which makes an AJAX call to request a new assessment for the user to complete. Once the user has completed the assessment the client sends an AJAX request to the server indicating that it has been completed and requests a new assessment. Note that currently, the server doesn't validate that the assessment was actually completed correctly, it is up to the client to validate. This is fine for now as there is no need to prevent cheating as it is a learning site.
+
+Once the assessment is completed, the user is given a basic summary of their performance and is routed to a stats page where they can see more detailed information. The stats page also shows global statistics and a leaderboard of the fastest users to complete the assessment.
+
 ### Tests
+A variety of tests were implemented including unit tests on the database schema, front-end tests using Selenium Web Driver and HTML/CSS validation.
+
+Firstly in the unit tests the User table in the database was tested, ensuring user details such as password hashes are stored correctly and validation occurs for incorrectly entered usernames/passwords. The Puzzle, PuzzleCompletion and Test models were also tested on the correct storage of data once a user completes an individual puzzle within the final assessment.
+
+In the Selenium system tests, login and registering were tested by checking if the website rendered a Logout button and if certain account-restricted pages were accessible.

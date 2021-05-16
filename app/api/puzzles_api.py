@@ -52,6 +52,10 @@ def random_puzzle_api():
 @api_login_required
 def random_test_puzzle_api(test_id):
     """ API route which serves a random puzzle that hasn't been completed by the current user """
+    test = Test.query.get(test_id)
+    # Ensure that the request is from the correct user
+    if test.user != g.user.id:
+        return error_response(401)
     puzzles = get_incomplete_puzzles_for_test(test_id, g.user.id)
     if len(puzzles) > 0:
         return jsonify({ "puzzle": random.choice(puzzles).to_json(), "is_final": len(get_unique_puzzle_completions_for_test(test_id, g.user.id)) >= (PUZZLES_PER_TEST - 1) })
@@ -62,6 +66,9 @@ def random_test_puzzle_api(test_id):
 def test_api(test_id):
     test = Test.query.filter_by(id=test_id).first()
     if test is not None:
+        # Ensure the request is from the correct user
+        if test.user != g.user.id:
+            return error_response(401)
         if len(get_unique_puzzle_completions_for_test(test_id, g.user.id)) >= PUZZLES_PER_TEST:
             test.end_time = datetime.datetime.now()
             db.session.commit()

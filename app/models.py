@@ -111,9 +111,9 @@ class PuzzleCompletion(db.Model):
 	# Times used to calculate the length of time taken to solve
 	start_time = db.Column(db.DateTime, nullable=False)
 	end_time = db.Column(db.DateTime, nullable=False)
+	test_number = db.Column(db.Integer, db.ForeignKey("test.id"), nullable=False)
 
 	puzzle = db.relationship("Puzzle", lazy=True, uselist=False, backref="completions")
-	test_number = db.Column(db.Integer, db.ForeignKey("test.id"), nullable=False)
 
 	def get_best_times():
 		all_puzzles = PuzzleCompletion.query.all()

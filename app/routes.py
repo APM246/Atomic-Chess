@@ -1,10 +1,11 @@
 import math
+import datetime
 
 from app.api.lessons_api import get_lesson_progression
 from app.auth import admin_login_required
 from flask import render_template, abort, redirect, request, url_for, g
 from app import app, db
-from app.models import User, LessonCompletion, PuzzleCompletion
+from app.models import Test, User, LessonCompletion, PuzzleCompletion
 from app.auth import login_required
 
 from app.lessons import get_all_lessons, get_lesson_by_name, LESSONS_BY_ID
@@ -74,8 +75,19 @@ def puzzle():
     """ Serves the puzzles page, either for a mini-test or the final test """
     lesson_id = int(request.args.get("lesson", -1))
     lesson = LESSONS_BY_ID.get(lesson_id)
-    # If we are doing the final test (no lesson) only use puzzles that have not been completed by the user
-    puzzle_uri = url_for("random_puzzle_api", **request.args) if lesson is not None else url_for("random_incomplete_puzzle_api", **request.args)
+    puzzle_uri = url_for("random_puzzle_api", **request.args)
+    test_id = None
+    if lesson is None:
+        # If we are doing the final test (no lesson) only use puzzles that have not been completed by the user
+        test = Test(
+            user=g.user.id,
+            start_time=datetime.datetime.now(),
+            end_time=None,
+        )
+        db.session.add(test)
+        db.session.commit()
+        test_id = test.id
+        puzzle_uri = url_for("random_test_puzzle_api", test_id=test_id, **request.args)
 
     # Check that the lesson for this test has been completed
     lesson_model = LessonCompletion.query.filter_by(user=g.user.id, lesson_id=lesson_id).first()
@@ -84,7 +96,7 @@ def puzzle():
         return abort(403)
 
     title = lesson.name if lesson is not None else "Puzzles"
-    return render_template("puzzle.html", user=g.user, lesson=lesson, puzzle_uri=puzzle_uri, title=title, save=(lesson is None))
+    return render_template("puzzle.html", user=g.user, lesson=lesson, puzzle_uri=puzzle_uri, test_id=test_id, title=title, save=(lesson is None))
 
 # todo: unroute this in production 
 @app.route("/test")

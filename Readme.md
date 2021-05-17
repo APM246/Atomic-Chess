@@ -85,3 +85,10 @@ A variety of tests were implemented including unit tests on the database schema,
 Firstly in the unit tests the User table in the database was tested, ensuring user details such as password hashes are stored correctly and validation occurs for incorrectly entered usernames/passwords. The Puzzle, PuzzleCompletion and Test models were also tested on the correct storage of data once a user completes an individual puzzle within the final assessment.
 
 In the Selenium system tests, login and registering were tested by checking if the website rendered a Logout button and if certain account-restricted pages were accessible.
+
+### References 
+The following libaries/resources were used in the project
+
+Chess pieces: https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
+
+Bootstrap 5: https://getbootstrap.com/

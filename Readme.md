@@ -9,7 +9,7 @@ Website designed to teach people how to play the chess variant [Atomic](https://
 
 1. Clone this repository.
 
-2. Create a python virtual environment and install requirements.
+2. Create a python virtual environment and install requirements. (note: webapp was developed on python version 3.9.2)
 
 `pip install virtualenv`
 

@@ -59,7 +59,7 @@ class Puzzle {
             if (this._hintVisible) {
                 this.board.emphasizer.resetColors();
             }
-        })
+        });
 
         this.reset();
     }
